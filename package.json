@@ -46,16 +46,16 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "XxHuberrr",
-        "repo": "Mineradio"
+        "owner": "ShijingYangwow27",
+        "repo": "Mineradio--macOS"
       }
     ]
   },
   "mineradio": {
     "update": {
       "provider": "github",
-      "owner": "XxHuberrr",
-      "repo": "Mineradio",
+      "owner": "ShijingYangwow27",
+      "repo": "Mineradio--macOS",
       "preview": true,
       "preferMirrors": true,
       "mirrors": [
