@@ -8,8 +8,6 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "build:win": "electron-builder --win nsis",
-    "build:win:dir": "electron-builder --win dir",
     "build:mac": "electron-builder --mac"
   },
   "build": {
@@ -20,9 +18,6 @@
       "buildResources": "build"
     },
     "afterPack": "build/after-pack.js",
-    "toolsets": {
-      "winCodeSign": "1.1.0"
-    },
     "files": [
       "desktop/**/*",
       "public/**/*",
@@ -34,34 +29,6 @@
       "public/index.html"
     ],
     "asar": false,
-    "win": {
-      "executableName": "Mineradio",
-      "icon": "build/icon.ico",
-      "signAndEditExecutable": false,
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Mineradio",
-      "installerIcon": "build/icon.ico",
-      "uninstallerIcon": "build/icon.ico",
-      "installerSidebar": "build/installerSidebar.bmp",
-      "uninstallerSidebar": "build/installerSidebar.bmp",
-      "installerHeader": "build/installerHeader.bmp",
-      "include": "build/installer.nsh",
-      "artifactName": "Mineradio-${version}-Setup.${ext}"
-    },
     "mac": {
       "icon": "build/icon.icns",
       "hardenedRuntime": false,
