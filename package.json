@@ -56,7 +56,7 @@
       "provider": "github",
       "owner": "ShijingYangwow27",
       "repo": "Mineradio--macOS",
-      "preview": true,
+      "preview": false,
       "preferMirrors": true,
       "mirrors": [
         "https://gh.llkk.cc/",
