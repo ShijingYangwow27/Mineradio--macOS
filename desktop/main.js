@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, screen, session, globalShortcut, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, screen, session, globalShortcut, dialog, Tray, Menu, nativeImage } = require('electron');
 const net = require('net');
 const path = require('path');
 const fs = require('fs');
@@ -22,6 +22,7 @@ let wallpaperState = {};
 let htmlFullscreenActive = false;
 let windowFullscreenActive = false;
 let mainWindowStateTimer = null;
+let appTray = null;
 const registeredGlobalHotkeys = new Map();
 
 const WINDOWED_ASPECT = 16 / 9;
@@ -33,6 +34,8 @@ const APP_NAME = 'Mineradio';
 const APP_USER_MODEL_ID = 'com.mineradio.desktop';
 const APP_ICON_ICO = path.join(__dirname, '..', 'build', 'icon.ico');
 const APP_ICON_ICNS = path.join(__dirname, '..', 'build', 'icon.icns');
+const APP_ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
+const TRAY_ICON_PNG = path.join(__dirname, '..', 'build', 'tray-icon.png');
 const NETEASE_LOGIN_PARTITION = 'persist:mineradio-netease-login';
 const NETEASE_LOGIN_URL = 'https://music.163.com/#/login';
 const QQ_LOGIN_PARTITION = 'persist:mineradio-qqmusic-login';
@@ -1659,6 +1662,50 @@ if (!gotSingleInstanceLock) {
     screen.on('display-added', () => scheduleWindowStateSend(mainWindow));
     screen.on('display-removed', () => scheduleWindowStateSend(mainWindow));
     await createWindow();
+
+    // 创建菜单栏 Tray 图标
+    try {
+      let trayIcon = nativeImage.createFromPath(TRAY_ICON_PNG);
+      if (trayIcon.isEmpty()) {
+        trayIcon = nativeImage.createFromPath(APP_ICON_PNG);
+      }
+      // resize 到 18pt @2x（36x36px）适配 macOS 菜单栏
+      trayIcon = trayIcon.resize({ width: 36, height: 36 });
+      trayIcon.setTemplateImage(true);
+      appTray = new Tray(trayIcon);
+      appTray.setToolTip('Mineradio');
+      const contextMenu = Menu.buildFromTemplate([
+        {
+          label: '打开 Mineradio',
+          click: () => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              if (!mainWindow.isVisible()) mainWindow.show();
+              if (mainWindow.isMinimized()) mainWindow.restore();
+              mainWindow.focus();
+            }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: '退出',
+          click: () => {
+            app.isQuitting = true;
+            app.quit();
+          }
+        }
+      ]);
+      appTray.setContextMenu(contextMenu);
+      // 点击 tray 图标也打开窗口（macOS 单击行为）
+      appTray.on('click', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          if (!mainWindow.isVisible()) mainWindow.show();
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.focus();
+        }
+      });
+    } catch (e) {
+      console.error('[tray] failed to create tray:', e);
+    }
   });
 
   app.on('activate', () => {
@@ -1681,6 +1728,7 @@ if (!gotSingleInstanceLock) {
     app.isQuitting = true;
     unregisterMineradioGlobalHotkeys();
     closeOverlayWindows();
+    if (appTray) { appTray.destroy(); appTray = null; }
     if (localServer && localServer.close) localServer.close();
   });
 }
