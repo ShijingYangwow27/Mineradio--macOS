@@ -74,5 +74,8 @@
     "electron": "^42.4.1",
     "electron-builder": "^26.15.3",
     "rcedit": "^5.0.2"
+  },
+  "optionalDependencies": {
+    "koffi": "^3.0.2"
   }
 }

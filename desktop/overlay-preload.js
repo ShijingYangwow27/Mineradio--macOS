@@ -16,4 +16,5 @@ contextBridge.exposeInMainWorld('desktopOverlay', {
   setLyricsLockState: (locked) => ipcRenderer.invoke('mineradio-desktop-lyrics-set-lock-state', !!locked),
   moveLyricsBy: (dx, dy) => ipcRenderer.invoke('mineradio-desktop-lyrics-move-by', Number(dx) || 0, Number(dy) || 0),
   closeLyrics: () => ipcRenderer.invoke('mineradio-desktop-lyrics-set-enabled', false, {}),
+  closeWallpaper: () => ipcRenderer.invoke('mineradio-wallpaper-set-enabled', false, {}),
 });

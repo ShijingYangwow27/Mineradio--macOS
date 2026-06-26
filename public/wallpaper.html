@@ -84,15 +84,14 @@
     function draw(nowMs){
       var now = nowMs * .001;
       ensureParticles();
-      var opacity = Math.max(.35, Math.min(1, state.opacity || 1));
       var primary = state.colors.primary || '#d6f8ff';
       var secondary = state.colors.secondary || '#9cffdf';
       var highlight = state.colors.highlight || '#fff0b8';
       var glow = state.colors.glow || secondary;
       var bg = ctx.createLinearGradient(0,0,innerWidth,innerHeight);
       bg.addColorStop(0, '#050608');
-      bg.addColorStop(.52, rgba(primary, .12 * opacity));
-      bg.addColorStop(1, rgba(secondary, .10 * opacity));
+      bg.addColorStop(.52, rgba(primary, .12));
+      bg.addColorStop(1, rgba(secondary, .10));
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
       ctx.fillStyle = bg;
@@ -115,15 +114,15 @@
         var tw = Math.pow(.5 + .5 * Math.sin(now * (.50 + rand(p.seed)*.42) + p.seed), 4);
         var r = Math.max(.7, p.size * (.8 + tw * 1.2));
         var col = tw > .74 ? highlight : (p.lane > .55 ? secondary : glow);
-        ctx.globalAlpha = (0.045 + tw * .18 + (state.playing ? .035 : 0)) * opacity;
+        ctx.globalAlpha = (0.045 + tw * .18 + (state.playing ? .035 : 0));
         ctx.fillStyle = col;
         ctx.beginPath();
         ctx.arc(x,y,r,0,Math.PI*2);
         ctx.fill();
       }
       var aura = ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(innerWidth,innerHeight)*.54);
-      aura.addColorStop(0, rgba(highlight, .12 * opacity));
-      aura.addColorStop(.34, rgba(secondary, .08 * opacity));
+      aura.addColorStop(0, rgba(highlight, .12));
+      aura.addColorStop(.34, rgba(secondary, .08));
       aura.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.globalAlpha = .9;
       ctx.fillStyle = aura;
@@ -136,6 +135,32 @@
     if (window.desktopOverlay && window.desktopOverlay.onWallpaperState) {
       window.desktopOverlay.onWallpaperState(applyState);
     }
+    function drawModeBadge(){
+      var mode = state.actualMode || state.mode || 'desktop-level';
+      var label, color;
+      if (mode === 'desktop-level') {
+        label = '桌面级';
+        color = 'rgba(0,245,212,.85)';
+      } else if (mode === 'always-on-top') {
+        label = '悬浮层（降级）';
+        color = 'rgba(244,210,138,.85)';
+      } else {
+        label = '覆盖式';
+        color = 'rgba(244,210,138,.85)';
+      }
+      ctx.save();
+      ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = color;
+      ctx.fillText('壁纸模式 · ' + label, innerWidth - 18, 18);
+      ctx.font = '500 10.5px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.40)';
+      ctx.fillText('壁纸模式 · ' + label + ' · ⌘⇧H 关闭', innerWidth - 18, 36);
+      ctx.restore();
+    }
+    var _origDraw = draw;
+    draw = function() { _origDraw.apply(this, arguments); drawModeBadge(); };
     requestAnimationFrame(draw);
   </script>
 </body>

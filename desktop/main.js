@@ -1047,17 +1047,90 @@ $target = [IntPtr]::new([Int64]${hwnd})
 function attachWallpaperAsBackground(win) {
   if (process.platform !== 'darwin' || !win || win.isDestroyed()) return;
   try {
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    // visibleOnFullScreen 关闭：开启后会与全屏 Space / 应用切换冲突，导致 Cmd+Tab 无法切到其他应用
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
     win.setIgnoreMouseEvents(true, { forward: true });
   } catch (e) {
     console.warn('Wallpaper macOS background attach failed:', e.message);
   }
 }
 
+function setWallpaperWindowLevelBelowDock(win) {
+  if (process.platform !== 'darwin' || !win || win.isDestroyed()) return false;
+  try {
+    const handle = win.getNativeWindowHandle();
+    if (!handle) return false;
+    const kCGDesktopWindowLevel = -2147483623;
+    const bridge = getObjcBridge();
+    if (bridge && typeof bridge.setNSWindowLevel === 'function') {
+      return bridge.setNSWindowLevel(handle, kCGDesktopWindowLevel);
+    }
+    console.warn('[wallpaper] Objective-C bridge not available, falling back to alwaysOnTop');
+    win.setAlwaysOnTop(true, 'screen-saver');
+    return false;
+  } catch (e) {
+    console.warn('[wallpaper] setWindowLevel failed:', e.message);
+    return false;
+  }
+}
+
+let _objcBridge = null;
+function getObjcBridge() {
+  if (_objcBridge !== null) return _objcBridge;
+  try {
+    const bridgePath = path.join(__dirname, 'wallpaper-level-bridge.js');
+    if (fs.existsSync(bridgePath)) {
+      _objcBridge = require(bridgePath);
+    } else {
+      _objcBridge = false;
+    }
+  } catch (e) {
+    console.warn('[wallpaper] load bridge failed:', e.message);
+    _objcBridge = false;
+  }
+  return _objcBridge;
+}
+
+// 统一应用壁纸窗口层级模式（macOS）
+// 处理 desktop-level ↔ overlay 双向切换：
+// - desktop-level: setAlwaysOnTop(false) → setLevel:kCGDesktopWindowLevel → attachWallpaperAsBackground
+// - overlay: setLevel:0(重置桌面级) → setAlwaysOnTop('floating') → setIgnoreMouseEvents
+// 返回 actualMode: 'desktop-level' / 'always-on-top'(fallback) / 'overlay'
+function applyWallpaperWindowMode(win, mode) {
+  if (!win || win.isDestroyed()) return mode;
+  if (process.platform === 'darwin') {
+    if (mode === 'desktop-level') {
+      // 从 overlay 切过来时先清除 alwaysOnTop
+      try { win.setAlwaysOnTop(false); } catch (e) {}
+      const ok = setWallpaperWindowLevelBelowDock(win);
+      attachWallpaperAsBackground(win);
+      return ok ? 'desktop-level' : 'always-on-top';
+    } else {
+      // overlay 模式：先重置桌面级层级到 normal(0)，否则窗口仍在桌面层
+      try {
+        const bridge = getObjcBridge();
+        if (bridge && typeof bridge.setNSWindowLevel === 'function') {
+          bridge.setNSWindowLevel(win.getNativeWindowHandle(), 0);
+        }
+      } catch (e) {
+        console.warn('[wallpaper] reset level for overlay failed:', e.message);
+      }
+      win.setAlwaysOnTop(true, 'floating');
+      win.setIgnoreMouseEvents(true, { forward: true });
+      return 'overlay';
+    }
+  }
+  // Windows/其他平台不支持运行时切换，返回原模式（下次打开生效）
+  return mode;
+}
+
 function positionWallpaperWindow() {
   if (!wallpaperWindow || wallpaperWindow.isDestroyed()) return;
-  const bounds = screen.getPrimaryDisplay().bounds;
-  wallpaperWindow.setBounds(bounds, false);
+  const display = screen.getPrimaryDisplay();
+  // macOS 全屏尺寸用 size，包含菜单栏和 Dock 区域，桌面级模式需要铺满
+  const fullBounds = { x: display.bounds.x, y: display.bounds.y, width: display.size.width, height: display.size.height };
+  wallpaperWindow.setBounds(fullBounds, false);
+  wallpaperWindow.setSize(fullBounds.width, fullBounds.height, false);
 }
 
 function sendWallpaperState() {
@@ -1068,14 +1141,26 @@ function sendWallpaperState() {
 function createWallpaperWindow(payload = {}) {
   wallpaperState = { ...wallpaperState, ...payload, enabled: true };
   if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
+    // 窗口已存在：检测模式是否变化，运行时实时切换层级（desktop-level ↔ overlay）
+    const targetMode = wallpaperState.mode || (process.platform === 'darwin' ? 'desktop-level' : 'overlay');
+    if (targetMode !== wallpaperState.actualMode &&
+        !(targetMode === 'desktop-level' && wallpaperState.actualMode === 'always-on-top')) {
+      // 已降级到 always-on-top 时不再反复重试桌面级，避免每次状态推送都触发 FFI 调用；
+      // 下次新建窗口（ready-to-show）时会重新尝试桌面级桥接
+      wallpaperState.actualMode = applyWallpaperWindowMode(wallpaperWindow, targetMode);
+    }
     positionWallpaperWindow();
     sendWallpaperState();
     return wallpaperWindow;
   }
-  const bounds = screen.getPrimaryDisplay().bounds;
+  const display = screen.getPrimaryDisplay();
+  // 用 size 不用 bounds，桌面级模式需要铺满包含菜单栏和 Dock 的全部区域
+  const fullBounds = { x: display.bounds.x, y: display.bounds.y, width: display.size.width, height: display.size.height };
   const isMac = process.platform === 'darwin';
+  const mode = wallpaperState.mode || (isMac ? 'desktop-level' : 'overlay');
+  wallpaperState.mode = mode;
   wallpaperWindow = new BrowserWindow({
-    ...bounds,
+    ...fullBounds,
     frame: false,
     transparent: isMac,
     backgroundColor: isMac ? '#00000000' : '#050608',
@@ -1085,6 +1170,7 @@ function createWallpaperWindow(payload = {}) {
     focusable: false,
     skipTaskbar: true,
     show: false,
+    enableLargerThanScreen: true,
     title: 'Mineradio Wallpaper',
     webPreferences: {
       preload: path.join(__dirname, 'overlay-preload.js'),
@@ -1099,25 +1185,87 @@ function createWallpaperWindow(payload = {}) {
     if (!wallpaperWindow || wallpaperWindow.isDestroyed()) return;
     positionWallpaperWindow();
     wallpaperWindow.showInactive();
-    if (process.platform === 'win32') attachWallpaperToWorkerW(wallpaperWindow);
-    else if (process.platform === 'darwin') attachWallpaperAsBackground(wallpaperWindow);
+    // 设置壁纸窗口透明度
+    if (typeof wallpaperWindow.setOpacity === 'function') {
+      const opacity = Math.max(0.35, Math.min(1, wallpaperState.opacity || 1));
+      wallpaperWindow.setOpacity(opacity);
+    }
+    if (process.platform === 'win32') {
+      attachWallpaperToWorkerW(wallpaperWindow);
+      wallpaperState.actualMode = 'desktop-level';
+    } else if (process.platform === 'darwin') {
+      // 统一走 applyWallpaperWindowMode，与 early return 的运行时切换逻辑保持一致
+      wallpaperState.actualMode = applyWallpaperWindowMode(wallpaperWindow, mode);
+    }
     sendWallpaperState();
+    // 壁纸窗口在 setLevel / orderFrontRegardless 后可能抢占 key window，
+    // 这里把焦点还给主窗口，避免应用无法 resign active、Cmd+Tab 切不到其他应用
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFocused()) {
+      try { mainWindow.focus(); } catch (e) {}
+    }
   });
   wallpaperWindow.webContents.once('did-finish-load', sendWallpaperState);
+  // 注册一个轻量级全局快捷键 Command+Shift+H 关闭壁纸（避开 Esc 以免影响其他应用）
+  try {
+    if (process.platform === 'darwin' && !_wallpaperEscShortcut) {
+      _wallpaperEscShortcut = globalShortcut.register('CommandOrControl+Shift+H', () => {
+        if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
+          closeWallpaperWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('mineradio-wallpaper-closed-by-hotkey');
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('[wallpaper] register hotkey failed:', e.message);
+  }
   wallpaperWindow.on('closed', () => {
     wallpaperWindow = null;
+    if (_wallpaperEscShortcut) {
+      try { globalShortcut.unregister('CommandOrControl+Shift+H'); } catch (e) {}
+      _wallpaperEscShortcut = false;
+    }
   });
   wallpaperWindow.loadURL(overlayUrl('wallpaper.html')).catch((e) => console.warn('Wallpaper load failed:', e.message));
   return wallpaperWindow;
 }
 
+let _wallpaperEscShortcut = false;
+
 function closeWallpaperWindow() {
+  console.log('[wallpaper] closeWallpaperWindow called; hasWindow=', !!(wallpaperWindow && !wallpaperWindow.isDestroyed()));
   wallpaperState = { ...wallpaperState, enabled: false };
   if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
-    sendWallpaperState();
-    wallpaperWindow.close();
+    try { sendWallpaperState(); } catch (e) {}
+    // 桌面级窗口（kCGDesktopWindowLevel）在 WindowServer 桌面层对 destroy()/close() 不敏感，
+    // 需要三步才能真正消失：
+    // 1. [NSWindow orderOut:nil] —— 把窗口移出屏幕（WindowServer 层面移除显示）
+    // 2. setLevel: 0 —— 把层级恢复到 normal，让 WindowServer 把它移出桌面层
+    // 3. destroy() —— Electron 销毁窗口
+    if (process.platform === 'darwin') {
+      try {
+        const bridge = getObjcBridge();
+        if (bridge) {
+          if (typeof bridge.orderOutNSWindow === 'function') {
+            bridge.orderOutNSWindow(wallpaperWindow.getNativeWindowHandle());
+          }
+          if (typeof bridge.setNSWindowLevel === 'function') {
+            bridge.setNSWindowLevel(wallpaperWindow.getNativeWindowHandle(), 0);
+          }
+        }
+      } catch (e) {
+        console.warn('[wallpaper] orderOut/level-reset before destroy failed:', e.message);
+      }
+    }
+    try { wallpaperWindow.destroy(); } catch (e) {
+      try { wallpaperWindow.close(); } catch (e2) {}
+    }
   }
-  wallpaperWindow = null;
+  if (_wallpaperEscShortcut) {
+    try { globalShortcut.unregister('CommandOrControl+Shift+H'); } catch (e) {}
+    _wallpaperEscShortcut = false;
+  }
 }
 
 function closeOverlayWindows() {
@@ -1321,8 +1469,10 @@ ipcMain.handle('mineradio-wallpaper-set-enabled', async (_event, enabled, payloa
   try {
     if (enabled) createWallpaperWindow(payload || {});
     else closeWallpaperWindow();
-    return { ok: true };
+    // 返回 actualMode 供前端检测降级（desktop-level 桥接失败时为 'always-on-top'）
+    return { ok: true, actualMode: wallpaperState.actualMode };
   } catch (e) {
+    console.warn('[wallpaper] set-enabled error:', e.message);
     return { ok: false, error: e.message || 'WALLPAPER_FAILED' };
   }
 });
@@ -1334,6 +1484,11 @@ ipcMain.handle('mineradio-wallpaper-update', async (_event, payload) => {
       createWallpaperWindow(wallpaperState);
       if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
         positionWallpaperWindow();
+        // 设置壁纸窗口透明度（与桌面歌词一致）
+        if (typeof wallpaperWindow.setOpacity === 'function') {
+          const opacity = Math.max(0.35, Math.min(1, wallpaperState.opacity || 1));
+          wallpaperWindow.setOpacity(opacity);
+        }
         sendWallpaperState();
       }
     } else if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
