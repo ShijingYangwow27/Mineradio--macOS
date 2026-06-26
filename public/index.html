@@ -26384,6 +26384,10 @@ function notifyDesktopLyricsBeatMapReady() {
   try {
     if (fx && fx.desktopLyrics) pushDesktopLyricsState(true);
   } catch (e) {}
+  // 节拍图谱就绪后通知壁纸 (cameraBeats 在 wallpaperPayload 里按 key 变化发送)
+  try {
+    if (fx && fx.wallpaperMode) { _lastWallpaperBeatMapKey = ''; pushWallpaperState(true); }
+  } catch (e) {}
 }
 function desktopLyricsPushInterval() {
   var fps = normalizeDesktopLyricsFps(fx && fx.desktopLyricsFps);
@@ -26426,7 +26430,9 @@ function desktopLyricsPayload(forceBeatMap) {
 }
 function wallpaperPayload() {
   var meta = currentDesktopSongMeta();
-  return {
+  // 仅在切歌时随 payload 发送 cameraBeats (一次性, 避免每帧 6KB IPC 开销)
+  var beatMapKey = (meta.title || '') + '|' + (meta.artist || '') + '|' + (meta.cover || '');
+  var payload = {
     enabled: !!fx.wallpaperMode && !isDevelopmentLockedFx('wallpaperMode'),
     // 始终请求桌面级；桌面级桥接失败时由 main 进程自动降级为 always-on-top（floating）
     mode: 'desktop-level',
@@ -26436,9 +26442,16 @@ function wallpaperPayload() {
     playing: !!playing,
     preset: fx.preset,
     opacity: clampRange(fx.wallpaperOpacity == null ? fxDefaults.wallpaperOpacity : Number(fx.wallpaperOpacity), 0.35, 1),
-    colors: desktopOverlayColors()
+    colors: desktopOverlayColors(),
+    cinemaShake: clampRange(Number(fx.cinemaShake) || 0, 0, 1.8)
   };
+  if (beatMapKey !== _lastWallpaperBeatMapKey) {
+    _lastWallpaperBeatMapKey = beatMapKey;
+    payload.cameraBeats = currentBeatMap ? (currentBeatMap.cameraBeats || currentBeatMap.beats || currentBeatMap.kicks || []) : [];
+  }
+  return payload;
 }
+var _lastWallpaperBeatMapKey = '';
 function pushDesktopLyricsState(force) {
   var api = getDesktopWindowApi();
   if (!api || typeof api.updateDesktopLyrics !== 'function') return;
@@ -26757,6 +26770,8 @@ function animate() {
         window.desktopWindow.sendWallpaperAudioFrame({
           bass: bass, mid: mid, treble: treble, beat: beatPulse, energy: audioEnergy,
           time: uniforms.uTime.value,
+          audioTime: audio ? audio.currentTime : 0,
+          playing: !!playing,
           vinylSpin: uniforms.uVinylSpin.value,
           burstAmt: uniforms.uBurstAmt.value,
           alpha: uniforms.uAlpha.value,

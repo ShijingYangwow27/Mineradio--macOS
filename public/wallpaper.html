@@ -26,6 +26,7 @@
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
     camera.position.set(0, 0, 6.6);
+    var BASE_FOV = 45;
     camera.lookAt(0, 0, 0);
 
     // ============================================================
@@ -48,10 +49,30 @@
     var dotTexture = makeDotTexture();
 
     // ============================================================
-    //  Geometry
+    //  Geometry (按 coverRes 动态重建, 与主应用一致)
     // ============================================================
     var PLANE_SIZE = 4.8;
-    var GRID_X = 118;
+
+    // —— 分辨率助手 (从主应用移植) ——
+    function clampRange(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function normalizeCoverResolution(v) {
+      return clampRange(Number(v) || 1, 0.75, 1.55);
+    }
+    function coverParticleGridForResolution(v) {
+      var grid = Math.round(118 * normalizeCoverResolution(v));
+      grid = Math.max(88, Math.min(183, grid));
+      return grid % 2 ? grid : grid + 1;
+    }
+    function coverTextureSizeForResolution(v) {
+      v = normalizeCoverResolution(v);
+      if (v >= 1.32) return 512;
+      if (v >= 1.10) return 384;
+      return 256;
+    }
+
+    // 默认 1.55 (与主应用 fx.coverResolution 默认值一致) → grid 183
+    var _coverRes = 1.55;
+    var GRID_X = coverParticleGridForResolution(_coverRes);
 
     function buildCoverParticleGeometry(grid) {
       grid = Math.max(88, Math.min(183, Math.round(grid)));
@@ -80,6 +101,20 @@
     }
 
     var geo = buildCoverParticleGeometry(GRID_X);
+
+    // 收到主应用 coverRes 变化时重建几何 (与主应用 applyCoverParticleResolution 对齐)
+    function applyCoverParticleResolution(value) {
+      var next = normalizeCoverResolution(value);
+      var grid = coverParticleGridForResolution(next);
+      if (grid === GRID_X) { _coverRes = next; return; }
+      _coverRes = next;
+      GRID_X = grid;
+      var oldGeo = geo;
+      geo = buildCoverParticleGeometry(grid);
+      if (particles) particles.geometry = geo;
+      if (bloomParticles) bloomParticles.geometry = geo;
+      if (oldGeo && oldGeo !== geo) oldGeo.dispose();
+    }
 
     // ============================================================
     //  Textures
@@ -598,6 +633,91 @@ void main(){
     var coverLoader = new THREE.TextureLoader();
     var currentCoverSrc = '';
 
+    // —— 封面正方形化 (从主应用 makeSquareCoverCanvas 移植) ——
+    function makeSquareCoverCanvas(img, size) {
+      size = size || 512;
+      var cv = document.createElement('canvas');
+      cv.width = cv.height = size;
+      var cx = cv.getContext('2d');
+      cx.clearRect(0, 0, size, size);
+      var iw = img.naturalWidth || img.width;
+      var ih = img.naturalHeight || img.height;
+      var s = Math.min(iw, ih);
+      cx.drawImage(img, (iw - s) / 2, (ih - s) / 2, s, s, 0, 0, size, size);
+      return cv;
+    }
+
+    // —— 启发式边缘/深度分析 (从主应用 buildEdgeAndDepth 移植) ——
+    // 输出 256×256 RGBA: R=depth, G=edge, B=fg-mask, A=lum
+    function buildEdgeAndDepth(srcCanvas) {
+      var W = 256, H = 256, N = W * H;
+      var normalized = document.createElement('canvas');
+      normalized.width = W; normalized.height = H;
+      var sctx = normalized.getContext('2d');
+      sctx.drawImage(srcCanvas, 0, 0, W, H);
+      var src = sctx.getImageData(0, 0, W, H).data;
+      var lum = new Float32Array(N), blur = new Float32Array(N), tmp = new Float32Array(N);
+      for (var i = 0; i < N; i++) {
+        var di = i * 4;
+        lum[i] = (src[di] * 0.299 + src[di+1] * 0.587 + src[di+2] * 0.114) / 255;
+      }
+      function blurH(s, d, r) {
+        for (var y = 0; y < H; y++) {
+          var sum = 0;
+          for (var x = -r; x <= r; x++) sum += s[y * W + Math.max(0, Math.min(W-1, x))];
+          for (var x = 0; x < W; x++) {
+            d[y * W + x] = sum / (2*r + 1);
+            var xR = Math.min(W-1, x + r + 1), xL = Math.max(0, x - r);
+            sum += s[y * W + xR] - s[y * W + xL];
+          }
+        }
+      }
+      function blurV(s, d, r) {
+        for (var x = 0; x < W; x++) {
+          var sum = 0;
+          for (var y = -r; y <= r; y++) sum += s[Math.max(0, Math.min(H-1, y)) * W + x];
+          for (var y = 0; y < H; y++) {
+            d[y * W + x] = sum / (2*r + 1);
+            var yD = Math.min(H-1, y + r + 1), yU = Math.max(0, y - r);
+            sum += s[yD * W + x] - s[yU * W + x];
+          }
+        }
+      }
+      blurH(lum, tmp, 4); blurV(tmp, blur, 4);
+      var edge = new Float32Array(N);
+      for (var y = 1; y < H-1; y++) for (var x = 1; x < W-1; x++) {
+        var gx = -blur[(y-1)*W + (x-1)] - 2*blur[y*W + (x-1)] - blur[(y+1)*W + (x-1)]
+                + blur[(y-1)*W + (x+1)] + 2*blur[y*W + (x+1)] + blur[(y+1)*W + (x+1)];
+        var gy = -blur[(y-1)*W + (x-1)] - 2*blur[(y-1)*W + x] - blur[(y-1)*W + (x+1)]
+                + blur[(y+1)*W + (x-1)] + 2*blur[(y+1)*W + x] + blur[(y+1)*W + (x+1)];
+        edge[y*W + x] = Math.min(1.0, Math.sqrt(gx*gx + gy*gy) * 1.4);
+      }
+      var depth = new Float32Array(N);
+      for (var y2 = 0; y2 < H; y2++) for (var x2 = 0; x2 < W; x2++) {
+        var ii = y2*W + x2;
+        var cx = (x2 / (W-1) - 0.5) * 2.0;
+        var cy = (y2 / (H-1) - 0.5) * 2.0;
+        var rr = Math.sqrt(cx*cx + cy*cy);
+        var centerBias = 1.0 - Math.min(1, rr * 0.75);
+        depth[ii] = Math.min(1.0, blur[ii] * 0.45 + centerBias * 0.55);
+      }
+      var fg = new Float32Array(N);
+      for (var k = 0; k < N; k++) {
+        fg[k] = Math.min(1.0, depth[k] * 0.6 + edge[k] * 0.5);
+      }
+      var out = document.createElement('canvas'); out.width = W; out.height = H;
+      var octx = out.getContext('2d'), imgOut = octx.createImageData(W, H);
+      for (var j = 0; j < N; j++) {
+        var dj = j * 4;
+        imgOut.data[dj]   = Math.round(depth[j] * 255);
+        imgOut.data[dj+1] = Math.round(edge[j] * 255);
+        imgOut.data[dj+2] = Math.round(fg[j] * 255);
+        imgOut.data[dj+3] = Math.round(lum[j] * 255);
+      }
+      octx.putImageData(imgOut, 0, 0);
+      return out;
+    }
+
     function loadCoverTexture(src) {
       src = String(src || '');
       if (src === currentCoverSrc) return;
@@ -616,6 +736,24 @@ void main(){
         uniforms.uCoverTex.value = texture;
         uniforms.uPrevCoverTex.value = texture;
         uniforms.uHasCover.value = 1;
+        // 构建真实 edge/depth 纹理 (与主应用 buildEdgeAndDepth 一致)
+        // uHasDepth / uAiBoost 由主应用音频帧驱动, 这里只负责把纹理备好
+        try {
+          var img = texture.image;
+          if (img && (img.naturalWidth || img.width)) {
+            var sq = makeSquareCoverCanvas(img, coverTextureSizeForResolution(_coverRes));
+            var edgeCv = buildEdgeAndDepth(sq);
+            var edgeTexture = new THREE.CanvasTexture(edgeCv);
+            edgeTexture.minFilter = THREE.LinearFilter;
+            edgeTexture.magFilter = THREE.LinearFilter;
+            edgeTexture.wrapS = THREE.ClampToEdgeWrapping;
+            edgeTexture.wrapT = THREE.ClampToEdgeWrapping;
+            uniforms.uEdgeTex.value = edgeTexture;
+          }
+        } catch (e) {
+          // 跨域或解码失败时回退到 dummy 纹理
+          uniforms.uEdgeTex.value = edgeTex;
+        }
       }, undefined, function() {
         uniforms.uCoverTex.value = coverTex;
         uniforms.uHasCover.value = 0;
@@ -911,14 +1049,277 @@ void main(){
     var wpState = { mode:'desktop-level', actualMode:'desktop-level' };
     var _lastAudioFrameAt = 0;
 
+    // ============================================================
+    //  Beat Camera (B-lite: 节拍图谱驱动镜头跳动, 非DJ路径)
+    //  从主应用移植 scheduleBeatCamera / updateBeatCamera / tickBeatMap
+    // ============================================================
+    function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+    var _wallpaperAudioTime = 0;
+    var _wallpaperPlaying = false;
+    var _wallpaperCinemaShake = 0.5;
+    var _wallpaperBeatMap = null;
+    var _wpEnergy = 0, _wpBass = 0;
+
+    var beatCam = {
+      nextIdx: 0,
+      events: [],
+      punch: 0,
+      lookahead: 0.075,
+      lastTriggerAt: -10,
+      minInterval: 0.500,
+      attack: 0.028,
+      hold: 0.030,
+      release: 0.185,
+      thetaKick: 0,
+      phiKick: 0,
+      radiusKick: 0,
+      rollKick: 0,
+      prevAudioTime: -1
+    };
+    var cinemaDynamics = { avg: 0, lowAvg: 0, peak: 0.30, scale: 0.82 };
+    var cinemaTrackProfile = { scale: 1.0 };
+
+    function easeBeatCamera(x) {
+      x = Math.max(0, Math.min(1, x));
+      return x * x * (3 - 2 * x);
+    }
+
+    function updateCinemaDynamics(rawEnergy, rawLow) {
+      var e = clamp01(rawEnergy || 0);
+      var l = clamp01(rawLow || 0);
+      var composite = clamp01(e * 0.62 + l * 0.38);
+      cinemaDynamics.avg += (composite - cinemaDynamics.avg) * (composite > cinemaDynamics.avg ? 0.010 : 0.004);
+      cinemaDynamics.lowAvg += (l - cinemaDynamics.lowAvg) * (l > cinemaDynamics.lowAvg ? 0.012 : 0.005);
+      cinemaDynamics.peak = Math.max(0.30, cinemaDynamics.peak * 0.9988, composite);
+      var floor = Math.max(0.10, cinemaDynamics.avg * 0.82);
+      var span = Math.max(0.18, cinemaDynamics.peak - floor);
+      var lift = clamp01((composite - floor) / span);
+      lift = lift * lift * (3 - 2 * lift);
+      var target = 0.42 + lift * 0.56 + clamp01((l - cinemaDynamics.lowAvg) / 0.36) * 0.12;
+      if (cinemaDynamics.avg < 0.18 && l < 0.32) target *= 0.78;
+      if (e > 0.48 && l > 0.46) target = Math.max(target, 0.92);
+      target = clampRange(target, 0.34, 1.08);
+      cinemaDynamics.scale += (target - cinemaDynamics.scale) * (target > cinemaDynamics.scale ? 0.045 : 0.022);
+    }
+
+    function cameraDynamicsScale(extra) {
+      return clampRange((cinemaDynamics.scale || 0.82) * (cinemaTrackProfile.scale || 1) * (extra == null ? 1 : extra), 0.18, 1.18);
+    }
+
+    function resetBeatCameraSync(t) {
+      beatCam.nextIdx = 0;
+      beatCam.events.length = 0;
+      beatCam.punch = 0;
+      beatCam.lastTriggerAt = -10;
+      beatCam.thetaKick = 0;
+      beatCam.phiKick = 0;
+      beatCam.radiusKick = 0;
+      beatCam.rollKick = 0;
+      beatCam.prevAudioTime = isFinite(t) ? t : -1;
+    }
+
+    function alignBeatCameraCursorToTime(t) {
+      if (!_wallpaperBeatMap) return;
+      var beats = _wallpaperBeatMap;
+      beatCam.nextIdx = 0;
+      while (beatCam.nextIdx < beats.length) {
+        var bt = typeof beats[beatCam.nextIdx] === 'number' ? beats[beatCam.nextIdx] : beats[beatCam.nextIdx].time;
+        if (bt >= t + beatCam.lookahead) break;
+        beatCam.nextIdx++;
+      }
+    }
+
+    function syncBeatCameraToTime(t) {
+      resetBeatCameraSync(t);
+      alignBeatCameraCursorToTime(t);
+    }
+
+    // scheduleBeatCamera: 仅非DJ + map 源路径 (剥离 DJ/live/preview 分支)
+    function scheduleBeatCamera(beat) {
+      var time = typeof beat === 'number' ? beat : beat.time;
+      if (!isFinite(time)) return;
+      var strength = typeof beat === 'number' ? 0.72 : Math.max(0, Math.min(1, beat.strength || 0.72));
+      var confidence = typeof beat === 'number' ? 0.72 : Math.max(0, Math.min(1, beat.confidence || 0.72));
+      var isPrimary = typeof beat === 'number' ? true : beat.primary !== false;
+      var visualImpact = typeof beat === 'number' ? strength : Math.max(0, Math.min(1, beat.impact == null ? strength : beat.impact));
+      if (!isPrimary) return;
+      if (visualImpact < 0.18 && strength < 0.56) return;
+      if (confidence < 0.30 && strength < 0.68) return;
+      var lowTone = typeof beat === 'number' ? 0.62 : Math.max(0, beat.low == null ? 0.62 : beat.low);
+      var bodyTone = typeof beat === 'number' ? 0.22 : Math.max(0, beat.body == null ? 0.22 : beat.body);
+      var snapTone = typeof beat === 'number' ? 0.16 : Math.max(0, beat.snap == null ? 0.16 : beat.snap);
+      var toneSum = Math.max(0.001, lowTone + bodyTone + snapTone);
+      lowTone /= toneSum; bodyTone /= toneSum; snapTone /= toneSum;
+      var sharpness = typeof beat === 'number' ? snapTone : Math.max(0, Math.min(1, beat.sharpness == null ? snapTone : beat.sharpness));
+      var mass = typeof beat === 'number' ? lowTone : Math.max(0, Math.min(1, beat.mass == null ? (lowTone * 0.72 + bodyTone * 0.36 + strength * 0.20) : beat.mass));
+      var mode = 'deep';
+      if (snapTone > 0.42 && snapTone > lowTone * 1.18 && snapTone > bodyTone * 1.08) mode = 'snap';
+      else if (bodyTone > 0.46 && bodyTone > lowTone * 1.12) mode = 'body';
+      var amp = Math.max(0.18, Math.min(0.72, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
+      amp *= 0.68 + visualImpact * 0.46;
+      if (mode === 'deep') amp = Math.min(0.62, amp * 1.12);
+      var dynScale = cameraDynamicsScale(0.92 + visualImpact * 0.12 + mass * 0.08);
+      amp *= dynScale;
+      var attack = Math.max(0.014, Math.min(0.038, beatCam.attack * (1.18 - sharpness * 0.55)));
+      var hold = Math.max(0.014, Math.min(0.052, beatCam.hold * (0.62 + lowTone * 0.55 + bodyTone * 0.25)));
+      var release = Math.max(0.110, Math.min(0.255, beatCam.release * (0.76 + mass * 0.56 + bodyTone * 0.18 - sharpness * 0.18)));
+      var idx = typeof beat === 'number' ? Math.floor(time * 2.7) : (beat.index || Math.floor(time * 2.7));
+      var combo = typeof beat === 'number' ? null : beat.combo;
+      if (!combo) {
+        var comboSlot = Math.abs(idx) % 4;
+        combo = comboSlot === 0 ? 'downbeat' : (comboSlot === 1 ? 'push' : (comboSlot === 2 ? 'drop' : 'rebound'));
+      }
+      var zoomAmp = 0.070 + mass * 0.190 + (mode === 'deep' ? 0.095 : 0.018) + strength * 0.045;
+      var phiAmp = 0.002 + (mode === 'body' ? 0.012 : (mode === 'snap' ? 0.005 : 0.002));
+      var rollAmp = mode === 'snap' ? (0.003 + snapTone * 0.004) : 0.0008;
+      zoomAmp *= 0.76 + dynScale * 0.28;
+      phiAmp *= 0.82 + dynScale * 0.20;
+      rollAmp *= 0.78 + dynScale * 0.24;
+      if (combo === 'downbeat') { amp *= 1.10; zoomAmp *= 1.18; phiAmp *= 0.72; }
+      else if (combo === 'push') { amp *= 0.84; zoomAmp *= 0.88; phiAmp *= 0.62; }
+      else if (combo === 'drop') { amp *= 0.96; zoomAmp *= 0.72; phiAmp *= 1.22; }
+      else if (combo === 'rebound') { amp *= 0.74; zoomAmp *= 0.62; phiAmp *= 0.78; }
+      else if (combo === 'accent') { amp *= 1.14; zoomAmp *= 1.08; rollAmp *= 1.35; }
+      amp = Math.max(0.08, Math.min(0.68, amp));
+      var gap = time - beatCam.lastTriggerAt;
+      var minGap = beatCam.minInterval * 0.82;
+      if (gap < minGap && strength < 0.88) return;
+      beatCam.lastTriggerAt = time;
+      var nowT = _wallpaperAudioTime;
+      beatCam.events.push({
+        start: nowT + (time - nowT) - attack,
+        hit: time, amp: amp, attack: attack, hold: hold, release: release,
+        zoomAmp: zoomAmp, phiAmp: phiAmp, rollAmp: rollAmp,
+        mode: mode, combo: combo, phase: idx * 2.399963 + (snapTone - lowTone) * 1.4,
+        low: lowTone, body: bodyTone, snap: snapTone, mass: mass
+      });
+      if (beatCam.events.length > 8) beatCam.events.splice(0, beatCam.events.length - 8);
+    }
+
+    function tickBeatMap() {
+      if (!_wallpaperBeatMap || !_wallpaperPlaying) return;
+      var t = _wallpaperAudioTime;
+      var beatEvents = _wallpaperBeatMap;
+      while (beatCam.nextIdx < beatEvents.length) {
+        var beat = beatEvents[beatCam.nextIdx];
+        var beatTime = typeof beat === 'number' ? beat : beat.time;
+        if (beatTime > t + beatCam.lookahead) break;
+        scheduleBeatCamera(beat);
+        beatCam.nextIdx++;
+      }
+    }
+
+    function updateBeatCamera(dt) {
+      var t = _wallpaperAudioTime;
+      if (!_wallpaperPlaying) {
+        beatCam.punch *= Math.pow(0.08, dt);
+        beatCam.thetaKick *= Math.pow(0.05, dt);
+        beatCam.phiKick *= Math.pow(0.05, dt);
+        beatCam.radiusKick *= Math.pow(0.05, dt);
+        beatCam.rollKick *= Math.pow(0.05, dt);
+        beatCam.events.length = 0;
+        beatCam.prevAudioTime = t;
+        return;
+      }
+      if (beatCam.prevAudioTime >= 0 && Math.abs(t - beatCam.prevAudioTime) > 0.55) {
+        syncBeatCameraToTime(t);
+      }
+      beatCam.prevAudioTime = t;
+      var punch = 0, thetaKick = 0, phiKick = 0, radiusKick = 0, rollKick = 0;
+      var leadEvent = null, leadPunch = 0, leadVal = 0;
+      for (var i = beatCam.events.length - 1; i >= 0; i--) {
+        var ev = beatCam.events[i];
+        var attack = ev.attack || beatCam.attack;
+        var hold = ev.hold || beatCam.hold;
+        var release = ev.release || beatCam.release;
+        var local = t - ev.start;
+        var val = 0;
+        if (local < 0) { val = 0; }
+        else if (local < attack) { val = easeBeatCamera(local / attack); }
+        else if (local < attack + hold) { val = 1; }
+        else if (local < attack + hold + release) {
+          var r = (local - attack - hold) / release;
+          val = 1 - easeBeatCamera(r);
+        } else {
+          beatCam.events.splice(i, 1);
+          continue;
+        }
+        var evPunch = val * ev.amp;
+        punch = Math.max(punch, evPunch);
+        if (evPunch > leadPunch) { leadEvent = ev; leadPunch = evPunch; leadVal = val; }
+      }
+      if (leadEvent) {
+        var sign = Math.sin(leadEvent.phase) >= 0 ? 1 : -1;
+        var snapFlick = 1.0 - Math.min(1, Math.max(0, leadVal - 0.25) / 0.75);
+        var combo = leadEvent.combo || 'downbeat';
+        if (combo === 'downbeat') {
+          radiusKick = leadPunch * leadEvent.zoomAmp;
+          phiKick = -leadPunch * 0.0032;
+        } else if (combo === 'push') {
+          radiusKick = leadPunch * leadEvent.zoomAmp * 0.72;
+          phiKick = -leadPunch * 0.0014;
+        } else if (combo === 'drop') {
+          radiusKick = leadPunch * leadEvent.zoomAmp * 0.46;
+          phiKick = leadPunch * leadEvent.phiAmp * 0.92;
+        } else if (combo === 'rebound') {
+          radiusKick = leadPunch * leadEvent.zoomAmp * 0.30;
+          phiKick = -leadPunch * leadEvent.phiAmp * 0.22;
+        } else if (combo === 'accent') {
+          radiusKick = leadPunch * leadEvent.zoomAmp * 0.90;
+          phiKick = -leadPunch * 0.0022;
+          rollKick = sign * leadPunch * (leadEvent.rollAmp || 0) * (0.45 + snapFlick * 0.30);
+        } else if (leadEvent.mode === 'deep') {
+          radiusKick = leadPunch * leadEvent.zoomAmp;
+          phiKick = -leadPunch * 0.003;
+        }
+      }
+      beatCam.punch += (punch - beatCam.punch) * (punch > beatCam.punch ? 0.72 : 0.38);
+      beatCam.thetaKick += (thetaKick - beatCam.thetaKick) * (Math.abs(thetaKick) > Math.abs(beatCam.thetaKick) ? 0.70 : 0.36);
+      beatCam.phiKick += (phiKick - beatCam.phiKick) * (Math.abs(phiKick) > Math.abs(beatCam.phiKick) ? 0.70 : 0.36);
+      beatCam.radiusKick += (radiusKick - beatCam.radiusKick) * (radiusKick > beatCam.radiusKick ? 0.72 : 0.34);
+      beatCam.rollKick += (rollKick - beatCam.rollKick) * (Math.abs(rollKick) > Math.abs(beatCam.rollKick) ? 0.72 : 0.38);
+    }
+
+    // 相机应用: FOV punch + roll + 位置抖动 (壁纸固定相机, 简化版)
+    function applyBeatCameraToScene() {
+      var cameraShake = clampRange(_wallpaperCinemaShake, 0, 1.8);
+      camera.position.x = 0;
+      camera.position.y = beatCam.phiKick * cameraShake * 30;
+      camera.position.z = 6.6;
+      camera.rotation.z = beatCam.rollKick * cameraShake;
+      var cameraPunch = (beatCam.punch * 0.54 + beatCam.radiusKick * 0.16) * cameraShake;
+      var targetFOV = BASE_FOV - cameraPunch * 2.35;
+      var fovEase = targetFOV < camera.fov ? 0.24 : 0.12;
+      camera.fov += (targetFOV - camera.fov) * fovEase;
+      camera.updateProjectionMatrix();
+    }
+
     function applyWallpaperState(next) {
       wpState = Object.assign({}, wpState, next || {});
       if (next && next.cover) loadCoverTexture(next.cover);
+      // 节拍图谱到达 (仅切歌时随 payload 发一次)
+      if (next && next.cameraBeats) {
+        _wallpaperBeatMap = next.cameraBeats;
+        resetBeatCameraSync(_wallpaperAudioTime);
+        alignBeatCameraCursorToTime(_wallpaperAudioTime);
+      }
+      if (next && next.cinemaShake != null) {
+        _wallpaperCinemaShake = next.cinemaShake;
+      }
+      if (next && next.playing != null) {
+        _wallpaperPlaying = !!next.playing;
+      }
     }
 
     function applyAudioFrame(d) {
       if (!d) return;
       _lastAudioFrameAt = performance.now();
+      // 节拍相机: 存储音频时间/播放状态/能量 (animate 里推进)
+      if (d.audioTime != null) _wallpaperAudioTime = d.audioTime;
+      if (d.playing != null) _wallpaperPlaying = !!d.playing;
+      if (d.energy != null) _wpEnergy = d.energy;
+      if (d.bass != null) _wpBass = d.bass;
       var isSkull = d.preset === SKULL_PRESET_INDEX;
       // 预设切换时管理主粒子 vs 骷髅粒子可见性
       if (isSkull) {
@@ -953,7 +1354,13 @@ void main(){
       if (d.twist != null) uniforms.uTwist.value = d.twist;
       if (d.colorBoost != null) uniforms.uColorBoost.value = d.colorBoost;
       if (d.scatter != null) uniforms.uScatter.value = d.scatter;
-      if (d.coverRes != null) uniforms.uCoverRes.value = d.coverRes;
+      if (d.coverRes != null) {
+        uniforms.uCoverRes.value = d.coverRes;
+        // coverRes 变化时重建粒子几何, 与主应用 applyCoverParticleResolution 对齐
+        if (normalizeCoverResolution(d.coverRes) !== normalizeCoverResolution(_coverRes)) {
+          applyCoverParticleResolution(d.coverRes);
+        }
+      }
       if (d.bgFade != null) uniforms.uBgFade.value = d.bgFade;
       if (d.bloomStrength != null) uniforms.uBloomStrength.value = d.bloomStrength;
       if (d.edgeEnabled != null) uniforms.uEdgeEnabled.value = d.edgeEnabled;
@@ -994,12 +1401,20 @@ void main(){
     function animate() {
       requestAnimationFrame(animate);
       var now = performance.now();
-      var dt = (now - _lastFrameAt) * 0.001;
+      var dt = Math.min(0.1, (now - _lastFrameAt) * 0.001);
       _lastFrameAt = now;
       // 超过 200ms 没收到音频帧时自主推进时间，保持动画不冻结
       if (now - _lastAudioFrameAt > 200) {
         uniforms.uTime.value += dt;
       }
+      // 节拍相机: 在音频帧之间插值推进时间, 60fps 跑事件队列 + 相机应用
+      if (_wallpaperPlaying && now - _lastAudioFrameAt < 500) {
+        _wallpaperAudioTime += dt;
+      }
+      updateCinemaDynamics(_wpEnergy, _wpBass);
+      tickBeatMap();
+      updateBeatCamera(dt);
+      applyBeatCameraToScene();
       renderer.render(scene, camera);
     }
     animate();
