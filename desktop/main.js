@@ -1500,6 +1500,13 @@ ipcMain.handle('mineradio-wallpaper-update', async (_event, payload) => {
   }
 });
 
+// 主窗口音频帧数据 → 转发给壁纸窗口
+ipcMain.on('mineradio-wallpaper-audio-frame', (_event, data) => {
+  if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
+    wallpaperWindow.webContents.send('mineradio-wallpaper-audio-frame', data || {});
+  }
+});
+
 async function createWindow() {
   htmlFullscreenActive = false;
   windowFullscreenActive = false;

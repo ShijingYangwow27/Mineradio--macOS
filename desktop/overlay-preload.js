@@ -10,6 +10,12 @@ function bind(channel, callback) {
 contextBridge.exposeInMainWorld('desktopOverlay', {
   onLyricsState: (callback) => bind('mineradio-desktop-lyrics-state', callback),
   onWallpaperState: (callback) => bind('mineradio-wallpaper-state', callback),
+  onWallpaperAudioFrame: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const listener = (_event, data) => callback(data || {});
+    ipcRenderer.on('mineradio-wallpaper-audio-frame', listener);
+    return () => ipcRenderer.removeListener('mineradio-wallpaper-audio-frame', listener);
+  },
   setLyricsDrag: (dragging) => ipcRenderer.invoke('mineradio-desktop-lyrics-set-dragging', !!dragging),
   setLyricsPointerCapture: (active) => ipcRenderer.invoke('mineradio-desktop-lyrics-set-pointer-capture', !!active),
   setLyricsHotBounds: (bounds) => ipcRenderer.invoke('mineradio-desktop-lyrics-set-hot-bounds', bounds || {}),

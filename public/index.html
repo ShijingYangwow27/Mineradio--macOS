@@ -26745,11 +26745,48 @@ function sampleRenderPerf(now, dt) {
 function animate() {
   requestAnimationFrame(animate);
   var now = performance.now();
-  if (shouldSkipAdaptiveRenderFrame(now)) return;
   var dt = Math.min((now - prevTime) / 1000, 0.05);
   prevTime = now;
-  sampleRenderPerf(now, dt);
   uniforms.uTime.value += dt;
+  // 壁纸模式：发送音频帧数据给壁纸窗口（节流 ~30fps）
+  // 放在 skip 检查之前，确保窗口隐藏时壁纸仍能收到带时间推进的数据
+  if (fx && fx.wallpaperMode && window.desktopWindow && typeof window.desktopWindow.sendWallpaperAudioFrame === 'function') {
+    if (now - _lastWallpaperAudioAt > 33) {
+      _lastWallpaperAudioAt = now;
+      try {
+        window.desktopWindow.sendWallpaperAudioFrame({
+          bass: bass, mid: mid, treble: treble, beat: beatPulse, energy: audioEnergy,
+          time: uniforms.uTime.value,
+          vinylSpin: uniforms.uVinylSpin.value,
+          burstAmt: uniforms.uBurstAmt.value,
+          alpha: uniforms.uAlpha.value,
+          particleDim: uniforms.uParticleDim.value,
+          colorMixT: uniforms.uColorMixT.value,
+          hasCover: uniforms.uHasCover.value,
+          hasDepth: uniforms.uHasDepth.value,
+          aiBoost: uniforms.uAiBoost.value,
+          preset: fx.preset,
+          intensity: fx.intensity,
+          depth: fx.depth,
+          pointScale: fx.point,
+          speed: fx.speed,
+          twist: fx.twist,
+          colorBoost: fx.color,
+          scatter: fx.scatter,
+          coverRes: normalizeCoverResolution(fx.coverResolution),
+          bgFade: fx.bgFade,
+          bloomStrength: fx.bloom ? fx.bloomStrength : 0,
+          edgeEnabled: fx.edge ? 1 : 0,
+          tintColor: (fx.visualTintMode === 'custom' ? fx.visualTintColor : null) || '#9db8cf',
+          tintStrength: fx.visualTintMode === 'custom' ? 0.42 : 0,
+          floatAlpha: uniforms.uFloatAlpha.value,
+          loading: uniforms.uLoading.value,
+        });
+      } catch (e) {}
+    }
+  }
+  if (shouldSkipAdaptiveRenderFrame(now)) return;
+  sampleRenderPerf(now, dt);
   if (isMainSceneCoveredBySplash()) {
     if (now - splashWarmRenderLast > 520) {
       splashWarmRenderLast = now;
@@ -26997,20 +27034,8 @@ function animate() {
   }
 
   renderer.render(scene, camera);
-
-  // 壁纸模式：将渲染帧发送给壁纸窗口（节流 ~20fps）
-  if (fx && fx.wallpaperMode && window.desktopWindow && typeof window.desktopWindow.sendWallpaperRenderFrame === 'function') {
-    var _wpNow = performance.now();
-    if (_wpNow - _lastWallpaperFrameAt > 50) {
-      _lastWallpaperFrameAt = _wpNow;
-      try {
-        var _wpDataUrl = renderer.domElement.toDataURL('image/jpeg', 0.72);
-        window.desktopWindow.sendWallpaperRenderFrame(_wpDataUrl);
-      } catch (e) {}
-    }
-  }
 }
-var _lastWallpaperFrameAt = 0;
+var _lastWallpaperAudioAt = 0;
 animate();
 </script>
 </body>
