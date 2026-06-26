@@ -142,6 +142,7 @@
       uMid:        { value: 0 },
       uTreble:     { value: 0 },
       uBeat:       { value: 0 },
+      uBeatBurst:  { value: 0 },
       uEnergy:     { value: 0 },
       uBurstAmt:   { value: 0 },
       uVinylSpin:  { value: 0 },
@@ -187,7 +188,7 @@
     // ============================================================
     var vs = `
 precision highp float;
-uniform float uTime, uBass, uMid, uTreble, uBeat, uEnergy, uBurstAmt;
+uniform float uTime, uBass, uMid, uTreble, uBeat, uBeatBurst, uEnergy, uBurstAmt;
 uniform float uPreset, uIntensity, uDepth, uPointScale, uSpeed, uTwist;
 uniform float uVinylSpin;
 uniform float uColorBoost, uScatter, uCoverRes, uBgFade;
@@ -517,6 +518,7 @@ void main(){
   float tintLum = max(max(vColor.r, vColor.g), vColor.b);
   vec3 tintedColor = uTintColor * max(0.24, tintLum * 1.12);
   vColor = mix(vColor, tintedColor, clamp(uTintStrength, 0.0, 1.0) * (1.0 - blackParticleGuard));
+  vColor = mix(vColor, vec3(1.0), uBeat * 0.25);
 
   vBright = 0.82 + maxRippleAmp * 0.55 + uBass * 0.10 + edgeBoost * 0.30 + uEnergy * 0.05 + uBurstAmt * 0.40;
   if (uPreset > 4.5) {
@@ -531,6 +533,13 @@ void main(){
     vBright *= bgMul;
   }
   vBright += uGestureGrip * 0.22;
+
+  if (uBeatBurst > 0.001 && uPreset < 3.5) {
+    float burstAngle = fract(aRand * 17.31) * 6.2832;
+    vec2 burstDir = vec2(cos(burstAngle), sin(burstAngle));
+    pos.xy += burstDir * uBeatBurst * (0.22 + aRand * 0.18);
+    pos.z += (hash11(aRand * 73.0) - 0.5) * uBeatBurst * 0.22;
+  }
 
   vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
   float depthSize = 36.0 / max(0.5, -mvPos.z);
@@ -1060,6 +1069,7 @@ void main(){
     var _wallpaperCinemaShake = 0.5;
     var _wallpaperBeatMap = null;
     var _wpEnergy = 0, _wpBass = 0;
+    var _wpBaseBloom = 0;
 
     var beatCam = {
       nextIdx: 0,
@@ -1156,7 +1166,7 @@ void main(){
       var mode = 'deep';
       if (snapTone > 0.42 && snapTone > lowTone * 1.18 && snapTone > bodyTone * 1.08) mode = 'snap';
       else if (bodyTone > 0.46 && bodyTone > lowTone * 1.12) mode = 'body';
-      var amp = Math.max(0.18, Math.min(0.72, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
+      var amp = Math.max(0.18, Math.min(0.85, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
       amp *= 0.68 + visualImpact * 0.46;
       if (mode === 'deep') amp = Math.min(0.62, amp * 1.12);
       var dynScale = cameraDynamicsScale(0.92 + visualImpact * 0.12 + mass * 0.08);
@@ -1288,9 +1298,9 @@ void main(){
       camera.position.y = beatCam.phiKick * cameraShake * 30;
       camera.position.z = 6.6;
       camera.rotation.z = beatCam.rollKick * cameraShake;
-      var cameraPunch = (beatCam.punch * 0.54 + beatCam.radiusKick * 0.16) * cameraShake;
-      var targetFOV = BASE_FOV - cameraPunch * 2.35;
-      var fovEase = targetFOV < camera.fov ? 0.24 : 0.12;
+      var cameraPunch = (beatCam.punch * 1.00 + beatCam.radiusKick * 0.16) * cameraShake;
+      var targetFOV = BASE_FOV - cameraPunch * 5.00;
+      var fovEase = targetFOV < camera.fov ? 0.35 : 0.14;
       camera.fov += (targetFOV - camera.fov) * fovEase;
       camera.updateProjectionMatrix();
     }
@@ -1362,7 +1372,7 @@ void main(){
         }
       }
       if (d.bgFade != null) uniforms.uBgFade.value = d.bgFade;
-      if (d.bloomStrength != null) uniforms.uBloomStrength.value = d.bloomStrength;
+      if (d.bloomStrength != null) _wpBaseBloom = d.bloomStrength;
       if (d.edgeEnabled != null) uniforms.uEdgeEnabled.value = d.edgeEnabled;
       if (d.floatAlpha != null) uniforms.uFloatAlpha.value = d.floatAlpha;
       if (d.loading != null) uniforms.uLoading.value = d.loading;
@@ -1415,6 +1425,9 @@ void main(){
       tickBeatMap();
       updateBeatCamera(dt);
       applyBeatCameraToScene();
+      uniforms.uBeatBurst.value += (beatCam.punch * 0.64 - uniforms.uBeatBurst.value) * 0.58;
+      var wpBeatBloomTarget = _wpBaseBloom + beatCam.punch * 0.6;
+      uniforms.uBloomStrength.value += (wpBeatBloomTarget - uniforms.uBloomStrength.value) * 0.35;
       renderer.render(scene, camera);
     }
     animate();

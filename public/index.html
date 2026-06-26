@@ -3995,8 +3995,8 @@ function applyFreeCameraToCamera() {
     FREE_CAMERA_SHAKE_DIR.set(0, 0, -1).applyEuler(camera.rotation);
     camera.position.addScaledVector(FREE_CAMERA_SHAKE_DIR, beatCam.radiusKick * cameraShake * 0.52);
   }
-  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 0.54 + beatCam.radiusKick * 0.16) * cameraShake;
-  var targetFov = clampRange(freeCamera.fov || BASE_FOV, 26, 72) - cameraPunch * 1.75;
+  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 1.00 + beatCam.radiusKick * 0.16) * cameraShake;
+  var targetFov = clampRange(freeCamera.fov || BASE_FOV, 26, 72) - cameraPunch * 4.00;
   camera.fov += (targetFov - camera.fov) * (targetFov < camera.fov ? 0.24 : 0.12);
   camera.updateProjectionMatrix();
   camPunch *= 0.86;
@@ -4724,7 +4724,7 @@ function scheduleBeatCamera(beat, source) {
     else if (mode === 'body') amp = 0.12 + strength * 0.15 + bodyDrive * 0.18 + lowDrive * 0.06;
     else amp = 0.08 + strength * 0.11 + snapDrive * 0.13;
   } else {
-    amp = Math.max(0.18, Math.min(0.72, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
+    amp = Math.max(0.18, Math.min(0.85, 0.15 + strength * 0.34 + confidence * 0.06 + mass * 0.13 + snapTone * 0.04));
   }
   if (isMapSource) amp *= 0.68 + visualImpact * 0.46;
   if (!isPrimary) amp *= 0.62;
@@ -4741,7 +4741,7 @@ function scheduleBeatCamera(beat, source) {
     : Math.max(0.014, Math.min(0.052, beatCam.hold * (0.62 + lowTone * 0.55 + bodyTone * 0.25)));
   var release = dj
     ? (mode === 'deep' ? 0.178 + mass * 0.040 : (mode === 'body' ? 0.140 : 0.104))
-    : Math.max(0.110, Math.min(0.255, beatCam.release * (0.76 + mass * 0.56 + bodyTone * 0.18 - sharpness * 0.18)));
+    : Math.max(0.080, Math.min(0.150, beatCam.release * (0.76 + mass * 0.56 + bodyTone * 0.18 - sharpness * 0.18)));
   var idx = typeof beat === 'number' ? Math.floor(time * 2.7) : (beat.index || Math.floor(time * 2.7));
   var combo = typeof beat === 'number' ? null : beat.combo;
   if (!combo) {
@@ -4921,12 +4921,15 @@ function scheduleBeatCamera(beat, source) {
     var gap = time - beatCam.lastTriggerAt;
     var minGap = beatCam.minInterval;
     if (isMapSource && isPrimary) minGap *= 0.82;
-    if (gap < minGap && strength < 0.88) return;
+    if (gap < minGap && strength < 0.72) return;
     beatCam.lastTriggerAt = time;
     beatCam.stats.map++;
   } else {
     beatCam.lastTriggerAt = Math.max(beatCam.lastTriggerAt, time);
     beatCam.stats.live++;
+  }
+  for (var ti = 0; ti < beatCam.events.length; ti++) {
+    if (!beatCam.events[ti]._truncated) beatCam.events[ti]._truncated = nowT;
   }
   beatCam.events.push({
     start: isLiveSource ? nowT - attack * 0.42 : nowT + (time - nowT) - attack,
@@ -4999,6 +5002,10 @@ function updateBeatCamera(dt) {
       beatCam.events.splice(i, 1);
       continue;
     }
+    if (ev._truncated) {
+      var sinceTrunc = t - ev._truncated;
+      if (sinceTrunc > 0) val *= Math.max(0, 1 - sinceTrunc / 0.040);
+    }
     var evPunch = val * ev.amp;
     punch = Math.max(punch, evPunch);
     if (evPunch > leadPunch) {
@@ -5043,7 +5050,7 @@ function updateBeatCamera(dt) {
     }
   }
   var djEase = djMode.active;
-  beatCam.punch += (punch - beatCam.punch) * (punch > beatCam.punch ? (djEase ? 0.82 : 0.72) : (djEase ? 0.44 : 0.38));
+  beatCam.punch += (punch - beatCam.punch) * (punch > beatCam.punch ? (djEase ? 0.88 : 0.82) : (djEase ? 0.44 : 0.38));
   beatCam.thetaKick += (thetaKick - beatCam.thetaKick) * (Math.abs(thetaKick) > Math.abs(beatCam.thetaKick) ? (djEase ? 0.80 : 0.70) : (djEase ? 0.42 : 0.36));
   beatCam.phiKick += (phiKick - beatCam.phiKick) * (Math.abs(phiKick) > Math.abs(beatCam.phiKick) ? (djEase ? 0.80 : 0.70) : (djEase ? 0.42 : 0.36));
   beatCam.radiusKick += (radiusKick - beatCam.radiusKick) * (radiusKick > beatCam.radiusKick ? (djEase ? 0.82 : 0.72) : (djEase ? 0.40 : 0.34));
@@ -5143,8 +5150,8 @@ function updateCamera() {
   var cameraShake = clampRange(Number(fx.cinemaShake) || 0, 0, 1.8);
   camera.rotation.z += beatCam.rollKick * cameraShake;
 
-  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 0.54 + beatCam.radiusKick * 0.16) * cameraShake;
-  var targetFOV = BASE_FOV - cameraPunch * (djMode.active ? 2.62 : 2.35);
+  var cameraPunch = Math.max(camPunch * 0.55, beatCam.punch * 1.00 + beatCam.radiusKick * 0.16) * cameraShake;
+  var targetFOV = BASE_FOV - cameraPunch * (djMode.active ? 5.40 : 5.00);
   var fovEase = targetFOV < camera.fov ? 0.24 : 0.12;
   camera.fov += (targetFOV - camera.fov) * fovEase;
   camera.updateProjectionMatrix();
@@ -5874,6 +5881,7 @@ var uniforms = {
   uMid:        { value: 0 },
   uTreble:     { value: 0 },
   uBeat:       { value: 0 },
+  uBeatBurst:  { value: 0 },
   uEnergy:     { value: 0 },
   uBurstAmt:   { value: 0 },          // 通用预设切换脉冲 0..1
   uVinylSpin:  { value: 0 },
@@ -5920,7 +5928,7 @@ applyRendererPowerMode();
 //   v7.1: 律动幅度 ×2.5, Tunnel 自旋, 虚空预设, 切歌颜色渐变
 var vs = `
 precision highp float;
-uniform float uTime, uBass, uMid, uTreble, uBeat, uEnergy, uBurstAmt;
+uniform float uTime, uBass, uMid, uTreble, uBeat, uBeatBurst, uEnergy, uBurstAmt;
 uniform float uPreset, uIntensity, uDepth, uPointScale, uSpeed, uTwist;
 uniform float uVinylSpin;
 uniform float uColorBoost, uScatter, uCoverRes, uBgFade;
@@ -6328,6 +6336,7 @@ void main(){
   float tintLum = max(max(vColor.r, vColor.g), vColor.b);
   vec3 tintedColor = uTintColor * max(0.24, tintLum * 1.12);
   vColor = mix(vColor, tintedColor, clamp(uTintStrength, 0.0, 1.0) * (1.0 - blackParticleGuard));
+  vColor = mix(vColor, vec3(1.0), uBeat * 0.25);
 
   vBright = 0.82 + maxRippleAmp * 0.55 + uBass * 0.10 + edgeBoost * 0.30 + uEnergy * 0.05 + uBurstAmt * 0.40;
   if (uPreset > 4.5) {
@@ -6371,6 +6380,13 @@ void main(){
     vAlpha = mix(vAlpha, 0.08 + mistBreath * 0.11 + dustPick * 0.11 + glowPick * 0.30, uLoading);
     pos = mix(pos, mistPos, uLoading);
     loadingMistSize = 1.26 + mistBreath * 0.24 + abs(mistRibbon) * 0.14 + glowPick * 0.78;
+  }
+
+  if (uBeatBurst > 0.001 && uPreset < 3.5) {
+    float burstAngle = fract(aRand * 17.31) * 6.2832;
+    vec2 burstDir = vec2(cos(burstAngle), sin(burstAngle));
+    pos.xy += burstDir * uBeatBurst * (0.22 + aRand * 0.18);
+    pos.z += (hash11(aRand * 73.0) - 0.5) * uBeatBurst * 0.22;
   }
 
   vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
@@ -26992,6 +27008,10 @@ function animate() {
   uniforms.uMid.value    = mid;
   uniforms.uTreble.value = treble;
   uniforms.uBeat.value   = beatPulse;
+  uniforms.uBeatBurst.value += (beatCam.punch * 0.64 - uniforms.uBeatBurst.value) * 0.58;
+  var baseBloom = fx.bloom ? fx.bloomStrength : 0;
+  var beatBloomTarget = baseBloom + beatPulse * 0.6;
+  uniforms.uBloomStrength.value += (beatBloomTarget - uniforms.uBloomStrength.value) * 0.35;
   uniforms.uEnergy.value = audioEnergy;
   uniforms.uMouseXY.value.set(mouseWorld.x, mouseWorld.y);
   uniforms.uMouseActive.value = mouseActive ? 1 : 0;
