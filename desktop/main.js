@@ -1096,17 +1096,31 @@ function getObjcBridge() {
 
 // 统一应用壁纸窗口层级模式（macOS）
 // 处理 desktop-level ↔ overlay 双向切换：
-// - desktop-level: setAlwaysOnTop(false) → setLevel:kCGDesktopWindowLevel → attachWallpaperAsBackground
+// - desktop-level: setAlwaysOnTop(false) → attachWallpaperAsBackground(collection behavior) → setCollectionBehavior(Stationary) → setLevel:kCGDesktopWindowLevel
 // - overlay: setLevel:0(重置桌面级) → setAlwaysOnTop('floating') → setIgnoreMouseEvents
 // 返回 actualMode: 'desktop-level' / 'always-on-top'(fallback) / 'overlay'
+//
+// 关键：不再因主窗口全屏而 fallback 到 overlay。
+// 壁纸窗口通过 collection behavior (CanJoinAllSpaces | Stationary, 不含 FullScreenAuxiliary)
+// 绑定到所有非全屏 Space（桌面1），不进入全屏主窗口所在的 Space（桌面2），
+// 因此 desktop-level 不会与全屏 Space 冲突。必须在窗口 orderFront/show 之前设好 collection behavior。
 function applyWallpaperWindowMode(win, mode) {
   if (!win || win.isDestroyed()) return mode;
   if (process.platform === 'darwin') {
     if (mode === 'desktop-level') {
       // 从 overlay 切过来时先清除 alwaysOnTop
       try { win.setAlwaysOnTop(false); } catch (e) {}
-      const ok = setWallpaperWindowLevelBelowDock(win);
+      // 先设 collection behavior（Electron API：visibleOnAllWorkspaces + 不在全屏 Space 显示），
+      // 必须在 setLevel/orderFrontRegardless 之前调用，否则窗口会在默认 Space（可能是全屏 Space）短暂出现
       attachWallpaperAsBackground(win);
+      // 用 native bridge 补充 Stationary 位，让窗口固定不参与 Space 切换动画，更稳定
+      // CanJoinAllSpaces(1) | Stationary(16) = 17，不设 FullScreenAuxiliary(256)
+      const bridge = getObjcBridge();
+      if (bridge && typeof bridge.setCollectionBehavior === 'function') {
+        bridge.setCollectionBehavior(win.getNativeWindowHandle(), 1 | 16);
+      }
+      // 最后设桌面级层级（内部会 orderFrontRegardless，此时 collection behavior 已就位）
+      const ok = setWallpaperWindowLevelBelowDock(win);
       return ok ? 'desktop-level' : 'always-on-top';
     } else {
       // overlay 模式：先重置桌面级层级到 normal(0)，否则窗口仍在桌面层
@@ -1187,18 +1201,22 @@ function createWallpaperWindow(payload = {}) {
   wallpaperWindow.once('ready-to-show', () => {
     if (!wallpaperWindow || wallpaperWindow.isDestroyed()) return;
     positionWallpaperWindow();
-    wallpaperWindow.showInactive();
     // 设置壁纸窗口透明度
     if (typeof wallpaperWindow.setOpacity === 'function') {
       const opacity = Math.max(0.35, Math.min(1, wallpaperState.opacity || 1));
       wallpaperWindow.setOpacity(opacity);
     }
     if (process.platform === 'win32') {
+      wallpaperWindow.showInactive();
       attachWallpaperToWorkerW(wallpaperWindow);
       wallpaperState.actualMode = 'desktop-level';
     } else if (process.platform === 'darwin') {
-      // 统一走 applyWallpaperWindowMode，与 early return 的运行时切换逻辑保持一致
+      // 关键时序：先设 collection behavior + desktop level（内部会 orderFrontRegardless），
+      // 再调用 Electron showInactive 同步可见状态。
+      // 这样窗口 orderFront 时已绑定到所有非全屏 Space（桌面1），不进入全屏主窗口所在的 Space（桌面2），
+      // 避免 desktop-level 窗口在全屏 Space 触发 WindowServer 冲突闪退。
       wallpaperState.actualMode = applyWallpaperWindowMode(wallpaperWindow, mode);
+      wallpaperWindow.showInactive();
     }
     sendWallpaperState();
     // 壁纸窗口在 setLevel / orderFrontRegardless 后可能抢占 key window，
@@ -1246,6 +1264,8 @@ function closeWallpaperWindow() {
     // 1. [NSWindow orderOut:nil] —— 把窗口移出屏幕（WindowServer 层面移除显示）
     // 2. setLevel: 0 —— 把层级恢复到 normal，让 WindowServer 把它移出桌面层
     // 3. destroy() —— Electron 销毁窗口
+    // 不再因主窗口全屏而跳过：壁纸窗口绑定在非全屏 Space（桌面1），与全屏主窗口（桌面2）不在同一 Space，
+    // orderOut/setLevel 不会与全屏 Space 冲突。
     if (process.platform === 'darwin') {
       try {
         const bridge = getObjcBridge();

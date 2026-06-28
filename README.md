@@ -8,6 +8,7 @@
 
 ## 近期更新
 
+- **Bug 修复**：全屏模式下打开/关闭壁纸模式闪退的问题已修复；壁纸窗口在 show 前先设好 `NSWindowCollectionBehavior`（CanJoinAllSpaces | Stationary，不含 FullScreenAuxiliary）+ `kCGDesktopWindowLevel`，绑定到非全屏 Space（桌面1），不进入全屏主窗口所在的 Space，desktop-level 与全屏 Space 不再冲突
 - **壁纸模式**：桌面级粒子背景，Three.js 独立渲染，与主应用视觉对等；支持透明度调节、快捷键隐藏（`Cmd+Shift+H`）
 - **节拍驱动视觉增强**：增强相机冲击力（FOV ×5、冲击缓动 0.82）、粒子节拍径向爆发与白色闪烁、泛光脉冲
 - **Emily粒子专辑+行星环preste7**：双倍粒子，双倍快乐，视觉冲击更强！

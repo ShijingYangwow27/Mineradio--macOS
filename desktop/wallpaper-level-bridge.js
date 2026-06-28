@@ -41,6 +41,8 @@ function tryLoadWithKoffi() {
       msgSendSetLevel: objc.func('void objc_msgSend(void *receiver, void *sel, long level)'),
       msgSendNoArgs: objc.func('void objc_msgSend(void *receiver, void *sel)'),
       msgSendOrderOut: objc.func('void objc_msgSend(void *receiver, void *sel, void *sender)'),
+      // setCollectionBehavior: 参数 NSWindowCollectionBehavior 是 NSUInteger（64 位 unsigned long）
+      msgSendSetCollectionBehavior: objc.func('void objc_msgSend(void *receiver, void *sel, unsigned long behavior)'),
     };
   } catch (e) {
     console.warn('[wallpaper-bridge] koffi load failed:', e.message);
@@ -112,6 +114,37 @@ function setNSWindowLevel(nativeHandle, level) {
   }
 }
 
+// 设置 NSWindow collectionBehavior，控制窗口的 Space 归属。
+// 关键用途：让壁纸窗口绑定到所有非全屏 Space（CanJoinAllSpaces | Stationary），
+// 不进入全屏主窗口所在的 Space（不设 FullScreenAuxiliary），
+// 这样 desktop-level 窗口不会与全屏 Space 冲突导致闪退。
+// 必须在窗口 orderFront/show 之前调用，否则窗口可能在默认 Space（全屏 Space）短暂出现。
+// 返回 true 表示调用成功。
+function setCollectionBehavior(nativeHandle, behavior) {
+  const b = loadObjc();
+  if (!b) return false;
+  const nsView = readNativeHandle(nativeHandle);
+  if (!nsView) return false;
+  try {
+    const sel_window = b.sel_registerName('window');
+    const sel_setCollectionBehavior = b.sel_registerName('setCollectionBehavior:');
+    if (!sel_window || !sel_setCollectionBehavior) {
+      console.warn('[wallpaper-bridge] setCollectionBehavior: sel_registerName returned null');
+      return false;
+    }
+    const nsWindow = b.msgSendGetPtr(nsView, sel_window);
+    if (!nsWindow) {
+      console.warn('[wallpaper-bridge] setCollectionBehavior: [NSView window] returned null');
+      return false;
+    }
+    b.msgSendSetCollectionBehavior(nsWindow, sel_setCollectionBehavior, behavior);
+    return true;
+  } catch (e) {
+    console.warn('[wallpaper-bridge] setCollectionBehavior failed:', e.message);
+    return false;
+  }
+}
+
 // 桌面级窗口（kCGDesktopWindowLevel）对 Electron 的 destroy()/close() 不敏感，
 // 需要先调用 [NSWindow orderOut:nil] 把窗口移出屏幕，再重置层级到 normal(0)，
 // 最后 Electron 才能真正 destroy。
@@ -144,6 +177,7 @@ function orderOutNSWindow(nativeHandle) {
 
 module.exports = {
   setNSWindowLevel,
+  setCollectionBehavior,
   orderOutNSWindow,
   available: () => !!loadObjc(),
   mode: 'native-bridge'
