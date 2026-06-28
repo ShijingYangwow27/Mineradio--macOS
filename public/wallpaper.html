@@ -311,8 +311,8 @@ void main(){
 
   float K = uIntensity * 1.6;
 
-  // Preset 0: SILK
-  if (uPreset < 0.5) {
+  // Preset 0 / Preset 7: SILK
+  if (uPreset < 0.5 || uPreset > 6.5) {
     pos = position;
     rippleZ = rippleSumAt(pos.xy, maxRippleAmp);
     float midN = snoise(vec3(pos.x*1.4, pos.y*1.4, t*0.55)) * 0.6
@@ -456,7 +456,7 @@ void main(){
       float ridge = exp(-pow((local - ridgeCenter) / (0.25 + seed * 0.04), 2.0));
       float softMask = smoothstep(0.010, 0.12, lane) * (1.0 - smoothstep(0.72, 0.81, lane));
       float ribbonNoise = snoise(vec3(flow * 1.18 + seed, bandN * 2.0, t * 0.018)) * 0.74;
-      float zLayer = mix(-23.5, 15.5, bandN) + (seed - 0.5) * 6.0;
+      float zLayer = mix(-8.0, 6.0, bandN) + (seed - 0.5) * 4.0;
       pos.x = x + ribbonNoise * 1.40 + sin(t * 0.012 + seed * 8.0) * 0.22;
       pos.y = yBase + broadWave + fineWave + (local - 0.5) * (0.58 + ridge * 0.14);
       pos.z = zLayer + broadWave * 1.35 + ribbonNoise * 1.85;
@@ -500,20 +500,20 @@ void main(){
     vec2 jdir = vec2(cos(aRand * 6.2831), sin(aRand * 6.2831));
     pos.xy += jdir * uScatter * (0.05 + uTreble * 0.10);
   }
-  if (uTwist > 0.001 && uPreset < 0.5) {
+  if (uTwist > 0.001 && (uPreset < 0.5 || uPreset > 6.5)) {
     float ta = uTwist * pos.z * 0.6;
     float cs = cos(ta), sn = sin(ta);
     pos.xy = mat2(cs, -sn, sn, cs) * pos.xy;
   }
 
   // 颜色
-  float vinylHiResGuard = smoothstep(1.08, 1.55, uCoverRes) * step(3.5, uPreset) * (1.0 - step(4.5, uPreset));
+  float vinylHiResGuard = smoothstep(1.08, 1.55, uCoverRes) * step(3.5, uPreset) * (1.0 - step(4.5, uPreset)) * (1.0 - step(6.5, uPreset));
   float edgeBoost = uEdgeEnabled * edgeVal * mix(1.0, 0.42, vinylHiResGuard);
   vSourceLum = dot(max(vColor, vec3(0.0)), vec3(0.299, 0.587, 0.114));
   float blackParticleGuard = 1.0 - smoothstep(0.025, 0.115, vSourceLum);
-  vEdgeBoost = edgeBoost * (uPreset > 3.5 ? 0.22 : 1.0) * (1.0 - blackParticleGuard);
+  vEdgeBoost = edgeBoost * (uPreset > 3.5 && uPreset < 6.5 ? 0.22 : 1.0) * (1.0 - blackParticleGuard);
   vColor = pow(max(vColor, vec3(0.0)), vec3(1.0 / max(0.35, uColorBoost)));
-  float edgeColorMix = edgeBoost * (uPreset > 3.5 ? 0.20 : 0.50) * (1.0 - blackParticleGuard);
+  float edgeColorMix = edgeBoost * (uPreset > 3.5 && uPreset < 6.5 ? 0.20 : 0.50) * (1.0 - blackParticleGuard);
   vColor = mix(vColor, vColor + vec3(0.20), edgeColorMix);
   float tintLum = max(max(vColor.r, vColor.g), vColor.b);
   vec3 tintedColor = uTintColor * max(0.24, tintLum * 1.12);
@@ -521,14 +521,14 @@ void main(){
   vColor = mix(vColor, vec3(1.0), uBeat * 0.25);
 
   vBright = 0.82 + maxRippleAmp * 0.55 + uBass * 0.10 + edgeBoost * 0.30 + uEnergy * 0.05 + uBurstAmt * 0.40;
-  if (uPreset > 4.5) {
+  if (uPreset > 4.5 && uPreset < 6.5) {
     vBright = 0.94 + maxRippleAmp * 0.34 + uBass * 0.020 + uEnergy * 0.026 + uBurstAmt * 0.025;
-  } else if (uPreset > 3.5) {
+  } else if (uPreset > 3.5 && uPreset < 6.5) {
     vBright = 0.94 + maxRippleAmp * 0.64 + uBass * 0.08 + edgeBoost * 0.12 + uEnergy * 0.05 + uBeat * 0.16 + uBurstAmt * 0.16;
   }
   vRipple = clamp(maxRippleAmp * 1.5, 0.0, 1.0);
 
-  if (uHasDepth > 0.5 && uPreset < 0.5) {
+  if (uHasDepth > 0.5 && (uPreset < 0.5 || uPreset > 6.5)) {
     float bgMul = mix(1.0, 0.55, uBgFade * (1.0 - fgMask));
     vBright *= bgMul;
   }
@@ -545,10 +545,10 @@ void main(){
   float depthSize = 36.0 / max(0.5, -mvPos.z);
   float audioBoost = 1.0 + maxRippleAmp * 0.7 + edgeBoost * 0.55 + uBeat * 0.30 + uBurstAmt * 0.5;
   float sz = clamp(depthSize * audioBoost, 1.05, 4.95);
-  if (uPreset > 4.5) {
+  if (uPreset > 4.5 && uPreset < 6.5) {
     float flowDrive = uBass * 0.070 + uMid * 0.046 + uTreble * 0.060 + uBurstAmt * 0.090 + uBeat * 0.055;
     sz = clamp(depthSize * (1.05 + flowDrive), 1.00, 5.45);
-  } else if (uPreset > 3.5) {
+  } else if (uPreset > 3.5 && uPreset < 6.5) {
     float ringDrive = uBass * 0.30 + uMid * 0.18 + uTreble * 0.22 + uBeat * 0.30;
     sz = clamp(depthSize * (0.90 + ringDrive * 0.62), 1.05, 3.90);
   }
@@ -635,6 +635,216 @@ void main(){
     particles.frustumCulled = false;
     particles.renderOrder = 1;
     scene.add(particles);
+
+    // ============================================================
+    //  Ribbon Layer (行星环层 — Preset 7 下叠加)
+    // ============================================================
+    var RIBBON_COUNT = 15000;
+    var ribbonGroup = null;
+    var ribbonOpacity = 0;
+    var _wallpaperPreset = 0;
+
+    function createRibbonLayer() {
+      if (ribbonGroup) return ribbonGroup;
+      var rGeo = new THREE.BufferGeometry();
+      var rPositions = new Float32Array(RIBBON_COUNT * 3);
+      var rUvs = new Float32Array(RIBBON_COUNT * 2);
+      var rRands = new Float32Array(RIBBON_COUNT);
+      for (var i = 0; i < RIBBON_COUNT; i++) {
+        rPositions[i*3] = 0; rPositions[i*3+1] = 0; rPositions[i*3+2] = 0;
+        rUvs[i*2] = Math.random(); rUvs[i*2+1] = Math.random();
+        rRands[i] = Math.random();
+      }
+      rGeo.setAttribute('position', new THREE.BufferAttribute(rPositions, 3));
+      rGeo.setAttribute('aUv', new THREE.BufferAttribute(rUvs, 2));
+      rGeo.setAttribute('aRand', new THREE.BufferAttribute(rRands, 1));
+
+      var ribbonVs = [
+        'precision highp float;',
+        'uniform float uTime, uBass, uMid, uTreble, uBeat, uEnergy, uBurstAmt;',
+        'uniform float uPixel, uPointScale;',
+        'uniform sampler2D uCoverTex;',
+        'uniform float uHasCover;',
+        'attribute vec2 aUv;',
+        'attribute float aRand;',
+        'varying vec3 vColor;',
+        'varying float vBright, vAlpha;',
+        '',
+        'vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}',
+        'vec4 mod289v(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}',
+        'vec4 perm(vec4 x){return mod289v(((x*34.0)+1.0)*x);}',
+        'float snoise(vec3 v){',
+        '  const vec2 C=vec2(1.0/6.0,1.0/3.0);',
+        '  const vec4 D=vec4(0.0,0.5,1.0,2.0);',
+        '  vec3 i=floor(v+dot(v,C.yyy));',
+        '  vec3 x0=v-i+dot(i,C.xxx);',
+        '  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g;',
+        '  vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);',
+        '  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;',
+        '  i=mod289(i);',
+        '  vec4 p=perm(perm(perm(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));',
+        '  float n_=0.142857142857;',
+        '  vec3 ns=n_*D.wyz-D.xzx;',
+        '  vec4 j=p-49.0*floor(p*ns.z*ns.z);',
+        '  vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);',
+        '  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy;',
+        '  vec4 h=1.0-abs(x)-abs(y);',
+        '  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);',
+        '  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0;',
+        '  vec4 sh=-step(h,vec4(0.0));',
+        '  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;',
+        '  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);',
+        '  vec4 norm=inversesqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));',
+        '  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;',
+        '  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);',
+        '  m=m*m;',
+        '  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));',
+        '}',
+        'float hash11(float p){return fract(sin(p*127.1)*43758.5453123);}',
+        '',
+        '#define PI 3.14159265359',
+        '',
+        'void main() {',
+        '  float t = uTime;',
+        '  float bassGlow = smoothstep(0.07, 0.78, uBass) * 0.34 + uBeat * 0.014;',
+        '  float highGlow = smoothstep(0.04, 0.46, uTreble) * 0.46;',
+        '',
+        '  float ringSel = aUv.y;',
+        '  float ringIdx = floor(ringSel * 4.0);',
+        '  float ringLocal = fract(ringSel * 4.0);',
+        '  float seed = hash11(ringIdx * 19.17 + aRand * 31.0);',
+        '',
+        '  float ringRadius;',
+        '  if (ringIdx < 0.5) ringRadius = 4.2;',
+        '  else if (ringIdx < 1.5) ringRadius = 6.5;',
+        '  else if (ringIdx < 2.5) ringRadius = 8.8;',
+        '  else ringRadius = 11.2;',
+        '',
+        '  float radialWidth = 0.55 + ringIdx * 0.08;',
+        '  float radialNoise = snoise(vec3(ringIdx * 3.0, ringLocal * 5.0, t * 0.02)) * 0.22;',
+        '  float radialOffset = (ringLocal - 0.5) * radialWidth * 2.0 + radialNoise;',
+        '  float radius = ringRadius + radialOffset + seed * 0.35;',
+        '',
+        '  float baseAngle = aUv.x * 6.28318;',
+        '  float orbitSpeed = 0.08 - ringIdx * 0.010;',
+        '  float angle = baseAngle + t * orbitSpeed;',
+        '',
+        '  float cx = cos(angle) * radius;',
+        '  float cz = sin(angle) * radius;',
+        '  float yBase = (aRand - 0.5) * 0.80;',
+        '  float yWave = sin(angle * 3.0 + seed * 18.0 + t * 0.12) * 0.15;',
+        '  float y = yBase + yWave;',
+        '',
+        '  float bandCenterDist = abs(radialOffset) / max(0.01, radialWidth);',
+        '  float ridge = exp(-pow(bandCenterDist * 2.2, 2.0));',
+        '  ridge = ridge * 0.6 + 0.4;',
+        '',
+        '  float ribbonPhase = angle * (2.0 + ringIdx * 0.5) + t * 0.15 + seed * 8.0;',
+        '  float broadWave = sin(ribbonPhase) * 0.15;',
+        '  float pulseLine = 0.5 + 0.5 * sin(ribbonPhase * 2.5 + seed * 6.0);',
+        '',
+        '  vec3 pos = vec3(cx, y + broadWave, cz);',
+        '',
+        '  float beatKick = smoothstep(0.50, 0.92, uBeat);',
+        '  float expansion = 1.0 + beatKick * 0.25;',
+        '  pos *= expansion;',
+        '',
+        '  float ringN = clamp(ringIdx / 3.0, 0.0, 1.0);',
+        '  vec3 aurora = mix(vec3(0.62, 0.80, 1.0), vec3(0.50, 0.55, 0.95), ringN);',
+        '  aurora = mix(aurora, vec3(0.96, 0.98, 0.92), bassGlow * 0.04);',
+        '',
+        '  vec3 goldEdge = vec3(1.0, 0.78, 0.22);',
+        '  float goldMix = smoothstep(0.30, 0.75, ridge) * (0.28 + beatKick * 0.38);',
+        '  aurora = mix(aurora, goldEdge, goldMix);',
+        '',
+        '  vec3 coverColor = mix(vec3(0.42), texture2D(uCoverTex, aUv).rgb, uHasCover);',
+        '  vColor = mix(coverColor, aurora, 0.58 + ridge * 0.26) * (0.72 + ridge * 0.82 + pulseLine * highGlow * 0.04 + bassGlow * 0.03);',
+        '',
+        '  vAlpha = (0.38 + ridge * 0.72 + pulseLine * highGlow * 0.030 + bassGlow * 0.022) * 0.88;',
+        '',
+        '  float flickerFreq = 3.5 + aRand * 9.0;',
+        '  float flicker = 0.70 + 0.30 * sin(t * flickerFreq + aRand * 77.0);',
+        '  vAlpha *= flicker;',
+        '  vAlpha += beatKick * 0.16;',
+        '',
+        '  vBright = 1.18 + ridge * 0.30 + uBass * 0.018 + uEnergy * 0.022 + uBurstAmt * 0.022;',
+        '  vBright += beatKick * 0.50;',
+        '',
+        '  vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);',
+        '  float depthSize = 48.0 / max(0.5, -mvPos.z);',
+        '  float flowDrive = uBass * 0.070 + uMid * 0.046 + uTreble * 0.060 + uBurstAmt * 0.090 + uBeat * 0.055;',
+        '  float sz = clamp(depthSize * (1.20 + flowDrive), 1.50, 8.00);',
+        '  sz *= 1.0 + beatKick * 0.65;',
+        '  gl_PointSize = sz * uPixel * uPointScale;',
+        '  gl_Position = projectionMatrix * mvPos;',
+        '}'
+      ].join('\n');
+
+      var ribbonFs = [
+        'precision highp float;',
+        'uniform sampler2D uDotTex;',
+        'varying vec3 vColor;',
+        'varying float vBright, vAlpha;',
+        'void main() {',
+        '  vec4 tex = texture2D(uDotTex, gl_PointCoord);',
+        '  if (tex.a < 0.02) discard;',
+        '  vec3 col = vColor * vBright;',
+        '  col = clamp(col, vec3(0.0), vec3(2.0));',
+        '  gl_FragColor = vec4(col, tex.a * vAlpha * 0.85);',
+        '}'
+      ].join('\n');
+
+      var ribbonUniforms = {
+        uTime: { value: 0 },
+        uBass: { value: 0 }, uMid: { value: 0 }, uTreble: { value: 0 },
+        uBeat: { value: 0 }, uEnergy: { value: 0 }, uBurstAmt: { value: 0 },
+        uPixel: { value: renderer.getPixelRatio() },
+        uPointScale: { value: 1.0 },
+        uCoverTex: { value: coverTex },
+        uHasCover: { value: 0 },
+        uDotTex: { value: dotTexture },
+      };
+
+      var ribbonMat = new THREE.ShaderMaterial({
+        uniforms: ribbonUniforms,
+        vertexShader: ribbonVs,
+        fragmentShader: ribbonFs,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        blending: THREE.AdditiveBlending,
+      });
+
+      ribbonGroup = new THREE.Points(rGeo, ribbonMat);
+      ribbonGroup.frustumCulled = false;
+      ribbonGroup.renderOrder = 2;
+      ribbonGroup.visible = false;
+      scene.add(ribbonGroup);
+      return ribbonGroup;
+    }
+
+    function updateRibbonLayer(dt) {
+      // 懒创建 + 简洁可见性切换
+      if (!ribbonGroup) createRibbonLayer();
+      if (!ribbonGroup) return;
+
+      var isPreset7 = _wallpaperPreset === 7;
+      ribbonGroup.visible = isPreset7;
+      if (!isPreset7) return;
+
+      var ru = ribbonGroup.material.uniforms;
+      ru.uTime.value = uniforms.uTime.value;
+      ru.uBass.value = uniforms.uBass.value;
+      ru.uMid.value = uniforms.uMid.value;
+      ru.uTreble.value = uniforms.uTreble.value;
+      ru.uBeat.value = uniforms.uBeat.value;
+      ru.uEnergy.value = uniforms.uEnergy.value;
+      ru.uBurstAmt.value = uniforms.uBurstAmt.value;
+      ru.uPixel.value = renderer.getPixelRatio();
+      ru.uPointScale.value = uniforms.uPointScale.value;
+      ru.uHasCover.value = uniforms.uHasCover.value;
+      ru.uCoverTex.value = uniforms.uCoverTex.value;
+    }
 
     // ============================================================
     //  Cover Texture Loading
@@ -1325,6 +1535,8 @@ void main(){
     function applyAudioFrame(d) {
       if (!d) return;
       _lastAudioFrameAt = performance.now();
+      // 记录 preset 供丝带层使用
+      if (d.preset != null) _wallpaperPreset = d.preset;
       // 节拍相机: 存储音频时间/播放状态/能量 (animate 里推进)
       if (d.audioTime != null) _wallpaperAudioTime = d.audioTime;
       if (d.playing != null) _wallpaperPlaying = !!d.playing;
@@ -1428,6 +1640,41 @@ void main(){
       uniforms.uBeatBurst.value += (beatCam.punch * 0.64 - uniforms.uBeatBurst.value) * 0.58;
       var wpBeatBloomTarget = _wpBaseBloom + beatCam.punch * 0.6;
       uniforms.uBloomStrength.value += (wpBeatBloomTarget - uniforms.uBloomStrength.value) * 0.35;
+
+      // 丝带层更新（行星环 — 仅 Preset 7 下激活）
+      try { updateRibbonLayer(dt); } catch(e) {}
+
+      // Preset 7: 移场景实现俯角+环游
+      if (_wallpaperPreset === 7) {
+        var orbT = uniforms.uTime.value * 0.63;
+        var orbR = 0.55;
+        scene.position.x = -Math.cos(orbT) * orbR;
+        scene.position.y = -0.6 - Math.sin(orbT * 0.6) * 0.15;
+        scene.position.z = -0.8 - Math.sin(orbT) * orbR;
+      }
+      // Preset 5/6: 俯拍视角（场景上移+前倾）
+      else if (_wallpaperPreset === 5 || _wallpaperPreset === 6) {
+        scene.position.x = 0;
+        scene.position.y = 0.5;
+        scene.position.z = 0;
+        scene.rotation.y = -0.2;
+        scene.rotation.x = 0.45;
+      }
+      else {
+        scene.position.x = 0;
+        scene.position.y = 0;
+        scene.position.z = 0;
+        scene.rotation.x = 0;
+        scene.rotation.y = 0;
+        scene.rotation.z = 0;
+      }
+
+      // Preset 5/6: 广角 FOV
+      if (_wallpaperPreset === 5 || _wallpaperPreset === 6) {
+        camera.fov += (50 - camera.fov) * 0.06;
+        camera.updateProjectionMatrix();
+      }
+
       renderer.render(scene, camera);
     }
     animate();

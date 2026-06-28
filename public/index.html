@@ -3242,7 +3242,7 @@ var fxDefaults = {
   depth: 1.0,
   coverResolution: 1.55,
   point: 1.0, speed: 1.0, twist: 0.0, color: 1.10, scatter: 0.0, bgFade: 0.20,
-  bloomStrength: 0.62,
+  bloomStrength: 0.34,
   lyricGlowStrength: 0.28,
   lyricScale: 1.0,
   lyricOffsetX: 0,
@@ -3325,7 +3325,7 @@ var PACKAGED_DEFAULT_FX_SNAPSHOT = Object.freeze({
   color: 1.1,
   scatter: 0,
   bgFade: 0.2,
-  bloomStrength: 0.62,
+  bloomStrength: 0.34,
   lyricGlowStrength: 0.28,
   lyricScale: 1,
   lyricOffsetX: 0,
@@ -3415,7 +3415,7 @@ function readSavedPlaybackVisualPreset() {
   try {
     var raw = JSON.parse(localStorage.getItem(LYRIC_LAYOUT_STORE_KEY) || '{}') || {};
     if (!Object.prototype.hasOwnProperty.call(raw, 'preset')) return fxDefaults.preset;
-    var savedPreset = clampRange(Number(raw.preset) || 0, 0, 6);
+    var savedPreset = clampRange(Number(raw.preset) || 0, 0, 7);
     if (savedPreset === 3 && raw.visualPresetSchema !== VISUAL_PRESET_SCHEMA) savedPreset = 5;
     return savedPreset;
   } catch (e) {
@@ -5895,7 +5895,7 @@ var uniforms = {
   uScatter:    { value: 0 },
   uCoverRes:   { value: 1.0 },
   uBgFade:     { value: 0.20 },
-  uBloomStrength:{ value: 0.62 },
+  uBloomStrength:{ value: 0.34 },
   uBloomSize:  { value: 2.65 },
   uTintColor:  { value: new THREE.Color('#9db8cf') },
   uTintStrength:{ value: 0 },
@@ -6059,7 +6059,7 @@ void main(){
   //  Preset 0: SILK — 丝绸 (xy 平面, z 涟漪)
   //  v7.1: 全部位移 ×2.5
   // ====================================================
-  if (uPreset < 0.5) {
+  if (uPreset < 0.5 || uPreset > 6.5) {
     pos = position;
     rippleZ = rippleSumAt(pos.xy, maxRippleAmp);
 
@@ -6276,9 +6276,9 @@ void main(){
   }
 
   // ====================================================
-  //  鼠标交互 (仅 SILK)
+  //  鼠标交互 (仅 SILK 与 Preset-7)
   // ====================================================
-  if (uMouseActive > 0.5 && uPreset < 0.5) {
+  if (uMouseActive > 0.5 && (uPreset < 0.5 || uPreset > 6.5)) {
     float mdx = pos.x - uMouseXY.x;
     float mdy = pos.y - uMouseXY.y;
     float md = sqrt(mdx*mdx + mdy*mdy);
@@ -6318,20 +6318,20 @@ void main(){
     vec2 jdir = vec2(cos(aRand * 6.2831), sin(aRand * 6.2831));
     pos.xy += jdir * uScatter * (0.05 + uTreble * 0.10);
   }
-  if (uTwist > 0.001 && uPreset < 0.5) {
+  if (uTwist > 0.001 && (uPreset < 0.5 || uPreset > 6.5)) {
     float ta = uTwist * pos.z * 0.6;
     float cs = cos(ta), sn = sin(ta);
     pos.xy = mat2(cs, -sn, sn, cs) * pos.xy;
   }
 
   // 颜色
-  float vinylHiResGuard = smoothstep(1.08, 1.55, uCoverRes) * step(3.5, uPreset) * (1.0 - step(4.5, uPreset));
+  float vinylHiResGuard = smoothstep(1.08, 1.55, uCoverRes) * step(3.5, uPreset) * (1.0 - step(4.5, uPreset)) * (1.0 - step(6.5, uPreset));
   float edgeBoost = uEdgeEnabled * edgeVal * mix(1.0, 0.42, vinylHiResGuard);
   vSourceLum = dot(max(vColor, vec3(0.0)), vec3(0.299, 0.587, 0.114));
   float blackParticleGuard = 1.0 - smoothstep(0.025, 0.115, vSourceLum);
-  vEdgeBoost = edgeBoost * (uPreset > 3.5 ? 0.22 : 1.0) * (1.0 - blackParticleGuard);
+  vEdgeBoost = edgeBoost * (uPreset > 3.5 && uPreset < 6.5 ? 0.22 : 1.0) * (1.0 - blackParticleGuard);
   vColor = pow(max(vColor, vec3(0.0)), vec3(1.0 / max(0.35, uColorBoost)));
-  float edgeColorMix = edgeBoost * (uPreset > 3.5 ? 0.20 : 0.50) * (1.0 - blackParticleGuard);
+  float edgeColorMix = edgeBoost * (uPreset > 3.5 && uPreset < 6.5 ? 0.20 : 0.50) * (1.0 - blackParticleGuard);
   vColor = mix(vColor, vColor + vec3(0.20), edgeColorMix);
   float tintLum = max(max(vColor.r, vColor.g), vColor.b);
   vec3 tintedColor = uTintColor * max(0.24, tintLum * 1.12);
@@ -6339,14 +6339,14 @@ void main(){
   vColor = mix(vColor, vec3(1.0), uBeat * 0.25);
 
   vBright = 0.82 + maxRippleAmp * 0.55 + uBass * 0.10 + edgeBoost * 0.30 + uEnergy * 0.05 + uBurstAmt * 0.40;
-  if (uPreset > 4.5) {
+  if (uPreset > 4.5 && uPreset < 6.5) {
     vBright = 0.94 + maxRippleAmp * 0.34 + uBass * 0.020 + uEnergy * 0.026 + uBurstAmt * 0.025;
-  } else if (uPreset > 3.5) {
+  } else if (uPreset > 3.5 && uPreset < 6.5) {
     vBright = 0.94 + maxRippleAmp * 0.64 + uBass * 0.08 + edgeBoost * 0.12 + uEnergy * 0.05 + uBeat * 0.16 + uBurstAmt * 0.16;
   }
   vRipple = clamp(maxRippleAmp * 1.5, 0.0, 1.0);
 
-  if (uHasDepth > 0.5 && uPreset < 0.5) {
+  if (uHasDepth > 0.5 && (uPreset < 0.5 || uPreset > 6.5)) {
     float bgMul = mix(1.0, 0.55, uBgFade * (1.0 - fgMask));
     vBright *= bgMul;
   }
@@ -6393,10 +6393,10 @@ void main(){
   float depthSize = 36.0 / max(0.5, -mvPos.z);
   float audioBoost = 1.0 + maxRippleAmp * 0.7 + edgeBoost * 0.55 + uBeat * 0.30 + uBurstAmt * 0.5;
   float sz = clamp(depthSize * audioBoost, 1.05, 4.95);
-  if (uPreset > 4.5) {
+  if (uPreset > 4.5 && uPreset < 6.5) {
     float flowDrive = uBass * 0.070 + uMid * 0.046 + uTreble * 0.060 + uBurstAmt * 0.090 + uBeat * 0.055;
     sz = clamp(depthSize * (1.05 + flowDrive), 1.00, 5.45);
-  } else if (uPreset > 3.5) {
+  } else if (uPreset > 3.5 && uPreset < 6.5) {
     float ringDrive = uBass * 0.30 + uMid * 0.18 + uTreble * 0.22 + uBeat * 0.30;
     sz = clamp(depthSize * (0.90 + ringDrive * 0.62), 1.05, 3.90);
   }
@@ -6476,6 +6476,236 @@ particles.frustumCulled = false;
 particles.renderOrder = 1;
 scene.add(particles);
 console.log('v7 shell loaded, JS pending');
+
+// ============================================================
+//  Ribbon Layer (星河丝带层 — Emily/SILK 预设下叠加)
+// ============================================================
+var RIBBON_COUNT = 15000;
+var ribbonGroup = null;
+var ribbonOpacity = 0;
+var _ribbonActive = false;
+
+function createRibbonLayer() {
+  if (ribbonGroup) return ribbonGroup;
+  var rGeo = new THREE.BufferGeometry();
+  var rPositions = new Float32Array(RIBBON_COUNT * 3);
+  var rUvs = new Float32Array(RIBBON_COUNT * 2);
+  var rRands = new Float32Array(RIBBON_COUNT);
+  for (var i = 0; i < RIBBON_COUNT; i++) {
+    rPositions[i*3] = 0; rPositions[i*3+1] = 0; rPositions[i*3+2] = 0;
+    rUvs[i*2] = Math.random(); rUvs[i*2+1] = Math.random();
+    rRands[i] = Math.random();
+  }
+  rGeo.setAttribute('position', new THREE.BufferAttribute(rPositions, 3));
+  rGeo.setAttribute('aUv', new THREE.BufferAttribute(rUvs, 2));
+  rGeo.setAttribute('aRand', new THREE.BufferAttribute(rRands, 1));
+
+  var ribbonVs = [
+    'precision highp float;',
+    'uniform float uTime, uBass, uMid, uTreble, uBeat, uEnergy, uBurstAmt;',
+    'uniform float uPixel, uPointScale;',
+    'uniform sampler2D uCoverTex;',
+    'uniform float uHasCover;',
+    'attribute vec2 aUv;',
+    'attribute float aRand;',
+    'varying vec3 vColor;',
+    'varying float vBright, vAlpha;',
+    '',
+    'vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}',
+    'vec4 mod289v(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}',
+    'vec4 perm(vec4 x){return mod289v(((x*34.0)+1.0)*x);}',
+    'float snoise(vec3 v){',
+    '  const vec2 C=vec2(1.0/6.0,1.0/3.0);',
+    '  const vec4 D=vec4(0.0,0.5,1.0,2.0);',
+    '  vec3 i=floor(v+dot(v,C.yyy));',
+    '  vec3 x0=v-i+dot(i,C.xxx);',
+    '  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g;',
+    '  vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);',
+    '  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;',
+    '  i=mod289(i);',
+    '  vec4 p=perm(perm(perm(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));',
+    '  float n_=0.142857142857;',
+    '  vec3 ns=n_*D.wyz-D.xzx;',
+    '  vec4 j=p-49.0*floor(p*ns.z*ns.z);',
+    '  vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);',
+    '  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy;',
+    '  vec4 h=1.0-abs(x)-abs(y);',
+    '  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);',
+    '  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0;',
+    '  vec4 sh=-step(h,vec4(0.0));',
+    '  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;',
+    '  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);',
+    '  vec4 norm=inversesqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));',
+    '  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;',
+    '  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);',
+    '  m=m*m;',
+    '  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));',
+    '}',
+    'float hash11(float p){return fract(sin(p*127.1)*43758.5453123);}',
+    '',
+    '#define PI 3.14159265359',
+    '',
+    'void main() {',
+    '  float t = uTime;',
+    '  float bassGlow = smoothstep(0.07, 0.78, uBass) * 0.34 + uBeat * 0.014;',
+    '  float highGlow = smoothstep(0.04, 0.46, uTreble) * 0.46;',
+    '',
+    '  // ====== 行星环分布：4条同心环带 ======',
+    '  float ringSel = aUv.y;',
+    '  float ringIdx = floor(ringSel * 4.0);',
+    '  float ringLocal = fract(ringSel * 4.0);',
+    '  float seed = hash11(ringIdx * 19.17 + aRand * 31.0);',
+    '',
+    '  float ringRadius;',
+    '  if (ringIdx < 0.5) ringRadius = 4.2;',
+    '  else if (ringIdx < 1.5) ringRadius = 6.5;',
+    '  else if (ringIdx < 2.5) ringRadius = 8.8;',
+    '  else ringRadius = 11.2;',
+    '',
+    '  // 环带内径向散布 + 微噪声偏移',
+    '  float radialWidth = 0.55 + ringIdx * 0.08;',
+    '  float radialNoise = snoise(vec3(ringIdx * 3.0, ringLocal * 5.0, t * 0.02)) * 0.22;',
+    '  float radialOffset = (ringLocal - 0.5) * radialWidth * 2.0 + radialNoise;',
+    '  float radius = ringRadius + radialOffset + seed * 0.35;',
+    '',
+    '  // 轨道运动',
+    '  float baseAngle = aUv.x * 6.28318;',
+    '  float orbitSpeed = 0.14 - ringIdx * 0.018;',
+    '  float angle = baseAngle + t * orbitSpeed;',
+    '',
+    '  float cx = cos(angle) * radius;',
+    '  float cz = sin(angle) * radius;',
+    '',
+    '  // 极薄环面 + 微波动',
+    '  float yBase = (aRand - 0.5) * 0.45;',
+    '  float yWave = sin(angle * 3.0 + seed * 18.0 + t * 0.25) * 0.10;',
+    '  float y = yBase + yWave;',
+    '',
+    '  // 环带密度峰(ridge) — 环带中心最密',
+    '  float bandCenterDist = abs(radialOffset) / max(0.01, radialWidth);',
+    '  float ridge = exp(-pow(bandCenterDist * 2.2, 2.0));',
+    '  ridge = ridge * 0.6 + 0.4;',
+    '',
+    '  // 轨道相位脉冲',
+    '  float ribbonPhase = angle * (2.0 + ringIdx * 0.5) + t * 0.3 + seed * 8.0;',
+    '  float broadWave = sin(ribbonPhase) * 0.15;',
+    '  float pulseLine = 0.5 + 0.5 * sin(ribbonPhase * 2.5 + seed * 6.0);',
+    '',
+    '  vec3 pos = vec3(cx, y + broadWave, cz);',
+    '',
+    '  // E: 重拍扩散波',
+    '  float beatKick = smoothstep(0.50, 0.92, uBeat);',
+    '  float expansion = 1.0 + beatKick * 0.25;',
+    '  pos *= expansion;',
+    '',
+    '  // ====== 颜色 ======',
+    '  // 内环偏暖(金)，外环偏冷(蓝紫)',
+    '  float ringN = clamp(ringIdx / 3.0, 0.0, 1.0);',
+    '  vec3 aurora = mix(vec3(0.62, 0.80, 1.0), vec3(0.50, 0.55, 0.95), ringN);',
+    '  aurora = mix(aurora, vec3(0.96, 0.98, 0.92), bassGlow * 0.04);',
+    '',
+    '  vec3 goldEdge = vec3(1.0, 0.78, 0.22);',
+    '  float goldMix = smoothstep(0.30, 0.75, ridge) * (0.28 + beatKick * 0.38);',
+    '  aurora = mix(aurora, goldEdge, goldMix);',
+    '',
+    '  vec3 coverColor = mix(vec3(0.42), texture2D(uCoverTex, aUv).rgb, uHasCover);',
+    '  vColor = mix(coverColor, aurora, 0.58 + ridge * 0.26) * (0.72 + ridge * 0.82 + pulseLine * highGlow * 0.04 + bassGlow * 0.03);',
+    '',
+    '  vAlpha = (0.38 + ridge * 0.72 + pulseLine * highGlow * 0.030 + bassGlow * 0.022) * 0.88;',
+    '',
+    '  // I: 星光闪烁',
+    '  float flickerFreq = 3.5 + aRand * 9.0;',
+    '  float flicker = 0.70 + 0.30 * sin(t * flickerFreq + aRand * 77.0);',
+    '  vAlpha *= flicker;',
+    '  vAlpha += beatKick * 0.16;',
+    '',
+    '  vBright = 1.18 + ridge * 0.30 + uBass * 0.018 + uEnergy * 0.022 + uBurstAmt * 0.022;',
+    '  vBright += beatKick * 0.50;',
+    '',
+    '  vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);',
+    '  float depthSize = 48.0 / max(0.5, -mvPos.z);',
+    '  float flowDrive = uBass * 0.070 + uMid * 0.046 + uTreble * 0.060 + uBurstAmt * 0.090 + uBeat * 0.055;',
+    '  float sz = clamp(depthSize * (1.20 + flowDrive), 1.50, 8.00);',
+    '  sz *= 1.0 + beatKick * 0.65;',
+    '  gl_PointSize = sz * uPixel * uPointScale;',
+    '  gl_Position = projectionMatrix * mvPos;',
+    '}'
+  ].join('\n');
+
+  var ribbonFs = [
+    'precision highp float;',
+    'uniform sampler2D uDotTex;',
+    'varying vec3 vColor;',
+    'varying float vBright, vAlpha;',
+    'void main() {',
+    '  vec4 tex = texture2D(uDotTex, gl_PointCoord);',
+    '  if (tex.a < 0.02) discard;',
+    '  vec3 col = vColor * vBright;',
+    '  col = clamp(col, vec3(0.0), vec3(2.0));',
+    '  gl_FragColor = vec4(col, tex.a * vAlpha * 0.85);',
+    '}'
+  ].join('\n');
+
+  var ribbonUniforms = {
+    uTime: { value: 0 },
+    uBass: { value: 0 }, uMid: { value: 0 }, uTreble: { value: 0 },
+    uBeat: { value: 0 }, uEnergy: { value: 0 }, uBurstAmt: { value: 0 },
+    uPixel: { value: renderer.getPixelRatio() },
+    uPointScale: { value: 1.0 },
+    uCoverTex: { value: coverTex },
+    uHasCover: { value: 0 },
+    uDotTex: { value: dotTexture },
+  };
+
+  var ribbonMat = new THREE.ShaderMaterial({
+    uniforms: ribbonUniforms,
+    vertexShader: ribbonVs,
+    fragmentShader: ribbonFs,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  ribbonGroup = new THREE.Points(rGeo, ribbonMat);
+  ribbonGroup.frustumCulled = false;
+  ribbonGroup.renderOrder = 2;
+  ribbonGroup.visible = false;
+  scene.add(ribbonGroup);
+  return ribbonGroup;
+}
+
+function updateRibbonLayer(dt) {
+  var isSILK = !!(fx && Number(fx.preset) === 7);
+  if (isSILK && !ribbonGroup) createRibbonLayer();
+  if (!ribbonGroup) return;
+
+  var target = isSILK ? 1.0 : 0.0;
+  ribbonOpacity += (target - ribbonOpacity) * Math.min(1, dt * (isSILK ? 2.0 : 3.0));
+
+  if (ribbonOpacity < 0.005 && !isSILK) {
+    ribbonGroup.visible = false;
+    _ribbonActive = false;
+    return;
+  }
+  ribbonGroup.visible = true;
+  _ribbonActive = true;
+
+  var ru = ribbonGroup.material.uniforms;
+  ru.uTime.value = uniforms.uTime.value;
+  ru.uBass.value = uniforms.uBass.value;
+  ru.uMid.value = uniforms.uMid.value;
+  ru.uTreble.value = uniforms.uTreble.value;
+  ru.uBeat.value = uniforms.uBeat.value;
+  ru.uEnergy.value = uniforms.uEnergy.value;
+  ru.uBurstAmt.value = uniforms.uBurstAmt.value;
+  ru.uPixel.value = renderer.getPixelRatio();
+  ru.uPointScale.value = uniforms.uPointScale.value;
+  ru.uHasCover.value = uniforms.uHasCover.value;
+  ru.uCoverTex.value = uniforms.uCoverTex.value;
+}
+
+
 
 // ============================================================
 //  浮空粒子层 (独立 Points)
@@ -12927,7 +13157,7 @@ function canShowShelfHoverCueAt(e) {
   if (!shelfManager || !shelfManager.getMode || shelfManager.getMode() !== 'side') return false;
   if (shelfPinnedOpen) return false;
   if (shelfManager.hasOpenContent && shelfManager.hasOpenContent()) return false;
-  if (isPointerOverUi(e)) return false;
+  if (isPointerOverUi(e) || isFxPanelVisible()) return false;
   if (isShelfClickZone(e)) return true;
   return shelfPreviewIsVisible() && isShelfPreviewUseZone(e);
 }
@@ -14889,15 +15119,20 @@ function pointerCardHit(rc, e, screenPad) {
 }
 function isSideShelfFocusHit(e) {
   if (!e || !shelfManager || !shelfManager.getMode || shelfManager.getMode() !== 'side') return false;
+  if (isFxPanelVisible()) return false;
   if (shelfPinnedOpen) return true;
   if (shelfAlwaysVisible()) return !!pointerCardHit(raycasterFromPointerEvent(e), e, 18);
   if (!shelfAutoHiddenInputReady()) return false;
   if (shelfVisibility > 0.34 && (isShelfClickZone(e) || isShelfPreviewUseZone(e))) return true;
   return !!(shelfPreviewIsVisible() && pointerCardHit(raycasterFromPointerEvent(e), e, 24));
 }
+function isFxPanelVisible() {
+  var fp = document.getElementById('fx-panel');
+  return !!(fp && (fp.classList.contains('show') || fp.classList.contains('peek')));
+}
 function updateShelfCardHoverSelection(e) {
   if (!shelfManager || !shelfManager.clearSelected || !shelfManager.setSelected) return;
-  if (!e || document.body.classList.contains('splash-active') || isPointerOverUi(e)) {
+  if (!e || document.body.classList.contains('splash-active') || isPointerOverUi(e) || isFxPanelVisible()) {
     shelfManager.clearSelected();
     return;
   }
@@ -14942,7 +15177,7 @@ function isShelfPlaylistPlayHit(hit) {
 renderer.domElement.addEventListener('click', function(e){
   if (!shelfManager || shelfManager.getMode() === 'off') return;
   if (document.body.classList.contains('splash-active')) return;
-  if (isPointerOverUi(e)) return;
+  if (isPointerOverUi(e) || isFxPanelVisible()) return;
   if (mouseDownAt.hadDrag) { mouseDownAt.hadDrag = false; return; }
 
   var rc = raycasterFromPointerEvent(e);
@@ -15060,7 +15295,7 @@ function _shelfWheelFlush(){
 }
 renderer.domElement.addEventListener('wheel', function(e){
   if (!_shelfIsDarwin) _shelfIsDarwin = document.body.classList.contains('platform-darwin');
-  if (isPointerOverUi(e)) return;
+  if (isPointerOverUi(e) || isFxPanelVisible()) return;
   if (!shelfManager || shelfManager.getMode() === 'off') return;
   markRenderInteraction('shelf-wheel', 900);
   var rc = raycasterFromPointerEvent(e);
@@ -20212,6 +20447,7 @@ var presetMeta = [
   { name: '唱片', desc: '唱片 · 圆形封面' },
   { name: '星河', desc: '壁纸粒子 · 音乐律动' },
   { name: '安魂', desc: '骷髅·YUI7W', descHtml: '骷髅·<span class="pc-yui7w">YUI7W</span>' },
+  { name: 'Emily粒子专辑+行星环', desc: '双倍粒子·双倍快乐' },
 ];
 var presetIcons = [
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14c3-2 5-2 8 0s5 2 8 0M3 10c3-2 5-2 8 0s5 2 8 0M3 18c3-2 5-2 8 0s5 2 8 0"/></svg>',
@@ -20221,8 +20457,9 @@ var presetIcons = [
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><path d="M16.5 5.2c2.1.9 3.4 2.4 4 4.5"/><path d="M18.8 3.2l1.5 4.8"/></svg>',
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15c2.2-4.4 4.4-4.4 6.6 0s4.4 4.4 6.6 0S20.6 10.6 23 15"/><path d="M3 9c2.2 2.2 4.4 2.2 6.6 0s4.4-2.2 6.6 0S20.6 11.2 23 9"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/></svg>',
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.2h4v6.2h4.2v3.8H14v7.6h-4v-7.6H5.8V9.4H10z"/></svg>',
+  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17" opacity=".45"/><circle cx="12" cy="8" r="1.8" fill="currentColor"/><circle cx="15.5" cy="11" r="1.2" fill="currentColor"/><circle cx="9" cy="14" r="1.4" fill="currentColor"/><circle cx="14" cy="16" r="1" fill="currentColor"/></svg>',
 ];
-var presetDisplayOrder = [0, 6, 5, 4, 2, 1, 3];
+var presetDisplayOrder = [0, 7, 6, 5, 4, 2, 1, 3];
 var lyricColorPresets = [
   { name:'雾蓝', color:'#a9b8c8' },
   { name:'银蓝', color:'#9db8cf' },
@@ -21401,8 +21638,9 @@ function setPreset(p, opts) {
     else if (p === 4) { orbit.userRadius = 6.5; orbit.userPhi = 0.04; orbit.userTheta = 0.0; orbit.baselineRadius = 6.5; orbit.baselinePhi = 0.04; }
     else if (p === 5) { orbit.userRadius = 9.4; orbit.userPhi = 0.34; orbit.userTheta = -0.52; orbit.baselineRadius = 9.4; orbit.baselinePhi = 0.34; }
     else if (p === 6) { orbit.userRadius = 7.4; orbit.userPhi = 0.10; orbit.userTheta = 0.18; orbit.baselineRadius = 7.4; orbit.baselinePhi = 0.10; }
+    else if (p === 7) { orbit.userRadius = 8.5; orbit.userPhi = 0.25; orbit.userTheta = -0.20; orbit.baselineRadius = 8.5; orbit.baselinePhi = 0.25; }
     else              { orbit.userRadius = 6.6; orbit.userPhi = 0.08; orbit.userTheta = 0.0; orbit.baselineRadius = 6.6; orbit.baselinePhi = 0.08; }
-    orbit.baselineTheta = p === 5 ? -0.52 : (p === 6 ? 0.18 : 0.0);
+    orbit.baselineTheta = p === 5 ? -0.52 : (p === 6 ? 0.18 : (p === 7 ? -0.20 : 0.0));
   }
   if (changed && !opts.silent) showToast('视觉预设: ' + presetMeta[p].name);
   var shouldCommitPlaybackPreset = !!opts.commitPlaybackPreset || !opts.noSave;
@@ -25591,7 +25829,7 @@ window.addEventListener('mousemove', function(e){
     if (queueFocusImm) newFocusImm = 'queue';
     else if (shelfManager && shelfManager.hasOpenContent && shelfManager.hasOpenContent()) newFocusImm = 'shelf-detail';
     else if (shelfHoverFocusImm) newFocusImm = 'shelf-side';
-    else if (shelfCanFocusImm && shelfManager.getMode() === 'stage' && ey > H * 0.55) newFocusImm = 'shelf-stage';
+    else if (shelfCanFocusImm && !isFxPanelVisible() && shelfManager.getMode() === 'stage' && ey > H * 0.55) newFocusImm = 'shelf-stage';
     setFocusZone(newFocusImm, newFocusImm === 'queue');
     return;
   }
@@ -25643,7 +25881,7 @@ window.addEventListener('mousemove', function(e){
     newFocus = 'shelf-detail';
   } else if (shelfHoverFocus) {
     newFocus = 'shelf-side';
-  } else if (shelfCanFocus && shelfManager.getMode() === 'stage' && ey > H * 0.55) {
+  } else if (shelfCanFocus && !isFxPanelVisible() && shelfManager.getMode() === 'stage' && ey > H * 0.55) {
     newFocus = 'shelf-stage';
   }
   setFocusZone(newFocus, newFocus === 'queue');
@@ -26777,6 +27015,10 @@ function animate() {
   var dt = Math.min((now - prevTime) / 1000, 0.05);
   prevTime = now;
   uniforms.uTime.value += dt;
+
+  // 丝带层更新（星河丝带 — 仅在 SILK/Emily 预设下激活）
+  try { updateRibbonLayer(dt); } catch(e) {}
+
   // 壁纸模式：发送音频帧数据给壁纸窗口（节流 ~30fps）
   // 放在 skip 检查之前，确保窗口隐藏时壁纸仍能收到带时间推进的数据
   if (fx && fx.wallpaperMode && window.desktopWindow && typeof window.desktopWindow.sendWallpaperAudioFrame === 'function') {
@@ -27043,6 +27285,7 @@ function animate() {
   if (bloomParticles) bloomParticles.visible = !skullPresetActive && fx.bloom && fx.bloomStrength > 0.01;
   if (floatGroup) floatGroup.visible = !skullPresetActive;
   if (backCoverGroup) backCoverGroup.visible = !skullPresetActive;
+
   var targetRotY = orbit.centerLocked ? 0 : (headParallax.active ? headParallax.x * 0.5 : 0) + gestureRotation.y;
   var targetRotX = orbit.centerLocked ? 0 : (headParallax.active ? -headParallax.y * 0.35 : 0) + gestureRotation.x;
   particles.rotation.y += (targetRotY - particles.rotation.y) * 0.055;
