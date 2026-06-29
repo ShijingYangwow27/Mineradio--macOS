@@ -86,7 +86,10 @@ const UPDATE_FALLBACK_NOTES = [
 ];
 const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const OPEN_METEO_GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
-const WEATHER_IP_LOCATION_URL = 'http://ip-api.com/json/';
+const WEATHER_IP_LOCATION_URL_BILIBILI = 'https://api.bilibili.com/x/web-interface/zone';
+const WEATHER_IP_LOCATION_URL_TENCENT = 'https://apis.map.qq.com/ws/location/v1/ip';
+const WEATHER_TENCENT_KEY = '46HBZ-FHC6B-IUPUP-JZ3GI-MGLAJ-6ZBQK';
+const WEATHER_IP_LOCATION_URL_IPWHOIS = 'https://ipwho.is/';
 const WEATHER_DEFAULT_LOCATION = {
   name: '上海',
   country: 'China',
@@ -1937,16 +1940,66 @@ function buildWeatherMood(weather, date) {
   return mood;
 }
 
+const WEATHER_DIM_KEYWORDS = {
+  energy: {
+    high: ['摇滚', '电子 舞曲', '放克', 'punk', '动感 快歌'],
+    mid:  ['华语 流行', 'indie pop', 'city pop', '轻快'],
+    low:  ['慢歌', 'ballad', '抒情 慢板', '华语 慢歌'],
+  },
+  warmth: {
+    high: ['阳光', '温暖 民谣', 'bossa nova', 'acoustic 温暖', '夏日 阳光'],
+    mid:  ['华语 经典', '流行', 'indie'],
+    low:  ['冷色 电子', 'synth pop', 'trip hop', '暗黑 电子', 'dark pop'],
+  },
+  focus: {
+    high: ['post rock', 'dream pop', 'shoegaze', '后摇', '另类 摇滚'],
+    mid:  ['独立 民谣', 'singer songwriter', '唱作', 'indie folk'],
+    low:  ['chill pop', '轻快 流行', '放松 流行', '夏日 chill'],
+  },
+  melancholy: {
+    high: ['忧伤 华语', 'sad song', '心碎', '慢板 抒情', '伤感'],
+    mid:  ['怀旧', '复古 soul', '老歌 经典', 'soulful'],
+    low:  ['欢快', '正能量', '舞曲 快歌', '阳光 流行'],
+  },
+};
+
+function dimBucket(v) {
+  const x = Number(v);
+  if (!Number.isFinite(x)) return 'mid';
+  if (x >= 0.6) return 'high';
+  if (x < 0.4) return 'low';
+  return 'mid';
+}
+
 async function resolveOpenMeteoLocation(query) {
   const raw = String(query || '').trim();
   if (!raw) return WEATHER_DEFAULT_LOCATION;
-  const u = new URL(OPEN_METEO_GEOCODE_URL);
-  u.searchParams.set('name', raw);
-  u.searchParams.set('count', '1');
-  u.searchParams.set('language', 'zh');
-  u.searchParams.set('format', 'json');
-  const body = await requestJson(u.toString(), { headers: { 'User-Agent': UA } });
-  const first = body && Array.isArray(body.results) && body.results[0];
+
+  async function searchByName(name) {
+    const u = new URL(OPEN_METEO_GEOCODE_URL);
+    u.searchParams.set('name', name);
+    u.searchParams.set('count', '10');
+    u.searchParams.set('language', 'zh');
+    u.searchParams.set('format', 'json');
+    const body = await requestJson(u.toString(), { headers: { 'User-Agent': UA } });
+    const results = body && Array.isArray(body.results) ? body.results : [];
+    const populated = results.filter(r => String(r.feature_code || '').startsWith('PPL'));
+    return populated.length > 0 ? populated[0] : (results.length > 0 ? results[0] : null);
+  }
+
+  let first = await searchByName(raw);
+
+  if (first && (String(first.feature_code || '') === 'PK' || Number(first.elevation || 0) > 3000)) {
+    try {
+      const { pinyin } = require('pinyin-pro');
+      const py = pinyin(raw, { toneType: 'none' }).replace(/\s+/g, '');
+      if (py && py.toLowerCase() !== raw.toLowerCase()) {
+        const pyResult = await searchByName(py);
+        if (pyResult) first = pyResult;
+      }
+    } catch (e) {}
+  }
+
   if (!first) return { ...WEATHER_DEFAULT_LOCATION, query: raw, fallback: true };
   return {
     name: first.name || raw,
@@ -1972,7 +2025,25 @@ async function fetchOpenMeteoWeather(params) {
       timezone: params.timezone || 'auto',
     };
   } else {
-    location = await resolveOpenMeteoLocation(params.city || params.q || params.location);
+    const cityName = String(params.city || params.q || params.location || '').trim();
+    if (cityName) {
+      location = await resolveOpenMeteoLocation(cityName);
+    } else {
+      try {
+        const ipLoc = await fetchIpWeatherLocation();
+        location = {
+          name: ipLoc.city || '当前位置',
+          country: ipLoc.country || '',
+          admin1: ipLoc.region || '',
+          latitude: ipLoc.latitude,
+          longitude: ipLoc.longitude,
+          timezone: ipLoc.timezone || 'auto',
+        };
+      } catch (e) {
+        console.warn('[WeatherRadio] IP location failed, using default:', e.message);
+        location = WEATHER_DEFAULT_LOCATION;
+      }
+    }
   }
   const u = new URL(OPEN_METEO_FORECAST_URL);
   u.searchParams.set('latitude', String(location.latitude));
@@ -2011,26 +2082,91 @@ async function fetchOpenMeteoWeather(params) {
   return weather;
 }
 
-async function fetchIpWeatherLocation() {
-  const u = new URL(WEATHER_IP_LOCATION_URL);
-  u.searchParams.set('fields', 'status,message,country,regionName,city,lat,lon,timezone,query');
-  u.searchParams.set('lang', 'zh-CN');
+async function fetchIpLocationBilibili() {
+  const u = new URL(WEATHER_IP_LOCATION_URL_BILIBILI);
   const body = await requestJson(u.toString(), { headers: { 'User-Agent': UA } });
-  if (!body || body.status !== 'success' || !Number.isFinite(Number(body.lat)) || !Number.isFinite(Number(body.lon))) {
-    const err = new Error(body && body.message || 'IP_LOCATION_FAILED');
+  if (!body || body.code !== 0 || !body.data || !Number.isFinite(Number(body.data.latitude)) || !Number.isFinite(Number(body.data.longitude))) {
+    const err = new Error((body && body.message) || 'BILIBILI_FAILED');
     err.body = body;
     throw err;
   }
+  const d = body.data;
+  const city = d.city || d.province || WEATHER_DEFAULT_LOCATION.name;
   return {
-    provider: 'ip-api',
-    city: body.city || WEATHER_DEFAULT_LOCATION.name,
-    region: body.regionName || '',
-    country: body.country || '',
-    latitude: Number(body.lat),
-    longitude: Number(body.lon),
-    timezone: body.timezone || 'auto',
-    ip: body.query || '',
+    provider: 'bilibili',
+    city: city,
+    region: d.province || '',
+    country: d.country || '中国',
+    latitude: Number(d.latitude),
+    longitude: Number(d.longitude),
+    timezone: 'auto',
+    ip: d.addr || '',
   };
+}
+
+async function fetchIpLocationTencent() {
+  const u = new URL(WEATHER_IP_LOCATION_URL_TENCENT);
+  u.searchParams.set('key', WEATHER_TENCENT_KEY);
+  const body = await requestJson(u.toString(), { headers: { 'User-Agent': UA } });
+  if (!body || body.status !== 0 || !body.result || !body.result.location || !Number.isFinite(Number(body.result.location.lat)) || !Number.isFinite(Number(body.result.location.lng))) {
+    const err = new Error((body && body.message) || 'TENCENT_FAILED');
+    err.body = body;
+    throw err;
+  }
+  const ad = body.result.ad_info || {};
+  const loc = body.result.location;
+  const city = ad.district || ad.city || ad.province || WEATHER_DEFAULT_LOCATION.name;
+  return {
+    provider: 'tencent',
+    city: city,
+    region: ad.province || '',
+    country: ad.nation || '中国',
+    latitude: Number(loc.lat),
+    longitude: Number(loc.lng),
+    timezone: 'auto',
+    ip: body.result.ip || '',
+  };
+}
+
+async function fetchIpLocationIpwhois() {
+  const u = new URL(WEATHER_IP_LOCATION_URL_IPWHOIS);
+  const body = await requestJson(u.toString(), { headers: { 'User-Agent': UA } });
+  if (!body || body.success !== true || !Number.isFinite(Number(body.latitude)) || !Number.isFinite(Number(body.longitude))) {
+    const err = new Error((body && body.message) || 'IPWHOIS_FAILED');
+    err.body = body;
+    throw err;
+  }
+  const tz = body.timezone && typeof body.timezone === 'object' ? body.timezone.id : body.timezone;
+  const city = body.city || body.region || WEATHER_DEFAULT_LOCATION.name;
+  return {
+    provider: 'ipwho.is',
+    city: city,
+    region: body.region || '',
+    country: body.country || '',
+    latitude: Number(body.latitude),
+    longitude: Number(body.longitude),
+    timezone: tz || 'auto',
+    ip: body.ip || '',
+  };
+}
+
+async function fetchIpWeatherLocation() {
+  const providers = [
+    ['bilibili', fetchIpLocationBilibili],
+    ['tencent', fetchIpLocationTencent],
+    ['ipwho.is', fetchIpLocationIpwhois],
+  ];
+  for (const [name, fn] of providers) {
+    try {
+      const loc = await fn();
+      if (loc && Number.isFinite(loc.latitude) && Number.isFinite(loc.longitude)) return loc;
+    } catch (e) {
+      console.warn('[WeatherIpLocation] ' + name + ' failed:', e.message);
+    }
+  }
+  const err = new Error('IP_LOCATION_ALL_FAILED');
+  err.fallback = true;
+  throw err;
 }
 
 function weatherRadioSeedQueries(mood) {
@@ -2040,6 +2176,29 @@ function weatherRadioSeedQueries(mood) {
   if (key.includes('humid')) return ['落日飞车 My Jinji', '告五人 爱人错过', '夏日入侵企画 想去海边', '陈绮贞 旅行的意义', '王若琳 Lost in Paradise'];
   if (key.includes('night')) return ['方大同 特别的人', '陶喆 爱很简单', 'Frank Ocean Pink + White', '林忆莲 夜太黑', "Norah Jones Don't Know Why"];
   return ['孙燕姿 天黑黑', '周杰伦 晴天', '五月天 温柔', '陈奕迅 稳稳的幸福', '王菲'];
+}
+
+function buildWeatherSeedQueries(mood) {
+  const out = [];
+  const seen = new Set();
+  function push(kw) {
+    const s = String(kw || '').trim();
+    if (!s || seen.has(s)) return;
+    seen.add(s);
+    out.push(s);
+  }
+  if (mood && typeof mood === 'object') {
+    ['energy', 'warmth', 'focus', 'melancholy'].forEach(function (dim) {
+      const bucket = dimBucket(mood[dim]);
+      const words = WEATHER_DIM_KEYWORDS[dim] && WEATHER_DIM_KEYWORDS[dim][bucket];
+      (words || []).forEach(push);
+    });
+    (mood.keywords || []).forEach(push);
+  }
+  if (out.length < 4) {
+    weatherRadioSeedQueries(mood).forEach(push);
+  }
+  return out.slice(0, 8);
 }
 
 function fallbackWeatherForRadio(params, err) {
@@ -2122,6 +2281,41 @@ async function fetchWeatherPlaylistSongs(playlist, limit) {
   return rawTracks.map(mapSongRecord).filter(song => song.id && song.name).slice(0, limit || 36);
 }
 
+async function searchWeatherPlaylists(mood, limit) {
+  const out = [];
+  if (!mood || typeof mood !== 'object') return out;
+  const queries = (mood.keywords || []).slice(0, 2);
+  if (!queries.length) return out;
+  const target = limit || 12;
+  try {
+    const settled = await Promise.allSettled(queries.map(q => cloudsearch({
+      keywords: q, type: 1000, limit: 2, cookie: userCookie, timestamp: Date.now()
+    })));
+    const seen = new Set();
+    const playlists = [];
+    settled.forEach(r => {
+      if (r.status !== 'fulfilled' || !r.value) return;
+      const result = (r.value.body && r.value.body.result) || {};
+      const raw = result.playlists || result.playlist || [];
+      (Array.isArray(raw) ? raw : []).forEach(pl => {
+        const mapped = mapDiscoverPlaylist(pl, 'weather');
+        if (mapped.id && !seen.has(mapped.id)) {
+          seen.add(mapped.id);
+          playlists.push(mapped);
+        }
+      });
+    });
+    for (const pl of playlists.slice(0, 2)) {
+      if (out.length >= target) break;
+      const songs = await fetchWeatherPlaylistSongs(pl, Math.min(10, target - out.length));
+      out.push(...tagWeatherPoolSongs(songs, 'playlist'));
+    }
+  } catch (e) {
+    console.warn('[WeatherRadio] searchWeatherPlaylists failed:', e.message);
+  }
+  return out;
+}
+
 async function filterLikelyPlayableWeatherSongs(songs) {
   const source = uniqueSongsByKey(songs)
     .filter(song => song && song.name && song.id && !isLowSignalWeatherSong(song))
@@ -2166,13 +2360,55 @@ function scoreWeatherSong(song, mood) {
   if (song && song.duration) score += 2;
   if (song && song.weatherSource === 'daily') score += 6;
   if (song && song.weatherSource === 'private') score += 4;
-  if (/周杰伦|陈奕迅|孙燕姿|五月天|王菲|陶喆|方大同|林宥嘉|蔡健雅|莫文蔚|李健|毛不易|告五人|落日飞车|陈绮贞|朴树/.test(text)) score += 10;
+  if (song && song.weatherSource === 'playlist') score += 5;
+  if (mood && typeof mood === 'object') {
+    const eB = dimBucket(mood.energy), wB = dimBucket(mood.warmth);
+    const fB = dimBucket(mood.focus), mB = dimBucket(mood.melancholy);
+    if (eB === 'high' && /摇滚|rock|舞曲|dance|快|fast|upbeat|动感|punk|电子/.test(text)) score += 4;
+    if (eB === 'low' && /慢|slow|ballad|抒情|安静|soft|quiet/.test(text)) score += 4;
+    if (wB === 'high' && /暖|warm|阳光|sun|夏|summer|晴|bright/.test(text)) score += 3;
+    if (wB === 'low' && /冷|cold|暗|dark|阴|夜|night|cool/.test(text)) score += 3;
+    if (fB === 'high' && /后摇|post rock|dream|shoegaze|另类|alternative/.test(text)) score += 3;
+    if (mB === 'high' && /伤|sad|心碎|break|泪|哭|孤独|lonely|忧郁|blue/.test(text)) score += 4;
+    if (mB === 'low' && /快乐|happy|阳光|sunshine|欢/.test(text)) score += 3;
+  }
   const key = String(mood && mood.key || '');
-  if (key.includes('rain') && /雨|阴|夜|慢|r&b|soul|陈奕迅|林宥嘉|孙燕姿/.test(text)) score += 5;
-  if (key.includes('humid') && /夏|海|city|pop|落日|告五人|方大同|陶喆/.test(text)) score += 5;
-  if (key.includes('night') && /夜|moon|jazz|soul|r&b|方大同|陶喆|王菲/.test(text)) score += 5;
-  if (key.includes('cloudy') && /阴|民谣|indie|陈绮贞|朴树|李健/.test(text)) score += 5;
+  if (/周杰伦|陈奕迅|孙燕姿|五月天|王菲|陶喆|方大同|林宥嘉|蔡健雅|莫文蔚|李健|毛不易|告五人|落日飞车|陈绮贞|朴树/.test(text)) score += 6;
+  if (key.includes('rain') && /雨|阴|夜|慢|r&b|soul|陈奕迅|林宥嘉|孙燕姿/.test(text)) score += 4;
+  if (key.includes('humid') && /夏|海|city|pop|落日|告五人|方大同|陶喆/.test(text)) score += 4;
+  if (key.includes('night') && /夜|moon|jazz|soul|r&b|方大同|陶喆|王菲/.test(text)) score += 4;
+  if (key.includes('cloudy') && /阴|民谣|indie|陈绮贞|朴树|李健/.test(text)) score += 4;
   return score;
+}
+
+function buildMatchReason(song, mood) {
+  const text = String((song && song.name || '') + ' ' + (song && song.artist || '') + ' ' + (song && song.album || '')).toLowerCase();
+  const tags = [];
+  if (mood && typeof mood === 'object') {
+    const eB = dimBucket(mood.energy), wB = dimBucket(mood.warmth);
+    const mB = dimBucket(mood.melancholy);
+    if (eB === 'high' && /摇滚|rock|舞曲|dance|快|fast|upbeat|动感|punk|电子/.test(text)) tags.push('高能量');
+    if (eB === 'low' && /慢|slow|ballad|抒情|安静|soft|quiet/.test(text)) tags.push('慢板');
+    if (wB === 'high' && /暖|warm|阳光|sun|夏|summer|晴|bright/.test(text)) tags.push('暖调');
+    if (wB === 'low' && /冷|cold|暗|dark|阴|夜|night|cool/.test(text)) tags.push('冷调');
+    if (mB === 'high' && /伤|sad|心碎|break|泪|哭|孤独|lonely|忧郁|blue/.test(text)) tags.push('感伤');
+    if (mB === 'low' && /快乐|happy|阳光|sunshine|欢/.test(text)) tags.push('明朗');
+    const key = String(mood.key || '');
+    if (key.includes('rain') && /雨|阴|夜|慢|r&b|soul/.test(text)) tags.push('雨夜氛围');
+    if (key.includes('humid') && /夏|海|city|pop/.test(text)) tags.push('夏日');
+    if (key.includes('night') && /夜|moon|jazz|soul|r&b/.test(text)) tags.push('深夜');
+    if (key.includes('cloudy') && /阴|民谣|indie/.test(text)) tags.push('阴天');
+    if (song && song.weatherSource === 'playlist') tags.push('歌单池');
+  }
+  if (!tags.length) {
+    if (mood && mood.title) tags.push(mood.title.replace('电台', ''));
+    else tags.push('匹配推荐');
+  }
+  return tags.slice(0, 3).join(' · ');
+}
+
+function annotateMatchReasons(songs, mood) {
+  return (songs || []).map(song => ({ ...song, matchReason: buildMatchReason(song, mood) }));
 }
 
 function weatherArtistKey(song) {
@@ -2232,12 +2468,22 @@ async function buildWeatherRadio(params) {
     console.warn('[WeatherRadio] weather provider failed, using fallback radio:', e.message);
     weather = fallbackWeatherForRadio(params, e);
   }
-  const queries = weatherRadioSeedQueries(weather.mood);
+  const queries = buildWeatherSeedQueries(weather.mood);
+  const [settled, poolSongs] = await Promise.all([
+    Promise.allSettled(queries.slice(0, 4).map(q => handleSearch(q, 6))),
+    Promise.race([
+      searchWeatherPlaylists(weather.mood, 12).catch(function (e) {
+        console.warn('[WeatherRadio] playlist pool failed:', e && e.message);
+        return [];
+      }),
+      new Promise(function (resolve) { setTimeout(function () { resolve([]); }, 6000); }),
+    ]),
+  ]);
   let songs = [];
-  const settled = await Promise.allSettled(queries.slice(0, 4).map(q => handleSearch(q, 6)));
   settled.forEach(result => {
     if (result.status === 'fulfilled' && Array.isArray(result.value)) songs = songs.concat(result.value);
   });
+  songs = songs.concat(poolSongs);
   if (songs.length < 10 && weather.mood && Array.isArray(weather.mood.keywords)) {
     const more = await Promise.allSettled(weather.mood.keywords.slice(0, 2).map(q => handleSearch(q, 6)));
     more.forEach(result => {
@@ -2245,6 +2491,7 @@ async function buildWeatherRadio(params) {
     });
   }
   songs = orderWeatherSongs(songs, weather.mood);
+  songs = annotateMatchReasons(songs, weather.mood);
   return {
     ok: true,
     weather,

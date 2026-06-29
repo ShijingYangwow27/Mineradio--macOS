@@ -14,6 +14,10 @@
 - **Emily粒子专辑+行星环preste7**：双倍粒子，双倍快乐，视觉冲击更强！
 - **macOS 菜单栏托盘**：MR 图标，单击打开窗口，右键菜单支持打开 / 退出
 - **UI 清理**：移除壁纸模式 badge overlay，提升画面纯净度
+- **天气电台多级定位**：IP 定位采用三级 fallback 链（B站免 key 接口 → 腾讯位置服务 → ipwho.is），任一接口失败自动降级，定位不依赖系统 GPS 授权，无需弹授权框
+- **天气电台中文搜索优化**：Open-Meteo 中文城市搜索偶尔偏差（如"凯里"匹配到西藏山峰），现通过 `pinyin-pro` 自动转拼音后重新搜索，准确匹配国内城市
+- **左侧队列触发区缩小**：队列面板鼠标唤醒边界从 64px 收窄到 8px，贴左边缘才触发，避免日常操作误触（类似 macOS Dock 行为）
+- **换城市按钮移除**：定位精度已足够，精简 UI，仅保留"重新定位"按钮
 
 ***
 
@@ -24,7 +28,7 @@
 - 网易云音乐完整接入：搜索、扫码登录、歌单、播客、歌词、红心、收藏
 - QQ 音乐接入：搜索、登录、歌单、歌词、歌手详情、评论
 - 多音质支持：超清母带 / 高清臻音 / 无损 SQ / 极高 HQ / 标准
-- 天气电台：基于 Open-Meteo 天气数据 + IP 定位，根据天气 mood 智能推荐音乐
+- 天气电台：基于 Open-Meteo 天气数据 + 三级 IP 定位（B站免 key → 腾讯位置服务 → ipwho.is），根据天气 mood 智能推荐音乐；中文城市名拼音 fallback，避免定位偏差
 
 **沉浸视觉**
 
@@ -132,7 +136,7 @@ Mineradio- macOS/
 | 动画引擎   | GSAP                         |
 | 节奏分析   | music-tempo + 自研 dj-analyzer |
 | 音乐 API | NeteaseCloudMusicApi         |
-| 天气 API | Open-Meteo                   |
+| 天气 API | Open-Meteo + B站 IP 定位 + 腾讯位置服务 + ipwho.is（三级 fallback）                   |
 | 前端     | 纯 HTML / CSS / JS（无框架）       |
 | 构建打包   | electron-builder             |
 
