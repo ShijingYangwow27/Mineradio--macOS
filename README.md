@@ -2,22 +2,27 @@
 
 沉浸式桌面音乐播放器，融合天气电台、歌词舞台、粒子视觉和 3D 歌单架，打造属于你的私人音乐空间。
 
-> 当前版本：**v1.1.1 **|  平台：**macOS（Apple Silicon / Intel）**  |  许可证：**GPL-3.0**
+> 当前版本：v1.1.1 |  平台：**macOS（Apple Silicon / Intel）**  |  许可证：**GPL-3.0**
 
 ***
 
 ## 近期更新
 
+- **自由镜头存档同步**：用户视觉存档（预设）现在包含自由镜头参数（position、yaw、pitch、roll、fov、active、locked），保存预设时同步当前镜头状态，应用预设时恢复镜头位置
+- **固定局内热键说明**：热键设置弹窗副标题补充固定热键说明（P 视觉控制台 · I 沉浸模式 · R 自由镜头 · K 镜头回正 · WASD 镜头移动 · L 歌词面板）
+- **应用启动自动重新定位**：每次打开应用自动触发天气电台重新定位，更新本地天气数据
 - **Bug 修复**：全屏模式下打开/关闭壁纸模式闪退的问题已修复；壁纸窗口在 show 前先设好 `NSWindowCollectionBehavior`（CanJoinAllSpaces | Stationary，不含 FullScreenAuxiliary）+ `kCGDesktopWindowLevel`，绑定到非全屏 Space（桌面1），不进入全屏主窗口所在的 Space，desktop-level 与全屏 Space 不再冲突
+- 主页增加四个快捷卡片：壁纸模式、随机预设特效、3D 歌单、桌面歌词
 - **壁纸模式**：桌面级粒子背景，Three.js 独立渲染，与主应用视觉对等；支持透明度调节、快捷键隐藏（`Cmd+Shift+H`）
 - **节拍驱动视觉增强**：增强相机冲击力（FOV ×5、冲击缓动 0.82）、粒子节拍径向爆发与白色闪烁、泛光脉冲
 - **Emily粒子专辑+行星环preste7**：双倍粒子，双倍快乐，视觉冲击更强！
 - **macOS 菜单栏托盘**：MR 图标，单击打开窗口，右键菜单支持打开 / 退出
 - **UI 清理**：移除壁纸模式 badge overlay，提升画面纯净度
 - **天气电台多级定位**：IP 定位采用三级 fallback 链（B站免 key 接口 → 腾讯位置服务 → ipwho.is），任一接口失败自动降级，定位不依赖系统 GPS 授权，无需弹授权框
-- **天气电台中文搜索优化**：Open-Meteo 中文城市搜索偶尔偏差（如"凯里"匹配到西藏山峰），现通过 `pinyin-pro` 自动转拼音后重新搜索，准确匹配国内城市
+- **天气电台中文搜索优化**：Open-Meteo 中文城市搜索偶尔偏差，现通过 `pinyin-pro` 自动转拼音后重新搜索，准确匹配国内城市
 - **左侧队列触发区缩小**：队列面板鼠标唤醒边界从 64px 收窄到 8px，贴左边缘才触发，避免日常操作误触（类似 macOS Dock 行为）
-- **换城市按钮移除**：定位精度已足够，精简 UI，仅保留"重新定位"按钮
+- **启动按钮风格统一**：启动按钮改为白灰玻璃风格，与整体 UI 协调
+- **应用启动自动重新定位**：每次打开应用自动触发天气电台重新定位，更新本地天气数据
 
 ***
 
@@ -129,16 +134,16 @@ Mineradio- macOS/
 
 ## 技术栈
 
-| 类别     | 技术                           |
-| ------ | ---------------------------- |
-| 桌面框架   | Electron 42.x                |
-| 3D 渲染  | Three.js r128                |
-| 动画引擎   | GSAP                         |
-| 节奏分析   | music-tempo + 自研 dj-analyzer |
-| 音乐 API | NeteaseCloudMusicApi         |
-| 天气 API | Open-Meteo + B站 IP 定位 + 腾讯位置服务 + ipwho.is（三级 fallback）                   |
-| 前端     | 纯 HTML / CSS / JS（无框架）       |
-| 构建打包   | electron-builder             |
+| 类别     | 技术                                                     |
+| ------ | ------------------------------------------------------ |
+| 桌面框架   | Electron 42.x                                          |
+| 3D 渲染  | Three.js r128                                          |
+| 动画引擎   | GSAP                                                   |
+| 节奏分析   | music-tempo + 自研 dj-analyzer                           |
+| 音乐 API | NeteaseCloudMusicApi                                   |
+| 天气 API | Open-Meteo + B站 IP 定位 + 腾讯位置服务 + ipwho.is（三级 fallback） |
+| 前端     | 纯 HTML / CSS / JS（无框架）                                 |
+| 构建打包   | electron-builder                                       |
 
 ***
 

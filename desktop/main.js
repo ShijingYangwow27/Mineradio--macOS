@@ -26,7 +26,7 @@ let appTray = null;
 const registeredGlobalHotkeys = new Map();
 
 const WINDOWED_ASPECT = 16 / 9;
-const WINDOWED_SCALE = 3 / 4;
+const WINDOWED_SCALE = 9 / 10;
 const WINDOWED_MARGIN = 32;
 const MIN_WINDOWED_WIDTH = 960;
 const MIN_WINDOWED_HEIGHT = 540;

@@ -238,12 +238,13 @@ body.simple-mode .mini-queue-popover{width:min(380px,calc(100vw - 32px))}
 
 /* ---------- 空场 Home ---------- */
 #empty-home{position:fixed;z-index:4;left:50%;top:158px;bottom:58px;width:min(1240px,calc(100vw - 72px));transform:translateX(-50%) translateY(18px) scale(.992);opacity:0;pointer-events:none;transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1)}
-body.empty-home-active #empty-home{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
+body.empty-home-active #empty-home{opacity:1!important;pointer-events:auto!important;transform:translateX(-50%) translateY(0) scale(1)}
 body.splash-active #empty-home,body.immersive-mode #empty-home{opacity:0!important;pointer-events:none!important}
+body.empty-home-active #empty-home{pointer-events:auto!important}
 body.empty-home-active #canvas-container{filter:none}
 body.home-wallpaper-preview #canvas-container{filter:none}
 .empty-home-shell{height:100%;min-height:440px;display:grid;grid-template-columns:minmax(370px,.94fr) minmax(520px,1.06fr);grid-template-rows:auto 1fr;gap:14px;align-content:stretch}
-.home-hero{position:relative;grid-row:1 / span 2;min-height:438px;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:hidden}
+.home-hero{position:relative;grid-row:1 / span 2;min-height:438px;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:visible}
 .home-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,.060),transparent 24%,rgba(255,83,103,.070) 54%,rgba(122,215,194,.055) 82%,transparent 100%),linear-gradient(90deg,rgba(255,255,255,.032) 0 1px,transparent 1px 48px),linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 44px);opacity:.72;pointer-events:none}
 .home-hero::after{content:'';position:absolute;left:28px;right:28px;bottom:22px;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--home-accent) 0%,transparent),color-mix(in srgb,var(--home-accent) 52%,transparent),rgba(36,66,255,.24),rgba(248,244,238,.18),color-mix(in srgb,var(--home-accent) 0%,transparent));opacity:.82;pointer-events:none}
 .home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:minmax(0,1.16fr) minmax(150px,.64fr);grid-template-rows:auto auto auto auto minmax(150px,1fr);column-gap:18px}
@@ -256,10 +257,8 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-weather-pill{height:28px;padding:0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.050);display:inline-flex;align-items:center;color:rgba(255,255,255,.70);font-size:11px;font-weight:680}
 .home-weather-pill-btn{cursor:pointer;transition:background .2s,border-color .2s,color .2s}
 .home-weather-pill-btn:hover{background:rgba(232,160,107,.14);border-color:rgba(232,160,107,.52);color:rgba(232,160,107,.96)}
-.home-quick-row{grid-column:1;position:relative;z-index:3;display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
 .home-chip{height:32px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.060);color:rgba(255,255,255,.76);font-family:inherit;font-size:11.5px;font-weight:680;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s,box-shadow .18s}
 .home-chip:hover{background:color-mix(in srgb,var(--home-accent) 10%,transparent);border-color:color-mix(in srgb,var(--home-accent) 38%,rgba(255,255,255,.10));color:#fff;box-shadow:0 10px 26px color-mix(in srgb,var(--home-accent) 8%,transparent);transform:translateY(-1px)}
-.home-console-chip{height:36px;border-color:color-mix(in srgb,var(--home-accent) 34%,rgba(255,255,255,.12));background:color-mix(in srgb,var(--home-accent) 12%,rgba(255,255,255,.055));color:#fff}
 .home-visual{grid-column:2;grid-row:2 / span 2;position:relative;align-self:center;justify-self:end;width:100%;max-width:300px;height:74px;margin-top:0;pointer-events:none;filter:drop-shadow(0 18px 34px rgba(0,0,0,.28))}
 .home-visual.generated .home-sleeve,.home-visual.generated .home-disc{display:none}
 .home-radio-img{display:none}
@@ -276,13 +275,27 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-wave-track span{flex:1;min-width:3px;border-radius:999px;background:linear-gradient(180deg,#fff,var(--home-accent));box-shadow:0 0 12px color-mix(in srgb,var(--home-accent) 55%,transparent);height:5px;transform-origin:bottom;transition:height .08s linear,opacity .08s linear}
 @keyframes home-disc-turn{to{transform:rotate(360deg)}}
 @keyframes home-eq-rise{0%,100%{transform:scaleY(.68);opacity:.66}45%{transform:scaleY(1);opacity:1}}
-.home-mosaic{grid-column:1 / -1;grid-row:5;align-self:end;display:grid;grid-template-columns:1.18fr .82fr;grid-template-rows:1fr 1fr;gap:10px;height:min(216px,26vh);min-height:150px;margin-top:18px}
-.home-mosaic-cell{position:relative;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035));background-size:cover;background-position:center;overflow:hidden;border:1px solid color-mix(in srgb,var(--home-accent) 12%,rgba(255,255,255,.075));box-shadow:0 18px 44px rgba(0,0,0,.26)}
-.home-mosaic-cell:first-child{grid-row:1 / span 2}
-.home-mosaic-cell:not(.has-cover)::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,212,.62),rgba(36,66,255,.36) 46%,rgba(10,10,14,.20)),repeating-linear-gradient(110deg,rgba(255,255,255,.16) 0 2px,transparent 2px 18px)}
-.home-mosaic-cell:nth-child(2):not(.has-cover)::before{background:linear-gradient(135deg,rgba(122,215,194,.74),rgba(157,184,207,.46) 48%,rgba(10,10,14,.24)),repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,transparent 2px 16px)}
-.home-mosaic-cell:nth-child(3):not(.has-cover)::before{background:linear-gradient(135deg,rgba(248,244,238,.38),rgba(0,245,212,.40) 58%,rgba(10,10,14,.24)),repeating-linear-gradient(90deg,rgba(255,255,255,.15) 0 2px,transparent 2px 15px)}
-.home-mosaic-cell::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 42%,rgba(0,0,0,.42));pointer-events:none}
+.home-mosaic{grid-column:1 / -1;grid-row:5;align-self:end;display:grid;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:min(260px,32vh);min-height:190px;margin-top:18px}
+.home-mosaic-cell{position:relative;border-radius:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--home-accent) 12%,rgba(255,255,255,.075));box-shadow:0 18px 44px rgba(0,0,0,.26);cursor:pointer;transition:transform .18s,border-color .18s}
+.home-mosaic-cell:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--home-accent) 28%,rgba(255,255,255,.12))}
+.home-mosaic-radio{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;min-height:0;padding:clamp(10px,2vw,16px) clamp(10px,2vw,16px) clamp(40px,5vw,52px);gap:clamp(6px,1.2vw,10px);text-align:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1)}
+.home-mosaic-radio::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,transparent 55%,rgba(0,0,0,.02) 100%);pointer-events:none;border-radius:inherit}
+.home-mosaic-radio-head{display:flex;align-items:center;gap:clamp(6px,1vw,10px);flex-shrink:0}
+.home-mosaic-radio-logo{width:clamp(32px,4vw,48px);height:clamp(32px,4vw,48px);border-radius:clamp(8px,1.2vw,12px);object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 clamp(1px,.2vw,3px) clamp(2px,.6vw,8px) rgba(0,0,0,.4));flex-shrink:0}
+.home-mosaic-radio-title{font-size:clamp(12px,1.5vw,16px);font-weight:650;letter-spacing:clamp(.01em,.1vw,.04em);position:relative;z-index:1;text-shadow:0 clamp(1px,.2vw,2px) clamp(1px,.4vw,4px) rgba(0,0,0,.5);line-height:clamp(1.2,1.25vw,1.3);white-space:nowrap}
+.home-mosaic-radio-desc{font-size:clamp(8px,1vw,10px);line-height:clamp(1.35,1.45vw,1.55);color:rgba(255,255,255,.78);position:relative;z-index:1;max-width:92%;flex:1 1 0%;min-height:0;padding:4px 0;text-shadow:0 clamp(1px,.15vw,2px) clamp(1px,.3vw,3px) rgba(0,0,0,.5);overflow:hidden;word-break:break-word}
+.home-mosaic-radio-btn{position:absolute;z-index:1;bottom:clamp(4px,.6vw,8px);left:50%;transform:translateX(-50%);height:clamp(24px,2.8vw,34px);padding:0 clamp(12px,1.8vw,24px);border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:rgba(255,255,255,.88);font-family:inherit;font-size:clamp(10px,1.2vw,13px);font-weight:500;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.home-mosaic-radio-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.40);transform:translateX(-50%) translateY(-1px);box-shadow:0 clamp(4px,.8vw,8px) clamp(12px,2vw,24px) rgba(255,255,255,.12)}
+.home-mosaic-shortcut{border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;text-align:center;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);transition:border-color .2s,border-width .2s,background .2s,box-shadow .2s,transform .22s cubic-bezier(.16,1,.3,1);color:rgba(255,255,255,.82)}
+.home-mosaic-shortcut::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.06) 0%,transparent 55%,rgba(0,0,0,.04) 100%);pointer-events:none;border-radius:inherit}
+.home-mosaic-shortcut:hover{border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.13);box-shadow:0 12px 36px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.14)}
+.home-mosaic-shortcut-icon{font-size:22px;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:transform .2s cubic-bezier(.16,1,.3,1),filter .2s}
+.home-mosaic-shortcut-label{font-size:11px;font-weight:700;letter-spacing:.03em;position:relative;z-index:1;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.32);line-height:1.2;white-space:nowrap;transition:color .2s,text-shadow .2s}
+.home-mosaic-shortcut-hint{font-size:8px;font-weight:560;color:rgba(255,255,255,.48);letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:1;transition:color .2s}
+.home-mosaic-shortcut.active{border-color:rgba(255,255,255,.85);background:rgba(255,255,255,.20);box-shadow:0 0 20px rgba(255,255,255,.50),0 0 60px rgba(255,255,255,.30),0 0 120px rgba(255,255,255,.15),0 0 240px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.50),0 0 0 3px rgba(255,255,255,.20);transform:translateY(-3px)}
+.home-mosaic-shortcut.active .home-mosaic-shortcut-icon{transform:scale(1.16);filter:drop-shadow(0 3px 10px rgba(255,255,255,.45))}
+.home-mosaic-shortcut.active .home-mosaic-shortcut-label{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.42)}
+.home-mosaic-shortcut.active .home-mosaic-shortcut-hint{color:rgba(255,255,255,.80)}
 .home-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;min-height:38px}
 .home-section-title{font-size:13px;font-weight:760;color:rgba(255,255,255,.84);letter-spacing:.04em}
 .home-section-note{font-size:11px;color:rgba(255,255,255,.38);white-space:nowrap}
@@ -327,10 +340,10 @@ body.empty-home-active .home-visual{animation:home-visual-drift 8.8s ease-in-out
 .home-skeleton{position:relative;overflow:hidden}
 .home-skeleton::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);animation:home-shimmer 1.5s ease-in-out infinite}
 @keyframes home-shimmer{100%{transform:translateX(100%)}}
-@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:minmax(0,1.16fr) minmax(128px,.52fr);column-gap:14px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-visual{height:198px;max-width:236px}.home-mosaic{height:142px;min-height:126px;margin-top:14px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
-@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:minmax(0,1.22fr) minmax(136px,.54fr);column-gap:14px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-quick-row{margin-top:16px}.home-visual{height:206px;max-width:246px}.home-mosaic{height:132px;min-height:120px;margin-top:14px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
-@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-weather-meta{margin-top:12px}.home-quick-row{margin-top:12px}.home-visual{height:174px;max-width:216px}.home-mosaic{height:112px;min-height:104px}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
-@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:minmax(0,1fr)}.home-visual{display:none}.home-mosaic{height:124px;min-height:108px}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
+@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:minmax(0,1.16fr) minmax(128px,.52fr);column-gap:14px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-visual{height:198px;max-width:236px}.home-mosaic{height:280px;min-height:240px;margin-top:14px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
+@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:minmax(0,1.22fr) minmax(136px,.54fr);column-gap:14px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-visual{height:206px;max-width:246px}.home-mosaic{height:200px;min-height:180px;margin-top:14px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
+@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-weather-meta{margin-top:12px}.home-visual{height:174px;max-width:216px}.home-mosaic{height:170px;min-height:150px}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
+@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:minmax(0,1fr)}.home-visual{display:none}.home-mosaic{height:240px;min-height:210px}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
 @media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto;min-height:344px}.home-mosaic{height:172px;min-height:150px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
 body.empty-home-active.controls-visible #empty-home{bottom:128px}
 @media (max-height:760px){body.empty-home-active.controls-visible #empty-home{bottom:112px}}
@@ -415,7 +428,6 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .home-title{font-size:clamp(27px,3.5vw,40px)}
   body.desktop-shell .home-sub{font-size:11.8px;line-height:1.4}
   body.desktop-shell .home-weather-meta{margin-top:11px}
-  body.desktop-shell .home-quick-row{margin-top:12px}
   body.desktop-shell .home-visual{height:166px;max-width:206px}
   body.desktop-shell .home-mosaic{height:104px;min-height:98px}
   body.desktop-shell .home-card{min-height:104px;padding:12px}
@@ -1967,19 +1979,40 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
         <h1 class="home-title" id="home-weather-title">我的音乐库</h1>
         <p class="home-sub" id="home-subtitle">从你的歌单、最近播放和常听歌手开始，天气电台放在需要氛围的时候再开。</p>
         <div class="home-weather-meta" id="home-weather-meta"></div>
-        <div class="home-quick-row">
-          <button class="home-chip" type="button" data-home-radio-start>启动天气电台</button>
-          <button class="home-chip home-console-chip" type="button" onclick="openHomePlayerConsole()">展开播放器控制台</button>
-        </div>
         <div class="home-visual" id="home-visual">
           <div class="home-sleeve"></div>
           <div class="home-disc"></div>
           <div class="home-wave-track" id="home-wave-track"></div>
         </div>
         <div class="home-mosaic" id="home-mosaic">
-          <div class="home-mosaic-cell"></div>
-          <div class="home-mosaic-cell"></div>
-          <div class="home-mosaic-cell"></div>
+          <div class="home-mosaic-cell home-mosaic-radio">
+            <div class="home-mosaic-radio-head">
+              <img class="home-mosaic-radio-logo" src="./images/weather-radio-logo.png" alt="天气电台" />
+              <div class="home-mosaic-radio-title">天气电台</div>
+            </div>
+            <div class="home-mosaic-radio-desc">给你放点不一样的歌</div>
+            <button class="home-mosaic-radio-btn" type="button" data-home-radio-start>启动</button>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="wallpaper">
+            <div class="home-mosaic-shortcut-icon">🌌</div>
+            <div class="home-mosaic-shortcut-label">壁纸模式</div>
+            <div class="home-mosaic-shortcut-hint">WALLPAPER</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="lyrics">
+            <div class="home-mosaic-shortcut-icon">📝</div>
+            <div class="home-mosaic-shortcut-label">桌面歌词</div>
+            <div class="home-mosaic-shortcut-hint">LYRICS</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="preset">
+            <div class="home-mosaic-shortcut-icon">🎬</div>
+            <div class="home-mosaic-shortcut-label">随机预设特效</div>
+            <div class="home-mosaic-shortcut-hint">PRESET</div>
+          </div>
+          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="shelf">
+            <div class="home-mosaic-shortcut-icon">💿</div>
+            <div class="home-mosaic-shortcut-label">3D 歌单</div>
+            <div class="home-mosaic-shortcut-hint">SHELF</div>
+          </div>
         </div>
       </div>
     </div>
@@ -15995,12 +16028,13 @@ function homeToneForItem(item, index) {
 function renderHomeMosaic(items) {
   var cells = document.querySelectorAll('#home-mosaic .home-mosaic-cell');
   if (!cells.length) return;
-  var covers = [];
-  (items || []).forEach(function(item){
-    var cover = homeTileCover(item);
-    if (cover) covers.push(cover);
-  });
   for (var i = 0; i < cells.length; i++) {
+    if (cells[i].classList.contains('home-mosaic-radio') || cells[i].classList.contains('home-mosaic-shortcut')) continue;
+    var covers = [];
+    (items || []).forEach(function(item){
+      var cover = homeTileCover(item);
+      if (cover) covers.push(cover);
+    });
     var src = covers[i] || covers[(i + 1) % Math.max(1, covers.length)] || '';
     cells[i].style.backgroundImage = src ? 'url("' + cssImageUrl(src) + '")' : '';
     cells[i].classList.toggle('has-cover', !!src);
@@ -16302,12 +16336,34 @@ async function startWeatherRadio(opts) {
 var emptyHomeStartEl = document.getElementById('empty-home');
 if (emptyHomeStartEl) {
   emptyHomeStartEl.addEventListener('click', function(e){
+    if (document.body.classList.contains('splash-active')) {
+      document.body.classList.remove('splash-active');
+      document.body.classList.remove('splash-revealing');
+      var s = document.getElementById('splash');
+      if (s) { s.classList.add('hide'); s.style.display = 'none'; }
+    }
     var start = e.target && e.target.closest ? e.target.closest('[data-home-radio-start]') : null;
     if (!start || !emptyHomeStartEl.contains(start)) return;
     e.preventDefault();
-    e.stopPropagation();
     startWeatherRadio();
-  }, true);
+  });
+  emptyHomeStartEl.addEventListener('click', function(e){
+    if (document.body.classList.contains('splash-active')) {
+      document.body.classList.remove('splash-active');
+      document.body.classList.remove('splash-revealing');
+      var s = document.getElementById('splash');
+      if (s) { s.classList.add('hide'); s.style.display = 'none'; }
+    }
+    var shortcut = e.target && e.target.closest ? e.target.closest('[data-shortcut]') : null;
+    if (!shortcut || !emptyHomeStartEl.contains(shortcut)) return;
+    e.preventDefault();
+    var key = shortcut.getAttribute('data-shortcut');
+    if (key === 'wallpaper') { toggleFx('wallpaperMode'); updateMosaicShortcutStates(); }
+    else if (key === 'lyrics') { toggleFx('desktopLyrics'); updateMosaicShortcutStates(); }
+    else if (key === 'preset') { randomPreset(); }
+    else if (key === 'shelf') { toggleShelfMode(); updateMosaicShortcutStates(); }
+  });
+  updateMosaicShortcutStates();
 }
 function locateWeatherRadio() {
   var previousWeatherCity = homeWeatherRadioState.city || '上海';
@@ -16677,7 +16733,8 @@ function isPointNearHomeContent(x, y) {
   var selectors = [
     '.home-card',
     '.home-tile',
-    '.home-chip'
+    '.home-chip',
+    '.home-mosaic-shortcut'
   ];
   for (var i = 0; i < selectors.length; i++) {
     var nodes = document.querySelectorAll(selectors[i]);
@@ -20742,7 +20799,20 @@ function normalizeFxArchiveSnapshot(raw) {
     shelfOpacity: archiveNumber(raw, 'shelfOpacity', fxDefaults.shelfOpacity, 0.25, 1),
     shelfBgOpacity: archiveNumber(raw, 'shelfBgOpacity', fxDefaults.shelfBgOpacity, 0.25, 0.98),
     shelfAccentColor: normalizeHexColor(raw.shelfAccentColor || fxDefaults.shelfAccentColor, fxDefaults.shelfAccentColor),
-    cam: archiveMode(raw, 'cam', /^(off|gesture)$/, fxDefaults.cam)
+    cam: archiveMode(raw, 'cam', /^(off|gesture)$/, fxDefaults.cam),
+    freeCamera: raw.freeCamera ? {
+      position: {
+        x: clampRange(Number(raw.freeCamera.position && raw.freeCamera.position.x) || 0, -80, 80),
+        y: clampRange(Number(raw.freeCamera.position && raw.freeCamera.position.y) || 0, -80, 80),
+        z: clampRange(Number(raw.freeCamera.position && raw.freeCamera.position.z) || 6.6, -80, 80)
+      },
+      yaw: clampRange(Number(raw.freeCamera.yaw) || 0, -Math.PI * 8, Math.PI * 8),
+      pitch: clampRange(Number(raw.freeCamera.pitch) || 0, -Math.PI * 0.49, Math.PI * 0.49),
+      roll: clampRange(Number(raw.freeCamera.roll) || 0, -Math.PI, Math.PI),
+      fov: clampRange(Number(raw.freeCamera.fov) || BASE_FOV, 26, 72),
+      active: !!raw.freeCamera.active,
+      locked: !!raw.freeCamera.locked
+    } : null
   };
 }
 function readUserFxArchives() {
@@ -20799,7 +20869,19 @@ function formatUserArchiveTime(ts) {
   return pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 function captureFxArchiveSnapshot() {
-  return normalizeFxArchiveSnapshot(Object.assign({ visualPresetSchema: VISUAL_PRESET_SCHEMA }, fx));
+  var snap = Object.assign({ visualPresetSchema: VISUAL_PRESET_SCHEMA }, fx);
+  if (freeCamera) {
+    snap.freeCamera = {
+      position: { x: freeCamera.position.x, y: freeCamera.position.y, z: freeCamera.position.z },
+      yaw: freeCamera.yaw,
+      pitch: freeCamera.pitch,
+      roll: freeCamera.roll,
+      fov: freeCamera.fov,
+      active: freeCamera.active,
+      locked: freeCamera.locked
+    };
+  }
+  return normalizeFxArchiveSnapshot(snap);
 }
 function applySavedLyricPaletteState() {
   if (!stageLyrics) return;
@@ -20814,8 +20896,9 @@ function applyFxArchiveSnapshot(snapshot) {
   var data = normalizeFxArchiveSnapshot(snapshot);
   if (!data) return false;
   var targetPreset = data.preset;
+  var freeCameraData = data.freeCamera;
   Object.keys(data).forEach(function(key){
-    if (key === 'visualPresetSchema' || key === 'preset') return;
+    if (key === 'visualPresetSchema' || key === 'preset' || key === 'freeCamera') return;
     fx[key] = data[key];
   });
   normalizeDevelopmentLockedFxState();
@@ -20832,6 +20915,24 @@ function applyFxArchiveSnapshot(snapshot) {
   if (shelfManager && shelfManager.rebuild) shelfManager.rebuild(true);
   if (shelfManager && shelfManager.refreshTheme) shelfManager.refreshTheme();
   setCamMode(fx.cam);
+  if (freeCameraData) {
+    if (!freeCamera) freeCamera = defaultFreeCameraState();
+    freeCamera.position.set(
+      clampRange(freeCameraData.position.x, -80, 80),
+      clampRange(freeCameraData.position.y, -80, 80),
+      clampRange(freeCameraData.position.z, -80, 80)
+    );
+    freeCamera.yaw = freeCameraData.yaw;
+    freeCamera.pitch = freeCameraData.pitch;
+    freeCamera.roll = freeCameraData.roll;
+    freeCamera.fov = freeCameraData.fov;
+    freeCamera.active = freeCameraData.active;
+    freeCamera.locked = freeCameraData.locked;
+    saveFreeCameraState();
+    if (freeCamera.active || freeCamera.locked) {
+      applyFreeCameraToCamera();
+    }
+  }
   updateFxInputs();
   applySavedLyricPaletteState();
   refreshCurrentLyricStyle();
@@ -21813,6 +21914,33 @@ function setPreset(p, opts) {
   }
 }
 
+function updateMosaicShortcutStates() {
+  var shortcuts = document.querySelectorAll('.home-mosaic-shortcut');
+  shortcuts.forEach(function(cell) {
+    var key = cell.getAttribute('data-shortcut');
+    var active = false;
+    if (key === 'wallpaper') active = !!fx.wallpaperMode;
+    else if (key === 'lyrics') active = !!fx.desktopLyrics;
+    else if (key === 'preset') active = !!(fx && presetMeta && presetMeta[fx.preset]);
+    else if (key === 'shelf') active = shelfManager && shelfManager.getMode && shelfManager.getMode() !== 'off';
+    cell.classList.toggle('active', active);
+  });
+}
+
+function randomPreset() {
+  var count = presetMeta ? presetMeta.length : 5;
+  var next = Math.floor(Math.random() * count);
+  setPreset(next, { silent: false });
+  updateMosaicShortcutStates();
+}
+function toggleShelfMode() {
+  if (!shelfManager || !shelfManager.getMode) return;
+  var current = shelfManager.getMode();
+  var next = current === 'off' ? 'side' : 'off';
+  setShelfMode(next);
+  showToast(next === 'off' ? '3D 歌单架已关闭' : '3D 歌单架已开启');
+  updateMosaicShortcutStates();
+}
 function syncFxUniforms() {
   uniforms.uPreset.value = fx.preset;
   uniforms.uIntensity.value = fx.intensity;
@@ -22485,7 +22613,7 @@ function ensureHotkeyModal() {
   modal.innerHTML =
     '<div class="hotkey-dialog" role="dialog" aria-modal="true" aria-label="热键设置">' +
       '<div class="hotkey-head">' +
-        '<div><div class="hotkey-title">热键设置</div><div class="hotkey-sub">局内热键只在 Mineradio 窗口内生效；全局热键会向系统注册，并检测是否被占用。</div></div>' +
+        '<div><div class="hotkey-title">热键设置</div><div class="hotkey-sub">局内热键只在 Mineradio 窗口内生效；全局热键会向系统注册，并检测是否被占用。<br>固定局内热键：P 视觉控制台 · I 沉浸模式 · R 自由镜头 · K 镜头回正 · WASD 镜头移动 · L 歌词面板</div></div>' +
         '<button class="hotkey-close" type="button" data-hotkey-close aria-label="关闭">×</button>' +
       '</div>' +
       '<div class="hotkey-toolbar">' +
@@ -22932,11 +23060,11 @@ function toggleFx(key) {
   if (key === 'lyricGlow') showToast(fx.lyricGlow ? '歌词溢光已开启' : '歌词溢光已关闭');
   if (key === 'lyricGlowBeat') showToast(fx.lyricGlowBeat ? '歌词溢光跟随鼓点' : '歌词溢光已脱离鼓点');
   if (key === 'lyricGlowParticles') showToast(fx.lyricGlowParticles ? '歌词光粒已开启' : '歌词光粒已关闭');
-  if (key === 'desktopLyrics') showToast(fx.desktopLyrics ? '桌面歌词已开启' : '桌面歌词已关闭');
+  if (key === 'desktopLyrics') { showToast(fx.desktopLyrics ? '桌面歌词已开启' : '桌面歌词已关闭'); updateMosaicShortcutStates(); }
   if (key === 'desktopLyricsClickThrough') showToast(fx.desktopLyricsClickThrough !== false ? '桌面歌词已锁定' : '桌面歌词可移动');
   if (key === 'desktopLyricsCinema') showToast(fx.desktopLyricsCinema !== false ? '桌面歌词电影震动已开启' : '桌面歌词电影震动已关闭，基础漂浮保留');
   if (key === 'desktopLyricsHighlight') showToast(fx.desktopLyricsHighlight === true ? '桌面歌词高亮跟随已开启' : '桌面歌词高亮跟随已关闭');
-  if (key === 'wallpaperMode') showToast(fx.wallpaperMode ? '壁纸模式已开启' : '壁纸模式已关闭');
+  if (key === 'wallpaperMode') { showToast(fx.wallpaperMode ? '壁纸模式已开启' : '壁纸模式已关闭'); updateMosaicShortcutStates(); }
   if (key === 'shelfShowPodcasts') showToast(fx.shelfShowPodcasts !== false ? '3D歌单架已显示播客歌单' : '3D歌单架已隐藏播客歌单');
   if (key === 'shelfMergeCollections') showToast(fx.shelfMergeCollections === true ? '我的歌单与收藏歌单已合并滚动' : '收藏歌单恢复滚到底切页');
   if (key === 'liveBackgroundKeep') showToast(fx.liveBackgroundKeep ? '直播后台保持已开启' : '直播后台保持已关闭');
@@ -23006,6 +23134,7 @@ function setShelfMode(m) {
   fx.shelf = m;
   document.querySelectorAll('#shelf-seg button').forEach(function(b){ b.classList.toggle('active', b.dataset.shelf === m); });
   if (shelfManager) shelfManager.setMode(m);
+  updateMosaicShortcutStates();
   // 舞台模式: 顶部搜索、底部控件让位
   var searchArea = document.getElementById('search-area');
   var bottomBar = document.getElementById('bottom-bar');
@@ -26658,6 +26787,8 @@ document.addEventListener('DOMContentLoaded', function(){
   markAppPerf('dom-content-loaded');
   armSplashSoundFallback();
   prewarmHomeWallpaperPreview();
+  // 每次打开应用自动重新定位
+  setTimeout(function(){ relocateWeatherRadio(); }, 600);
   function requestSplashEnter() {
     playMineradioIntroSound();
     if (splashReadyToEnter) dismissSplash();
