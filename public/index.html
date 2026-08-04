@@ -29256,7 +29256,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var waitStart = _cardIdx === 0 ? 0 : Math.max(0, 5 - cur);
     var _idx = _cardIdx;
     _cardTimer = setTimeout(function() {
-      showCard(comments[_idx], _idx + 1, comments.length);
+      /* 一次性传入当前评论 + 下一条评论（用于右下方预览位的预填） */
+      var currentC = comments[_idx];
+      var nextC = (_idx + 1 < comments.length) ? comments[_idx + 1] : null;
+      showCard(currentC, nextC, _idx + 1, comments.length);
       _cardIdx++;
       var extra = (_cardIdx >= comments.length) ? ((avail % (CARD_DISPLAY_MS / 1000)) * 1000) : 0;
       _cardTimer = setTimeout(function() {
@@ -29319,16 +29322,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /**
-   * 显示评论卡片 - Apple Music 堆叠风轮播逻辑：
-   * 1. current → past（左上方淡出位置，保留在 DOM 和队列）
-   * 2. next → current（移到中心）
-   * 3. 旧 past → 标记为 removing（彻底淡出移除）
-   * 4. 新卡片插入：
-   *    - 队列为空（首张卡）→ 直接标记为 current（主展示位）
-   *    - 队列非空 → 标记为 next（右下方淡入位置）
+   * 显示评论卡片 - Apple Music 堆叠风轮播逻辑（修复版）：
+   * 关键变更：新卡片直接进入 current（主展示位），不再先停留在 next 等待晋升
+   * 1. old current → past（左上方淡出，保留在 DOM）
+   * 2. old next（匹配 c）→ current（晋升，复用 DOM 元素获得平滑旋转动画）
+   * 3. old past / 旧 next（不匹配）→ 移除
+   * 4. 若无匹配的 old next 可晋升 → 创建新 current
+   * 5. nextC（传入的下一条评论）→ next（右下方预览位）
    * 同一时间最多 3 张：past / current / next
    */
-  function showCard(c, idx, total) {
+  function showCard(c, nextC, idx, total) {
     var wrapper = document.getElementById('comment-card-drag-wrapper');
     var container = document.getElementById('comment-card-container');
     if (!wrapper) return;
@@ -29336,10 +29339,10 @@ document.addEventListener('DOMContentLoaded', function() {
     /* 首次显示卡片时激活容器（让光标和拖拽生效） */
     if (container) container.classList.add('cc-active');
 
-    /* 收集需要淡出移除的旧 past 卡片 */
     var toRemove = [];
+    var promotedNext = null; /* 标记是否有 next 被晋升为 current */
 
-    /* 1+2. 移动现有卡片位置（current→past, next→current） */
+    /* 1+2+3. 移动现有卡片位置 */
     _cardQueue.forEach(function(entry) {
       var el = entry.el;
       el.classList.remove('cc-position-current', 'cc-position-past', 'cc-position-next');
@@ -29347,43 +29350,46 @@ document.addEventListener('DOMContentLoaded', function() {
         /* current 退位为 past（向左上方淡出，保留在 DOM） */
         entry.position = 'past';
         el.classList.add('cc-position-past');
-      } else if (entry.position === 'next') {
-        /* next 上位为 current（移到中心） */
+      } else if (entry.position === 'next' && entry.comment === c) {
+        /* 旧 next 晋升为 current（关键：复用 DOM 元素，旋转动画连续） */
         entry.position = 'current';
         el.classList.add('cc-position-current');
-      } else if (entry.position === 'past') {
-        /* 旧 past 即将被淘汰（轮转后超过 1 张 past） */
+        promotedNext = entry;
+      } else {
+        /* 旧 past 或其他不匹配的 next → 淘汰 */
         toRemove.push(entry);
       }
     });
 
-    /* 3. 移除多余的 past 卡片（带淡出动效）
-     *    关键：filter 必须用 toRemove 集合排除，而不是按 position === 'past' 排除
-     *    否则刚刚 current→past 的卡片会被错误地从 DOM 泄漏为孤儿 */
+    /* 4. 移除多余卡片（带淡出动效）
+     *    filter 用 toRemove 集合排除，避免误伤 current→past 降级的卡片 */
     toRemove.forEach(function(entry) { removeCard(entry.el); });
     var removedSet = new Set(toRemove);
     _cardQueue = _cardQueue.filter(function(entry) {
       return !removedSet.has(entry);
     });
 
-    /* 4. 插入新卡片：
-     *    - 队列为空（首张卡）→ 直接作为 current（主展示位）
-     *    - 队列非空 → 作为 next（右下方淡入位置） */
-    var newCard = createCardElement(c, idx, total);
-    if (_cardQueue.length === 0) {
+    /* 5. 若没有可晋升的 next，创建新的 current 卡片（首张卡场景） */
+    if (!promotedNext) {
+      var newCard = createCardElement(c, idx, total);
       newCard.classList.add('cc-position-current');
       _cardQueue.push({ el: newCard, comment: c, position: 'current' });
-    } else {
-      newCard.classList.add('cc-position-next');
-      _cardQueue.push({ el: newCard, comment: c, position: 'next' });
+      wrapper.appendChild(newCard);
     }
-    wrapper.appendChild(newCard);
 
-    /* 触发动画：base hidden → 对应 position 状态由 CSS transition 处理 */
+    /* 6. 预填下一张为 next（右下方预览位） */
+    if (nextC) {
+      var nextCard = createCardElement(nextC, idx + 1, total);
+      nextCard.classList.add('cc-position-next');
+      _cardQueue.push({ el: nextCard, comment: nextC, position: 'next' });
+      wrapper.appendChild(nextCard);
+    }
+
+    /* 触发动画：CSS transition 处理 */
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         /* 强制 reflow，确保 transition 生效 */
-        void newCard.offsetHeight;
+        if (promotedNext) void promotedNext.el.offsetHeight;
       });
     });
   }

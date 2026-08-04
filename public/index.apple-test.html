@@ -29255,7 +29255,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var waitStart = _cardIdx === 0 ? 0 : Math.max(0, 5 - cur);
     var _idx = _cardIdx;
     _cardTimer = setTimeout(function() {
-      showCard(comments[_idx], _idx + 1, comments.length);
+      /* 一次性传入当前评论 + 下一条评论（用于右下方预览位的预填） */
+      var currentC = comments[_idx];
+      var nextC = (_idx + 1 < comments.length) ? comments[_idx + 1] : null;
+      showCard(currentC, nextC, _idx + 1, comments.length);
       _cardIdx++;
       var extra = (_cardIdx >= comments.length) ? ((avail % (CARD_DISPLAY_MS / 1000)) * 1000) : 0;
       _cardTimer = setTimeout(function() {
@@ -29313,14 +29316,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /**
-   * 显示评论卡片 - Apple Music 堆叠风轮播逻辑：
-   * 1. current → past（左上方淡出位置）
-   * 2. next → current（移到中心）
-   * 3. 旧 past → 标记为 removing（彻底淡出移除）
-   * 4. 新卡片插入为 next（右下方淡入位置）
+   * 显示评论卡片 - Apple Music 堆叠风轮播逻辑（修复版）：
+   * 关键变更：新卡片直接进入 current（主展示位），不再先停留在 next 等待晋升
+   * 1. old current → past（左上方淡出，保留在 DOM）
+   * 2. old next（匹配 c）→ current（晋升，复用 DOM 元素获得平滑旋转动画）
+   * 3. old past / 旧 next（不匹配）→ 移除
+   * 4. 若无匹配的 old next 可晋升 → 创建新 current
+   * 5. nextC（传入的下一条评论）→ next（右下方预览位）
    * 同一时间最多 3 张：past / current / next
    */
-  function showCard(c, idx, total) {
+  function showCard(c, nextC, idx, total) {
     var wrapper = document.getElementById('comment-card-drag-wrapper');
     var container = document.getElementById('comment-card-container');
     if (!wrapper) return;
@@ -29329,6 +29334,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (container) container.classList.add('cc-active');
 
     var toRemove = [];
+    var promotedNext = null;
 
     _cardQueue.forEach(function(entry) {
       var el = entry.el;
@@ -29336,10 +29342,11 @@ document.addEventListener('DOMContentLoaded', function() {
       if (entry.position === 'current') {
         entry.position = 'past';
         el.classList.add('cc-position-past');
-      } else if (entry.position === 'next') {
+      } else if (entry.position === 'next' && entry.comment === c) {
         entry.position = 'current';
         el.classList.add('cc-position-current');
-      } else if (entry.position === 'past') {
+        promotedNext = entry;
+      } else {
         toRemove.push(entry);
       }
     });
@@ -29350,22 +29357,23 @@ document.addEventListener('DOMContentLoaded', function() {
       return !removedSet.has(entry);
     });
 
-    /* 4. 插入新卡片：
-     *    - 队列为空（首张卡）→ 直接作为 current（主展示位）
-     *    - 队列非空 → 作为 next（右下方淡入位置） */
-    var newCard = createCardElement(c, idx, total);
-    if (_cardQueue.length === 0) {
+    if (!promotedNext) {
+      var newCard = createCardElement(c, idx, total);
       newCard.classList.add('cc-position-current');
       _cardQueue.push({ el: newCard, comment: c, position: 'current' });
-    } else {
-      newCard.classList.add('cc-position-next');
-      _cardQueue.push({ el: newCard, comment: c, position: 'next' });
+      wrapper.appendChild(newCard);
     }
-    wrapper.appendChild(newCard);
+
+    if (nextC) {
+      var nextCard = createCardElement(nextC, idx + 1, total);
+      nextCard.classList.add('cc-position-next');
+      _cardQueue.push({ el: nextCard, comment: nextC, position: 'next' });
+      wrapper.appendChild(nextCard);
+    }
 
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        void newCard.offsetHeight;
+        if (promotedNext) void promotedNext.el.offsetHeight;
       });
     });
   }
