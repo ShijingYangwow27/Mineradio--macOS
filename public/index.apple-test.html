@@ -29346,6 +29346,9 @@ document.addEventListener('DOMContentLoaded', function() {
     bindCommentCardPlaybackEvents();
   }, 1000);
 
+  /* 暴露给播放器控制栏按钮的 onclick 调用 */
+  window.toggleCommentCards = toggleCommentCards;
+
 })();
 </script>
 <div id="comment-card-container"></div>
