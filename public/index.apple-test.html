@@ -2015,13 +2015,18 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 #comment-card-btn svg{transition:color .18s}
 #comment-card-btn[aria-pressed="true"]{color:var(--home-accent,#00f5d4)}
 
-/* 卡片容器 */
-#comment-card-container{position:fixed;z-index:80;left:50%;bottom:16%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;justify-content:center}
-.comment-card{width:400px;padding:0;border-radius:20px;opacity:0;transform:translateY(24px) scale(.97);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);pointer-events:none;position:relative;overflow:hidden}
-.comment-card.visible{opacity:1;transform:translateY(0) scale(1)}
-.comment-card.exit{opacity:0;transform:translateY(-20px) scale(.97);transition:opacity .45s ease-in,transform .45s ease-in}
-.comment-card .cc-glow{position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent,#00f5d4) 12%,transparent),transparent 40%,transparent 60%,color-mix(in srgb,var(--home-accent,#00f5d4) 6%,transparent));z-index:0;opacity:.5;filter:blur(1px)}
-.comment-card .cc-inner{position:relative;z-index:1;background:rgba(0,0,0,.10);backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);-webkit-backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);border:0;border-radius:20px;padding:20px 22px 16px;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.35),inset 0 0 10px 4px rgba(255,255,255,.15),0 4px 16px rgba(17,17,26,.05),0 8px 24px rgba(17,17,26,.05),0 16px 56px rgba(17,17,26,.05),inset 0 4px 16px rgba(17,17,26,.05),inset 0 8px 24px rgba(17,17,26,.05),inset 0 16px 56px rgba(17,17,26,.05)}
+/* 卡片容器：可拖动 */
+#comment-card-container{position:fixed;z-index:80;left:50%;bottom:16%;transform:translate(-50%,0);pointer-events:auto;display:flex;align-items:center;justify-content:center;cursor:grab;will-change:transform;transition:transform .35s cubic-bezier(.16,1,.3,1);touch-action:none;user-select:none;-webkit-user-select:none}
+#comment-card-container.dragging{cursor:grabbing;transition:none}
+#comment-card-container.dragging .comment-card .cc-inner{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.45),inset 0 0 10px 4px rgba(255,255,255,.22),0 6px 22px rgba(17,17,26,.10),0 12px 32px rgba(17,17,26,.10),0 20px 64px rgba(17,17,26,.12),inset 0 6px 22px rgba(17,17,26,.10),inset 0 12px 32px rgba(17,17,26,.10),inset 0 20px 64px rgba(17,17,26,.10)}
+/* 卡片本体：堆叠视觉 */
+.comment-card{position:absolute;width:400px;padding:0;border-radius:20px;opacity:0;transform:translateY(20px) scale(.96);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1);pointer-events:auto;overflow:hidden;left:50%;margin-left:-200px;top:0;will-change:opacity,transform}
+.comment-card.cc-stack-front{opacity:1;transform:translateY(0) scale(1);z-index:3}
+.comment-card.cc-stack-mid{opacity:.55;transform:translateY(-7px) scale(.98);z-index:2;filter:saturate(.85) brightness(.92);pointer-events:none}
+.comment-card.cc-stack-back{opacity:.25;transform:translateY(-14px) scale(.96);z-index:1;filter:saturate(.7) brightness(.84);pointer-events:none}
+.comment-card.cc-removing{opacity:0!important;transform:translateY(-26px) scale(.94)!important;transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1)!important;pointer-events:none}
+.comment-card .cc-glow{position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent,#00f5d4) 12%,transparent),transparent 40%,transparent 60%,color-mix(in srgb,var(--home-accent,#00f5d4) 6%,transparent));z-index:0;opacity:.5;filter:blur(1px);pointer-events:none}
+.comment-card .cc-inner{position:relative;z-index:1;background:rgba(0,0,0,.10);backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);-webkit-backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);border:0;border-radius:20px;padding:20px 22px 16px;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.35),inset 0 0 10px 4px rgba(255,255,255,.15),0 4px 16px rgba(17,17,26,.05),0 8px 24px rgba(17,17,26,.05),0 16px 56px rgba(17,17,26,.05),inset 0 4px 16px rgba(17,17,26,.05),inset 0 8px 24px rgba(17,17,26,.05),inset 0 16px 56px rgba(17,17,26,.05);transition:box-shadow .25s ease-out}
 html.control-glass-svg-ok .comment-card .cc-inner{background:rgba(0,0,0,.10);backdrop-filter:url(#mineradio-control-glass-filter) saturate(1);-webkit-backdrop-filter:url(#mineradio-control-glass-filter) saturate(1)}
 .comment-card .cc-header{display:flex;align-items:center;gap:12px}
 .comment-card .cc-avatar{width:40px;height:40px;border-radius:12px;flex-shrink:0;background:rgba(255,255,255,.06);overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.08)}
@@ -29013,8 +29018,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var _cardIdx = 0;
   var _cardComments = [];
   var _cardActive = false;
-  var _cardCleanupTimer = null; /* 追踪 hideCurrentCard 的清理定时器 */
   var _cardPaused = false; /* 暂停标记，替代 playing 检查 */
+
+  /* 卡片堆叠：最多同时显示 3 张 */
+  var CARD_STACK_MAX = 3;
+  var CARD_DISPLAY_MS = 15000; /* 每张卡片显示 15s */
+  var _cardStack = []; /* [{el, comment, idx, total}] - 索引 0 为最新 */
+
+  /* 拖动状态 */
+  var _cc_dragX = 0;
+  var _cc_dragY = 0;
+  var _cc_dragBounds = null;
+  var CC_POS_KEY = 'commentCardPos';
 
   /* ── 工具函数 ── */
   function getSongKey() {
@@ -29102,7 +29117,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btn) btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
     try { saveLyricLayout(); } catch(e) {}
     if (enabled) {
-      stopCardCarousel();
+      /* 用户关掉了评论卡片：停止并淡出当前显示 */
+      _cardActive = false;
+      if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
       hideCurrentCard();
       showToast('评论卡片已隐藏');
     } else {
@@ -29128,7 +29145,28 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /* ══════════════════════════════════════
-     卡片轮播模式
+     卡片轮播模式（三张堆叠 + 15s 切换）
+
+     GSAP 增强方案（未来可替换当前 CSS 过渡以获得更精细控制）：
+     ─────────────────────────────────────────────────
+     1) 堆叠入场序列（用 timeline 编排三张卡的级联动画）
+        gsap.timeline()
+          .fromTo('.cc-stack-front', { opacity:0, y:24, scale:.96 },
+                              { opacity:1, y:0,  scale:1,  duration:.65, ease:'expo.out' })
+          .to('.cc-stack-mid',   { opacity:.55, y:-7, scale:.98, duration:.5, ease:'power2.out' }, '<+.1')
+          .to('.cc-stack-back',  { opacity:.25, y:-14, scale:.96, duration:.5, ease:'power2.out' }, '<+.05');
+
+     2) 拖动回弹 / 吸附到边（Flip / Draggable 插件）
+        Draggable.create('#comment-card-container', {
+          type:'x,y', bounds:'body', edgeResistance:.6,
+          inertia:true, snap:{ x: snapTargets },
+          onDragEnd: () => savePos()
+        });
+
+     3) 推出动效（弹性 ease）
+        gsap.to(el, { y:-30, opacity:0, scale:.92, duration:.5, ease:'back.in(1.7)' });
+
+     参考：macOS Notification Center 堆叠、Apple Music Now Playing 卡片
      ══════════════════════════════════════ */
   function restartCardCarousel() {
     stopCardCarousel();
@@ -29143,13 +29181,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function scheduleNextCard() {
     if (!_cardActive) return;
-    if (_cardPaused) return; /* 暂停时只等待恢复 */
+    if (_cardPaused) return;
     if (typeof audio === 'undefined' || !audio) return;
-    /* 清除已有定时器，防止 play+playing 双事件导致重复调度 */
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
     var dur = audio.duration || 0;
     console.log('[卡片-debug] scheduleNextCard dur=', dur, '_cardActive=', _cardActive, '_cardPaused=', _cardPaused, 'comments=', _cardComments.length);
-    /* duration 可能还没加载完（play 事件时），延迟重试 */
     if (!dur || isNaN(dur) || dur <= 10) {
       console.log('[卡片-debug] duration 不可用，300ms 后重试');
       _cardTimer = setTimeout(function() { scheduleNextCard(); }, 300);
@@ -29157,32 +29193,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     var cur = audio.currentTime || 0;
     var avail = Math.max(0, dur - 10);
-    var totalSlots = Math.floor(avail / 15);
+    var totalSlots = Math.floor(avail / (CARD_DISPLAY_MS / 1000));
     if (totalSlots <= 0) return;
     var comments = _cardComments.slice(0, totalSlots);
     if (!comments.length) return;
     if (_cardIdx >= comments.length) { _cardActive = false; return; }
 
-    /* 掐头去尾：歌曲开始后5s才开始，结束前5s停止 */
     var waitStart = Math.max(0, 5 - cur);
     var _idx = _cardIdx;
     _cardTimer = setTimeout(function() {
       showCard(comments[_idx], _idx + 1, comments.length);
       _cardIdx++;
-      var extra = (_cardIdx >= comments.length) ? ((avail % 15) * 1000) : 0;
+      var extra = (_cardIdx >= comments.length) ? ((avail % (CARD_DISPLAY_MS / 1000)) * 1000) : 0;
       _cardTimer = setTimeout(function() {
-        hideCurrentCard();
-        _cardTimer = setTimeout(function() { scheduleNextCard(); }, 600);
-      }, 15000 + extra);
+        scheduleNextCard();
+      }, CARD_DISPLAY_MS + extra);
     }, waitStart * 1000);
   }
 
-  function showCard(c, idx, total) {
-    var container = document.getElementById('comment-card-container');
-    if (!container) return;
-    /* 取消未完成的清理定时器，防止新卡片被旧定时器清除 */
-    if (_cardCleanupTimer) { clearTimeout(_cardCleanupTimer); _cardCleanupTimer = null; }
-    container.innerHTML = '';
+  function createCardElement(c, idx, total) {
     var avatarUrl = (c.user && (c.user.avatar || c.user.avatarUrl)) || '';
     var nickname = (c.user && c.user.nickname) || '匿名用户';
     var text = c.content || '这条评论很神秘...';
@@ -29196,8 +29225,8 @@ document.addEventListener('DOMContentLoaded', function() {
     else if (c.location) loc = c.location;
     var likes = c.likedCount || 0;
     var card = document.createElement('div');
+    /* 初始不带 cc-stack-front：从 base 的 hidden 状态淡入到 front */
     card.className = 'comment-card';
-    /* 头像URL使用coverUrlWithSize处理，和app其他头像一致 */
     var safeAvatarUrl = avatarUrl ? (typeof coverUrlWithSize === 'function' ? coverUrlWithSize(avatarUrl, 96) : avatarUrl.replace(/^http:/, 'https:')) : '';
     var avatarHtml = safeAvatarUrl
       ? '<img alt="" onerror="this.onerror=null;this.parentNode.innerHTML=\'<span class=cc-avatar-fallback>🎵</span>\'">'
@@ -29223,32 +29252,200 @@ document.addEventListener('DOMContentLoaded', function() {
           '<span class="cc-counter">' + idx + ' / ' + total + '</span>' +
         '</div>' +
       '</div>';
-    container.appendChild(card);
-    /* 在 DOM 中设置 src 避免 innerHTML 中 URL 被转义 */
     if (safeAvatarUrl) {
       var img = card.querySelector('.cc-avatar img');
       if (img) img.src = safeAvatarUrl;
     }
-    requestAnimationFrame(function() { card.classList.add('visible'); });
+    return card;
+  }
+
+  /**
+   * 显示评论卡片 - 三张堆叠逻辑：
+   * - 新卡片淡入到 front 位置
+   * - 旧 front → mid（半透）
+   * - 旧 mid → back（更暗）
+   * - 超过 CARD_STACK_MAX 时移除最旧
+   */
+  function showCard(c, idx, total) {
+    var container = document.getElementById('comment-card-container');
+    if (!container) return;
+
+    /* 把当前所有卡片降级（front → mid，mid → back） */
+    _cardStack.forEach(function(entry, i) {
+      var el = entry.el;
+      el.classList.remove('cc-stack-front', 'cc-stack-mid', 'cc-stack-back');
+      if (i === 0) {
+        el.classList.add('cc-stack-mid');
+      } else {
+        el.classList.add('cc-stack-back');
+      }
+    });
+
+    var newCard = createCardElement(c, idx, total);
+    container.appendChild(newCard);
+    _cardStack.unshift({ el: newCard, comment: c, idx: idx, total: total });
+
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        newCard.classList.add('cc-stack-front');
+      });
+    });
+
+    while (_cardStack.length > CARD_STACK_MAX) {
+      var oldest = _cardStack.pop();
+      removeCard(oldest.el);
+    }
+  }
+
+  function removeCard(el) {
+    if (!el || !el.parentNode) return;
+    el.classList.remove('cc-stack-front', 'cc-stack-mid', 'cc-stack-back');
+    el.classList.add('cc-removing');
+    setTimeout(function() {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 520);
   }
 
   function hideCurrentCard() {
     var container = document.getElementById('comment-card-container');
     if (!container) return;
-    var card = container.querySelector('.comment-card');
-    if (card) {
-      card.classList.remove('visible');
-      card.classList.add('exit');
-      if (_cardCleanupTimer) { clearTimeout(_cardCleanupTimer); }
-      _cardCleanupTimer = setTimeout(function() { _cardCleanupTimer = null; if (container) container.innerHTML = ''; }, 450);
-    }
+    _cardStack.forEach(function(entry) { removeCard(entry.el); });
+    _cardStack = [];
   }
 
   function stopCardCarousel() {
     _cardActive = false;
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
     var container = document.getElementById('comment-card-container');
-    if (container) container.innerHTML = '';
+    if (!container) return;
+    _cardStack.forEach(function(entry) {
+      if (entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+    });
+    _cardStack = [];
+  }
+
+  /* ══════════════════════════════════════
+     位置持久化（localStorage）
+     ══════════════════════════════════════ */
+  function loadCommentCardPosition() {
+    try {
+      var raw = localStorage.getItem(CC_POS_KEY);
+      if (!raw) return null;
+      var pos = JSON.parse(raw);
+      if (typeof pos.x !== 'number' || typeof pos.y !== 'number') return null;
+      return pos;
+    } catch (e) { return null; }
+  }
+  function saveCommentCardPosition(x, y) {
+    try {
+      localStorage.setItem(CC_POS_KEY, JSON.stringify({ x: x, y: y, t: Date.now() }));
+    } catch (e) {}
+  }
+  function applyCommentCardPosition() {
+    var container = document.getElementById('comment-card-container');
+    if (!container) return;
+    container.style.transform = 'translate(calc(-50% + ' + _cc_dragX + 'px), ' + _cc_dragY + 'px)';
+  }
+  function clampDragPosition() {
+    var container = document.getElementById('comment-card-container');
+    if (!container) return;
+    var rect = container.getBoundingClientRect();
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var minX = -Math.floor(rect.left - 20);
+    var maxX = Math.floor(vw - rect.right - 20);
+    var minY = -Math.floor(rect.top - 20);
+    var maxY = Math.floor(vh - rect.bottom - 20);
+    if (minX > maxX) { minX = maxX = 0; }
+    if (minY > maxY) { minY = maxY = 0; }
+    if (_cc_dragX < minX) _cc_dragX = minX;
+    if (_cc_dragX > maxX) _cc_dragX = maxX;
+    if (_cc_dragY < minY) _cc_dragY = minY;
+    if (_cc_dragY > maxY) _cc_dragY = maxY;
+  }
+
+  /* ══════════════════════════════════════
+     拖动交互（原生鼠标 + 触摸事件）
+     ══════════════════════════════════════ */
+  function initCommentCardDrag() {
+    var container = document.getElementById('comment-card-container');
+    if (!container) return;
+
+    var pos = loadCommentCardPosition();
+    if (pos) { _cc_dragX = pos.x; _cc_dragY = pos.y; }
+    applyCommentCardPosition();
+
+    window.addEventListener('resize', function() {
+      clampDragPosition();
+      applyCommentCardPosition();
+    });
+    requestAnimationFrame(function() {
+      clampDragPosition();
+      applyCommentCardPosition();
+    });
+
+    var DRAG_THRESHOLD = 4;
+    var dragging = false;
+    var dragStarted = false;
+    var startX = 0, startY = 0;
+    var originX = 0, originY = 0;
+
+    function onDown(clientX, clientY, e) {
+      if (e && e.target && e.target.closest('button, a, input, textarea, .cc-avatar, .cc-likes')) return;
+      dragging = true;
+      dragStarted = false;
+      startX = clientX;
+      startY = clientY;
+      originX = _cc_dragX;
+      originY = _cc_dragY;
+      container.classList.add('dragging');
+      if (e && e.preventDefault) e.preventDefault();
+    }
+    function onMove(clientX, clientY) {
+      if (!dragging) return;
+      var dx = clientX - startX;
+      var dy = clientY - startY;
+      if (!dragStarted && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+        dragStarted = true;
+      }
+      if (dragStarted) {
+        _cc_dragX = originX + dx;
+        _cc_dragY = originY + dy;
+        applyCommentCardPosition();
+      }
+    }
+    function onUp() {
+      if (!dragging) return;
+      dragging = false;
+      container.classList.remove('dragging');
+      if (dragStarted) {
+        clampDragPosition();
+        applyCommentCardPosition();
+        saveCommentCardPosition(_cc_dragX, _cc_dragY);
+      }
+      dragStarted = false;
+    }
+
+    container.addEventListener('mousedown', function(e) { onDown(e.clientX, e.clientY, e); });
+    document.addEventListener('mousemove', function(e) { onMove(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('mouseleave', onUp);
+
+    container.addEventListener('touchstart', function(e) {
+      if (e.touches.length !== 1) return;
+      var t = e.touches[0];
+      onDown(t.clientX, t.clientY, e);
+    }, { passive: false });
+    container.addEventListener('touchmove', function(e) {
+      if (e.touches.length !== 1) return;
+      var t = e.touches[0];
+      onMove(t.clientX, t.clientY);
+      if (dragStarted) e.preventDefault();
+    }, { passive: false });
+    container.addEventListener('touchend', onUp);
+    container.addEventListener('touchcancel', onUp);
+
+    container.addEventListener('dragstart', function(e) { e.preventDefault(); });
   }
 
   /* ── 辅助函数 ── */
@@ -29309,6 +29506,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function initCommentCards() {
     var btn = document.getElementById('comment-card-btn');
     if (btn) btn.setAttribute('aria-pressed', fx.commentCardEnabled === false ? 'false' : 'true');
+    initCommentCardDrag();
     bindCommentCardPlaybackEvents();
   }
 
