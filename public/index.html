@@ -2018,13 +2018,14 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 /* 卡片容器：固定位置 + 3D 透视上下文（不参与拖拽 transform） */
 #comment-card-container{position:fixed;z-index:80;left:50%;top:50%;width:400px;height:240px;margin-left:-200px;margin-top:-120px;perspective:1400px;perspective-origin:50% 50%;pointer-events:none;display:block;visibility:hidden;transition:visibility 0s linear .35s}
 #comment-card-container.cc-ready{visibility:visible;transition:none}
-/* 激活（已有卡片在屏）时才接受指针事件、显示抓手光标，避免开屏动画期间误触 */
-#comment-card-container.cc-active{pointer-events:auto;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+/* 激活（已有卡片在屏）时才接受指针事件，避免开屏动画期间误触
+   注意：cursor:grab 已下移到 .comment-card.cc-position-current，光标只在主展示位卡片上显示 */
+#comment-card-container.cc-active{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
 #comment-card-container.cc-active.dragging{cursor:grabbing}
 
-/* 拖拽包装层：所有拖拽位移作用于它，与卡片旋转 transform 隔离 */
+/* 拖拽包装层：所有拖拽位移作用于它，与卡片旋转 transform 隔离
+   注意：不再设置 pointer-events:auto，由 current 卡片自身接收事件 */
 #comment-card-drag-wrapper{position:relative;width:100%;height:100%;transform:translate(0,0);will-change:transform;pointer-events:none}
-#comment-card-container.cc-active #comment-card-drag-wrapper{pointer-events:auto}
 #comment-card-container.dragging #comment-card-drag-wrapper{transition:none}
 #comment-card-drag-wrapper.dragging-lift .comment-card .cc-inner{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.45),inset 0 0 10px 4px rgba(255,255,255,.22),0 8px 28px rgba(17,17,26,.12),0 16px 40px rgba(17,17,26,.12),0 24px 72px rgba(17,17,26,.14),inset 0 8px 28px rgba(17,17,26,.12),inset 0 16px 40px rgba(17,17,26,.12),inset 0 24px 72px rgba(17,17,26,.12)}
 
@@ -2038,8 +2039,9 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
    - removing:进一步向左上方淡出消失
 */
 
-/* 当前位置：居中，全不透明度，正面 */
-.comment-card.cc-position-current{opacity:1;transform:translateX(0) translateY(0) scale(1) rotateZ(0deg);z-index:3;pointer-events:auto;filter:none}
+/* 当前位置：居中，全不透明度，正面 + 抓手光标（仅主展示位可拖动） */
+.comment-card.cc-position-current{opacity:1;transform:translateX(0) translateY(0) scale(1) rotateZ(0deg);z-index:3;pointer-events:auto;filter:none;cursor:grab}
+.comment-card.cc-position-current:active{cursor:grabbing}
 
 /* 历史位置：向左上方，scale 0.88，倾斜 +2°，淡化 */
 .comment-card.cc-position-past{opacity:.28;transform:translateX(-90px) translateY(-26px) scale(.88) rotateZ(2deg);z-index:1;filter:saturate(.7) brightness(.88) blur(.4px);pointer-events:none}
@@ -29514,6 +29516,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function onDown(clientX, clientY, e) {
       if (e && e.target && e.target.closest('button, a, input, textarea, .cc-avatar, .cc-likes')) return;
+      /* 关键守卫：仅当 mousedown 命中 .comment-card.cc-position-current 时才启动拖动
+         避免点击容器空白区、past/next 卡片延伸区、或卡片透明 padding 区域时误触 */
+      if (e && e.target && !e.target.closest('.comment-card.cc-position-current')) return;
       dragging = true;
       dragStarted = false;
       startX = clientX;
