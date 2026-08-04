@@ -2015,16 +2015,32 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 #comment-card-btn svg{transition:color .18s}
 #comment-card-btn[aria-pressed="true"]{color:var(--home-accent,#00f5d4)}
 
-/* 卡片容器：可拖动 */
-#comment-card-container{position:fixed;z-index:80;left:50%;bottom:16%;transform:translate(-50%,0);pointer-events:auto;display:flex;align-items:center;justify-content:center;cursor:grab;will-change:transform;transition:transform .35s cubic-bezier(.16,1,.3,1);touch-action:none;user-select:none;-webkit-user-select:none}
-#comment-card-container.dragging{cursor:grabbing;transition:none}
-#comment-card-container.dragging .comment-card .cc-inner{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.45),inset 0 0 10px 4px rgba(255,255,255,.22),0 6px 22px rgba(17,17,26,.10),0 12px 32px rgba(17,17,26,.10),0 20px 64px rgba(17,17,26,.12),inset 0 6px 22px rgba(17,17,26,.10),inset 0 12px 32px rgba(17,17,26,.10),inset 0 20px 64px rgba(17,17,26,.10)}
-/* 卡片本体：堆叠视觉 */
-.comment-card{position:absolute;width:400px;padding:0;border-radius:20px;opacity:0;transform:translateY(20px) scale(.96);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1);pointer-events:auto;overflow:hidden;left:50%;margin-left:-200px;top:0;will-change:opacity,transform}
-.comment-card.cc-stack-front{opacity:1;transform:translateY(0) scale(1);z-index:3}
-.comment-card.cc-stack-mid{opacity:.55;transform:translateY(-7px) scale(.98);z-index:2;filter:saturate(.85) brightness(.92);pointer-events:none}
-.comment-card.cc-stack-back{opacity:.25;transform:translateY(-14px) scale(.96);z-index:1;filter:saturate(.7) brightness(.84);pointer-events:none}
-.comment-card.cc-removing{opacity:0!important;transform:translateY(-26px) scale(.94)!important;transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1)!important;pointer-events:none}
+/* 卡片容器：固定位置 + 3D 透视上下文（不参与拖拽 transform） */
+#comment-card-container{position:fixed;z-index:80;left:50%;top:50%;width:400px;height:240px;margin-left:-200px;margin-top:-120px;perspective:1200px;perspective-origin:50% 50%;pointer-events:none;display:block;visibility:hidden;transition:visibility 0s linear .35s}
+#comment-card-container.cc-ready{visibility:visible;transition:none}
+#comment-card-container.dragging{cursor:grabbing}
+#comment-card-container{pointer-events:auto;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+
+/* 拖拽包装层：所有拖拽位移作用于它，与卡片旋转 transform 隔离 */
+#comment-card-drag-wrapper{position:relative;width:100%;height:100%;transform:translate(0,0);will-change:transform;pointer-events:auto}
+#comment-card-container.dragging #comment-card-drag-wrapper{transition:none}
+#comment-card-drag-wrapper.dragging-lift .comment-card .cc-inner{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.45),inset 0 0 10px 4px rgba(255,255,255,.22),0 8px 28px rgba(17,17,26,.12),0 16px 40px rgba(17,17,26,.12),0 24px 72px rgba(17,17,26,.14),inset 0 8px 28px rgba(17,17,26,.12),inset 0 16px 40px rgba(17,17,26,.12),inset 0 24px 72px rgba(17,17,26,.12)}
+
+/* 卡片本体：基础隐藏状态 */
+.comment-card{position:absolute;top:0;left:0;width:400px;padding:0;border-radius:20px;opacity:0;transform-origin:50% 50%;transform:translateY(24px) scale(.94) rotateY(0deg);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1),filter .7s cubic-bezier(.16,1,.3,1);pointer-events:none;overflow:hidden;will-change:opacity,transform,filter}
+
+/* 当前位置：中心，全不透明度，正面 */
+.comment-card.cc-position-current{opacity:1;transform:translateX(0) translateY(0) scale(1) rotateY(0deg);z-index:3;pointer-events:auto;filter:none}
+
+/* 历史位置：左侧，旋转 28deg，缩小，淡化 */
+.comment-card.cc-position-past{opacity:.32;transform:translateX(-150px) translateY(0) scale(.88) rotateY(28deg);z-index:1;filter:saturate(.65) brightness(.85) blur(.3px);pointer-events:none}
+
+/* 下一张位置：右侧，旋转 -28deg，缩小，淡化 */
+.comment-card.cc-position-next{opacity:.32;transform:translateX(150px) translateY(0) scale(.88) rotateY(-28deg);z-index:2;filter:saturate(.65) brightness(.85) blur(.3px);pointer-events:none}
+
+/* 即将被移除的旧历史卡片：进一步向左淡出 */
+.comment-card.cc-position-removing{opacity:0!important;transform:translateX(-220px) translateY(0) scale(.82) rotateY(40deg)!important;transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1)!important;pointer-events:none}
+
 .comment-card .cc-glow{position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent,#00f5d4) 12%,transparent),transparent 40%,transparent 60%,color-mix(in srgb,var(--home-accent,#00f5d4) 6%,transparent));z-index:0;opacity:.5;filter:blur(1px);pointer-events:none}
 .comment-card .cc-inner{position:relative;z-index:1;background:rgba(0,0,0,.10);backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);-webkit-backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);border:0;border-radius:20px;padding:20px 22px 16px;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.35),inset 0 0 10px 4px rgba(255,255,255,.15),0 4px 16px rgba(17,17,26,.05),0 8px 24px rgba(17,17,26,.05),0 16px 56px rgba(17,17,26,.05),inset 0 4px 16px rgba(17,17,26,.05),inset 0 8px 24px rgba(17,17,26,.05),inset 0 16px 56px rgba(17,17,26,.05);transition:box-shadow .25s ease-out}
 html.control-glass-svg-ok .comment-card .cc-inner{background:rgba(0,0,0,.10);backdrop-filter:url(#mineradio-control-glass-filter) saturate(1);-webkit-backdrop-filter:url(#mineradio-control-glass-filter) saturate(1)}
@@ -29020,10 +29036,10 @@ document.addEventListener('DOMContentLoaded', function() {
   var _cardActive = false;
   var _cardPaused = false; /* 暂停标记，替代 playing 检查 */
 
-  /* 卡片堆叠：最多同时显示 3 张 */
+  /* 卡片轮播：past / current / next 三状态轮转 */
   var CARD_STACK_MAX = 3;
   var CARD_DISPLAY_MS = 15000; /* 每张卡片显示 15s */
-  var _cardStack = []; /* [{el, comment, idx, total}] - 索引 0 为最新 */
+  var _cardQueue = []; /* [{el, comment, position: 'past'|'current'|'next'}] */
 
   /* 拖动状态 */
   var _cc_dragX = 0;
@@ -29260,68 +29276,73 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /**
-   * 显示评论卡片 - 三张堆叠逻辑：
-   * - 新卡片淡入到 front 位置
-   * - 旧 front → mid（半透）
-   * - 旧 mid → back（更暗）
-   * - 超过 CARD_STACK_MAX 时移除最旧
+   * 显示评论卡片 - 旋转轮播逻辑：
+   * 1. current → past（向左淡出位置）
+   * 2. next → current（移到中心）
+   * 3. 旧 past → 标记为 removing（彻底淡出移除）
+   * 4. 新卡片插入为 next（淡入到右侧预览位）
+   * 同一时间最多 3 张：past / current / next
    */
   function showCard(c, idx, total) {
-    var container = document.getElementById('comment-card-container');
-    if (!container) return;
+    var wrapper = document.getElementById('comment-card-drag-wrapper');
+    if (!wrapper) return;
 
-    /* 把当前所有卡片降级（front → mid，mid → back） */
-    _cardStack.forEach(function(entry, i) {
+    var toRemove = [];
+
+    _cardQueue.forEach(function(entry) {
       var el = entry.el;
-      el.classList.remove('cc-stack-front', 'cc-stack-mid', 'cc-stack-back');
-      if (i === 0) {
-        el.classList.add('cc-stack-mid');
-      } else {
-        el.classList.add('cc-stack-back');
+      el.classList.remove('cc-position-current', 'cc-position-past', 'cc-position-next');
+      if (entry.position === 'current') {
+        entry.position = 'past';
+        el.classList.add('cc-position-past');
+      } else if (entry.position === 'next') {
+        entry.position = 'current';
+        el.classList.add('cc-position-current');
+      } else if (entry.position === 'past') {
+        toRemove.push(entry);
       }
     });
 
+    toRemove.forEach(function(entry) { removeCard(entry.el); });
+    _cardQueue = _cardQueue.filter(function(entry) {
+      return entry.position === 'current' || entry.position === 'next';
+    });
+
     var newCard = createCardElement(c, idx, total);
-    container.appendChild(newCard);
-    _cardStack.unshift({ el: newCard, comment: c, idx: idx, total: total });
+    newCard.classList.add('cc-position-next');
+    wrapper.appendChild(newCard);
+    _cardQueue.push({ el: newCard, comment: c, position: 'next' });
 
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        newCard.classList.add('cc-stack-front');
+        void newCard.offsetHeight;
       });
     });
-
-    while (_cardStack.length > CARD_STACK_MAX) {
-      var oldest = _cardStack.pop();
-      removeCard(oldest.el);
-    }
   }
 
   function removeCard(el) {
     if (!el || !el.parentNode) return;
-    el.classList.remove('cc-stack-front', 'cc-stack-mid', 'cc-stack-back');
-    el.classList.add('cc-removing');
+    el.classList.remove('cc-position-current', 'cc-position-past', 'cc-position-next');
+    el.classList.add('cc-position-removing');
     setTimeout(function() {
       if (el.parentNode) el.parentNode.removeChild(el);
     }, 520);
   }
 
   function hideCurrentCard() {
-    var container = document.getElementById('comment-card-container');
-    if (!container) return;
-    _cardStack.forEach(function(entry) { removeCard(entry.el); });
-    _cardStack = [];
+    _cardQueue.forEach(function(entry) { removeCard(entry.el); });
+    _cardQueue = [];
   }
 
   function stopCardCarousel() {
     _cardActive = false;
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
-    var container = document.getElementById('comment-card-container');
-    if (!container) return;
-    _cardStack.forEach(function(entry) {
+    var wrapper = document.getElementById('comment-card-drag-wrapper');
+    if (!wrapper) return;
+    _cardQueue.forEach(function(entry) {
       if (entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
     });
-    _cardStack = [];
+    _cardQueue = [];
   }
 
   /* ══════════════════════════════════════
@@ -29342,22 +29363,25 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (e) {}
   }
   function applyCommentCardPosition() {
-    var container = document.getElementById('comment-card-container');
-    if (!container) return;
-    container.style.transform = 'translate(calc(-50% + ' + _cc_dragX + 'px), ' + _cc_dragY + 'px)';
+    var wrapper = document.getElementById('comment-card-drag-wrapper');
+    if (!wrapper) return;
+    wrapper.style.transform = 'translate(' + _cc_dragX + 'px, ' + _cc_dragY + 'px)';
   }
+
   function clampDragPosition() {
+    var wrapper = document.getElementById('comment-card-drag-wrapper');
+    if (!wrapper) return;
     var container = document.getElementById('comment-card-container');
     if (!container) return;
     var rect = container.getBoundingClientRect();
     var vw = window.innerWidth;
     var vh = window.innerHeight;
-    var minX = -Math.floor(rect.left - 20);
-    var maxX = Math.floor(vw - rect.right - 20);
-    var minY = -Math.floor(rect.top - 20);
-    var maxY = Math.floor(vh - rect.bottom - 20);
-    if (minX > maxX) { minX = maxX = 0; }
-    if (minY > maxY) { minY = maxY = 0; }
+    var halfW = 200;
+    var halfH = 120;
+    var minX = -(vw / 2) + halfW - (vw / 2 - rect.left);
+    var maxX = (vw / 2) - halfW - (vw / 2 - rect.left);
+    var minY = -(vh / 2) + halfH - (vh / 2 - rect.top);
+    var maxY = (vh / 2) - halfH - (vh / 2 - rect.top);
     if (_cc_dragX < minX) _cc_dragX = minX;
     if (_cc_dragX > maxX) _cc_dragX = maxX;
     if (_cc_dragY < minY) _cc_dragY = minY;
@@ -29369,11 +29393,13 @@ document.addEventListener('DOMContentLoaded', function() {
      ══════════════════════════════════════ */
   function initCommentCardDrag() {
     var container = document.getElementById('comment-card-container');
-    if (!container) return;
+    var wrapper = document.getElementById('comment-card-drag-wrapper');
+    if (!container || !wrapper) return;
 
     var pos = loadCommentCardPosition();
     if (pos) { _cc_dragX = pos.x; _cc_dragY = pos.y; }
     applyCommentCardPosition();
+    container.classList.add('cc-ready');
 
     window.addEventListener('resize', function() {
       clampDragPosition();
@@ -29407,6 +29433,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var dy = clientY - startY;
       if (!dragStarted && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
         dragStarted = true;
+        wrapper.classList.add('dragging-lift');
       }
       if (dragStarted) {
         _cc_dragX = originX + dx;
@@ -29418,6 +29445,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!dragging) return;
       dragging = false;
       container.classList.remove('dragging');
+      wrapper.classList.remove('dragging-lift');
       if (dragStarted) {
         clampDragPosition();
         applyCommentCardPosition();
@@ -29549,6 +29577,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 })();
 </script>
-<div id="comment-card-container"></div>
+<div id="comment-card-container"><div id="comment-card-drag-wrapper"></div></div>
 </body>
 </html>
