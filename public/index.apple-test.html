@@ -29076,7 +29076,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* 卡片轮播：past / current / next 三状态轮转 */
   var CARD_STACK_MAX = 3;
-  var CARD_DISPLAY_MS = 15000; /* 每张卡片显示 15s */
+  var CARD_DISPLAY_MS = 12000; /* 每张卡片显示 12s（更紧凑的节奏） */
+  var CARD_END_BUFFER_S = 5;   /* 歌曲尾部缓冲 5s，保证最后一张卡片有阅读时间 */
   var _cardQueue = []; /* [{el, comment, position: 'past'|'current'|'next'}] */
 
   /* 拖动状态 */
@@ -29246,15 +29247,15 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     var cur = audio.currentTime || 0;
-    var avail = Math.max(0, dur - 10);
+    var avail = Math.max(0, dur - CARD_END_BUFFER_S);
     var totalSlots = Math.floor(avail / (CARD_DISPLAY_MS / 1000));
     if (totalSlots <= 0) return;
     var comments = _cardComments.slice(0, totalSlots);
     if (!comments.length) return;
     if (_cardIdx >= comments.length) { _cardActive = false; return; }
 
-    /* 首张卡片立即显示，不等待；后续卡片在歌曲结束前 5s 内停止（保留尾部缓冲） */
-    var waitStart = _cardIdx === 0 ? 0 : Math.max(0, 5 - cur);
+    /* 节奏完全由 CARD_DISPLAY_MS 控制：每张卡片显示 12s，到点自动切换
+       等待/延迟逻辑全部移除：首张立即显示，后续按固定间隔轮转 */
     var _idx = _cardIdx;
     _cardTimer = setTimeout(function() {
       /* 一次性传入当前评论 + 下一条评论（用于右下方预览位的预填） */
@@ -29266,7 +29267,7 @@ document.addEventListener('DOMContentLoaded', function() {
       _cardTimer = setTimeout(function() {
         scheduleNextCard();
       }, CARD_DISPLAY_MS + extra);
-    }, waitStart * 1000);
+    }, 0);
   }
 
   function createCardElement(c, idx, total) {
