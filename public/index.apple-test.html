@@ -2016,30 +2016,66 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 #comment-card-btn[aria-pressed="true"]{color:var(--home-accent,#00f5d4)}
 
 /* 卡片容器：固定位置 + 3D 透视上下文（不参与拖拽 transform） */
-#comment-card-container{position:fixed;z-index:80;left:50%;top:50%;width:400px;height:240px;margin-left:-200px;margin-top:-120px;perspective:1200px;perspective-origin:50% 50%;pointer-events:none;display:block;visibility:hidden;transition:visibility 0s linear .35s}
+#comment-card-container{position:fixed;z-index:80;left:50%;top:50%;width:400px;height:240px;margin-left:-200px;margin-top:-120px;perspective:1400px;perspective-origin:50% 50%;pointer-events:none;display:block;visibility:hidden;transition:visibility 0s linear .35s}
 #comment-card-container.cc-ready{visibility:visible;transition:none}
-#comment-card-container.dragging{cursor:grabbing}
-#comment-card-container{pointer-events:auto;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+/* 激活（已有卡片在屏）时才接受指针事件、显示抓手光标，避免开屏动画期间误触 */
+#comment-card-container.cc-active{pointer-events:auto;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+#comment-card-container.cc-active.dragging{cursor:grabbing}
 
 /* 拖拽包装层：所有拖拽位移作用于它，与卡片旋转 transform 隔离 */
-#comment-card-drag-wrapper{position:relative;width:100%;height:100%;transform:translate(0,0);will-change:transform;pointer-events:auto}
+#comment-card-drag-wrapper{position:relative;width:100%;height:100%;transform:translate(0,0);will-change:transform;pointer-events:none}
+#comment-card-container.cc-active #comment-card-drag-wrapper{pointer-events:auto}
 #comment-card-container.dragging #comment-card-drag-wrapper{transition:none}
 #comment-card-drag-wrapper.dragging-lift .comment-card .cc-inner{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.45),inset 0 0 10px 4px rgba(255,255,255,.22),0 8px 28px rgba(17,17,26,.12),0 16px 40px rgba(17,17,26,.12),0 24px 72px rgba(17,17,26,.14),inset 0 8px 28px rgba(17,17,26,.12),inset 0 16px 40px rgba(17,17,26,.12),inset 0 24px 72px rgba(17,17,26,.12)}
 
 /* 卡片本体：基础隐藏状态 */
-.comment-card{position:absolute;top:0;left:0;width:400px;padding:0;border-radius:20px;opacity:0;transform-origin:50% 50%;transform:translateY(24px) scale(.94) rotateY(0deg);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1),filter .7s cubic-bezier(.16,1,.3,1);pointer-events:none;overflow:hidden;will-change:opacity,transform,filter}
+.comment-card{position:absolute;top:0;left:0;width:400px;padding:0;border-radius:20px;opacity:0;transform-origin:50% 50%;transform:translateY(24px) scale(.94) rotateZ(0deg);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .85s cubic-bezier(.22,1,.36,1),filter .75s cubic-bezier(.22,1,.36,1);pointer-events:none;overflow:visible;will-change:opacity,transform,filter}
 
-/* 当前位置：中心，全不透明度，正面 */
-.comment-card.cc-position-current{opacity:1;transform:translateX(0) translateY(0) scale(1) rotateY(0deg);z-index:3;pointer-events:auto;filter:none}
+/* ═══ Apple Music 堆叠风 ═══
+   - current: 居中，正面，scale 1
+   - past:    左上方淡出，已显示过的历史
+   - next:    右下方淡入，即将展示
+   - removing:进一步向左上方淡出消失
+*/
 
-/* 历史位置：左侧，旋转 28deg，缩小，淡化 */
-.comment-card.cc-position-past{opacity:.32;transform:translateX(-150px) translateY(0) scale(.88) rotateY(28deg);z-index:1;filter:saturate(.65) brightness(.85) blur(.3px);pointer-events:none}
+/* 当前位置：居中，全不透明度，正面 */
+.comment-card.cc-position-current{opacity:1;transform:translateX(0) translateY(0) scale(1) rotateZ(0deg);z-index:3;pointer-events:auto;filter:none}
 
-/* 下一张位置：右侧，旋转 -28deg，缩小，淡化 */
-.comment-card.cc-position-next{opacity:.32;transform:translateX(150px) translateY(0) scale(.88) rotateY(-28deg);z-index:2;filter:saturate(.65) brightness(.85) blur(.3px);pointer-events:none}
+/* 历史位置：向左上方，scale 0.88，倾斜 +2°，淡化 */
+.comment-card.cc-position-past{opacity:.28;transform:translateX(-90px) translateY(-26px) scale(.88) rotateZ(2deg);z-index:1;filter:saturate(.7) brightness(.88) blur(.4px);pointer-events:none}
 
-/* 即将被移除的旧历史卡片：进一步向左淡出 */
-.comment-card.cc-position-removing{opacity:0!important;transform:translateX(-220px) translateY(0) scale(.82) rotateY(40deg)!important;transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1)!important;pointer-events:none}
+/* 下一张位置：向右下方，scale 0.88，倾斜 -2°，淡化 */
+.comment-card.cc-position-next{opacity:.28;transform:translateX(90px) translateY(26px) scale(.88) rotateZ(-2deg);z-index:2;filter:saturate(.7) brightness(.88) blur(.4px);pointer-events:none}
+
+/* 即将被移除的旧历史卡片：进一步向左上方淡出消失 */
+.comment-card.cc-position-removing{opacity:0!important;transform:translateX(-160px) translateY(-50px) scale(.78) rotateZ(3deg)!important;transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1)!important;pointer-events:none}
+
+/* 当前卡片呼吸光晕 + 浮起微动 */
+@keyframes cc-pulse{
+  0%,100%{
+    box-shadow:0 0 14px rgba(0,245,212,.32),0 0 28px rgba(0,245,212,.18),0 8px 24px rgba(17,17,26,.10),0 16px 48px rgba(17,17,26,.10);
+    transform:translateX(0) translateY(0) scale(1) rotateZ(0deg);
+  }
+  50%{
+    box-shadow:0 0 22px rgba(0,245,212,.48),0 0 40px rgba(0,245,212,.28),0 10px 30px rgba(17,17,26,.12),0 20px 60px rgba(17,17,26,.12);
+    transform:translateX(0) translateY(-3px) scale(1.018) rotateZ(0deg);
+  }
+}
+.comment-card.cc-position-current{animation:cc-pulse 4.5s ease-in-out infinite}
+
+/* 当前卡片倒影（仅在 current 状态显示） */
+.comment-card.cc-position-current .cc-inner::after{
+  content:'';position:absolute;top:100%;left:6%;right:6%;height:38%;
+  background:linear-gradient(to bottom, rgba(255,255,255,.10) 0%, rgba(255,255,255,.04) 30%, transparent 100%);
+  transform:scaleY(-1) translateY(4px);
+  border-radius:0 0 20px 20px;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(to top, black 0%, transparent 100%);
+  mask-image:linear-gradient(to top, black 0%, transparent 100%);
+  filter:blur(.6px);
+  opacity:.65;
+  z-index:-1;
+}
 
 .comment-card .cc-glow{position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent,#00f5d4) 12%,transparent),transparent 40%,transparent 60%,color-mix(in srgb,var(--home-accent,#00f5d4) 6%,transparent));z-index:0;opacity:.5;filter:blur(1px);pointer-events:none}
 .comment-card .cc-inner{position:relative;z-index:1;background:rgba(0,0,0,.10);backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);-webkit-backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);border:0;border-radius:20px;padding:20px 22px 16px;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.35),inset 0 0 10px 4px rgba(255,255,255,.15),0 4px 16px rgba(17,17,26,.05),0 8px 24px rgba(17,17,26,.05),0 16px 56px rgba(17,17,26,.05),inset 0 4px 16px rgba(17,17,26,.05),inset 0 8px 24px rgba(17,17,26,.05),inset 0 16px 56px rgba(17,17,26,.05);transition:box-shadow .25s ease-out}
@@ -29276,16 +29312,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /**
-   * 显示评论卡片 - 旋转轮播逻辑：
-   * 1. current → past（向左淡出位置）
+   * 显示评论卡片 - Apple Music 堆叠风轮播逻辑：
+   * 1. current → past（左上方淡出位置）
    * 2. next → current（移到中心）
    * 3. 旧 past → 标记为 removing（彻底淡出移除）
-   * 4. 新卡片插入为 next（淡入到右侧预览位）
+   * 4. 新卡片插入为 next（右下方淡入位置）
    * 同一时间最多 3 张：past / current / next
    */
   function showCard(c, idx, total) {
     var wrapper = document.getElementById('comment-card-drag-wrapper');
+    var container = document.getElementById('comment-card-container');
     if (!wrapper) return;
+
+    /* 首次显示卡片时激活容器（让光标和拖拽生效） */
+    if (container) container.classList.add('cc-active');
 
     var toRemove = [];
 
@@ -29329,20 +29369,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 520);
   }
 
+  function deactivateContainer() {
+    var container = document.getElementById('comment-card-container');
+    if (container) container.classList.remove('cc-active', 'dragging');
+  }
+
   function hideCurrentCard() {
     _cardQueue.forEach(function(entry) { removeCard(entry.el); });
     _cardQueue = [];
+    deactivateContainer();
   }
 
   function stopCardCarousel() {
     _cardActive = false;
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
     var wrapper = document.getElementById('comment-card-drag-wrapper');
-    if (!wrapper) return;
+    if (!wrapper) {
+      deactivateContainer();
+      return;
+    }
     _cardQueue.forEach(function(entry) {
       if (entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
     });
     _cardQueue = [];
+    deactivateContainer();
   }
 
   /* ══════════════════════════════════════
