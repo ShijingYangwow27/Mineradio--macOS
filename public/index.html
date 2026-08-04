@@ -29320,7 +29320,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /**
    * 显示评论卡片 - Apple Music 堆叠风轮播逻辑：
-   * 1. current → past（左上方淡出位置）
+   * 1. current → past（左上方淡出位置，保留在 DOM 和队列）
    * 2. next → current（移到中心）
    * 3. 旧 past → 标记为 removing（彻底淡出移除）
    * 4. 新卡片插入：
@@ -29344,7 +29344,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var el = entry.el;
       el.classList.remove('cc-position-current', 'cc-position-past', 'cc-position-next');
       if (entry.position === 'current') {
-        /* current 退位为 past（向左上方淡出） */
+        /* current 退位为 past（向左上方淡出，保留在 DOM） */
         entry.position = 'past';
         el.classList.add('cc-position-past');
       } else if (entry.position === 'next') {
@@ -29352,15 +29352,18 @@ document.addEventListener('DOMContentLoaded', function() {
         entry.position = 'current';
         el.classList.add('cc-position-current');
       } else if (entry.position === 'past') {
-        /* 旧 past 即将被淘汰 */
+        /* 旧 past 即将被淘汰（轮转后超过 1 张 past） */
         toRemove.push(entry);
       }
     });
 
-    /* 3. 移除旧 past 卡片（带淡出动效） */
+    /* 3. 移除多余的 past 卡片（带淡出动效）
+     *    关键：filter 必须用 toRemove 集合排除，而不是按 position === 'past' 排除
+     *    否则刚刚 current→past 的卡片会被错误地从 DOM 泄漏为孤儿 */
     toRemove.forEach(function(entry) { removeCard(entry.el); });
+    var removedSet = new Set(toRemove);
     _cardQueue = _cardQueue.filter(function(entry) {
-      return entry.position === 'current' || entry.position === 'next';
+      return !removedSet.has(entry);
     });
 
     /* 4. 插入新卡片：

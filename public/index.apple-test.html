@@ -29345,8 +29345,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     toRemove.forEach(function(entry) { removeCard(entry.el); });
+    var removedSet = new Set(toRemove);
     _cardQueue = _cardQueue.filter(function(entry) {
-      return entry.position === 'current' || entry.position === 'next';
+      return !removedSet.has(entry);
     });
 
     /* 4. 插入新卡片：
