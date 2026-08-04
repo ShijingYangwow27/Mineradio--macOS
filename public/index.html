@@ -714,8 +714,10 @@ body.home-controls-locked #bottom-bar{opacity:0!important;pointer-events:none!im
 .quality-option.locked small::after{content:' · 需网易云SVIP';color:rgba(244,210,138,.88)}
 #volume-slider{width:92px;accent-color:var(--fc-accent);cursor:pointer}
 #volume-value{width:34px;text-align:right;font-size:10px;color:rgba(255,255,255,.52);font-variant-numeric:tabular-nums}
-.mini-queue-popover{position:absolute;left:50%;bottom:calc(100% + 14px);width:min(420px,calc(100vw - 32px));max-height:min(420px,calc(100vh - 170px));padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.075);background:linear-gradient(145deg,rgba(18,18,23,.82),rgba(8,8,12,.88));backdrop-filter:blur(30px) saturate(1.08);-webkit-backdrop-filter:blur(30px) saturate(1.08);box-shadow:0 22px 70px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.065);opacity:0;pointer-events:none;transform:translateX(-50%) translateY(12px) scale(.98);transition:opacity .22s,transform .22s;z-index:7;overflow:hidden}
-.mini-queue-popover.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
+/* mini-queue-popover 移出 bottom-bar 后改为 fixed 定位，由 JS syncMiniQueuePosition() 同步到 bottom-bar 上方 14px。
+   z-index:90 高于评论卡片容器（z-index:80），确保评论卡片在屏幕中部时不会拦截 popover 的 click 事件。 */
+#mini-queue-popover{position:fixed;left:50%;width:min(420px,calc(100vw - 32px));max-height:min(420px,calc(100vh - 170px));padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.075);background:linear-gradient(145deg,rgba(18,18,23,.82),rgba(8,8,12,.88));backdrop-filter:blur(30px) saturate(1.08);-webkit-backdrop-filter:blur(30px) saturate(1.08);box-shadow:0 22px 70px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.065);opacity:0;pointer-events:none;transform:translateX(-50%) translateY(12px) scale(.98);transition:opacity .22s,transform .22s;z-index:90;overflow:hidden;visibility:hidden}
+#mini-queue-popover.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1);visibility:visible}
 .mini-queue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
 .mini-queue-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.92);letter-spacing:.4px}
 .mini-queue-count{font-size:10.5px;color:rgba(255,255,255,.44);margin-top:3px}
@@ -2733,16 +2735,6 @@ body.immersive-mode #comment-card-container{opacity:0!important}
 </svg>
 <button id="bottom-handle" type="button" aria-label="展开播放器控制台" title="播放器控制台"><span></span></button>
 <div id="bottom-bar">
-  <div id="mini-queue-popover" class="mini-queue-popover" onclick="event.stopPropagation()">
-    <div class="mini-queue-head">
-      <div>
-        <div class="mini-queue-title">当前队列</div>
-        <div id="mini-queue-count" class="mini-queue-count">0 首</div>
-      </div>
-      <button class="fx-mini-btn ghost" onclick="closeMiniQueue()" title="关闭" style="height:26px;padding:0 9px;font-size:13px">×</button>
-    </div>
-    <div id="mini-queue-list" class="mini-queue-list"></div>
-  </div>
   <div id="progress-bar"><div id="progress-fill"></div><div id="progress-thumb" aria-hidden="true"></div></div>
   <div id="controls">
     <div class="control-cluster actions">
@@ -2788,6 +2780,19 @@ body.immersive-mode #comment-card-container{opacity:0!important}
     <div id="time-display">0:00 / 0:00</div>
     </div>
   </div>
+</div>
+
+<!-- 播放队列 popover 移出 bottom-bar，避免被 bottom-bar 的 stacking context (z-index:6) 限制，
+     进而被 z-index:80 的评论卡片容器盖住导致无法点击。改用 fixed 定位 + JS 同步 bottom-bar 位置。 -->
+<div id="mini-queue-popover" class="mini-queue-popover" onclick="event.stopPropagation()">
+  <div class="mini-queue-head">
+    <div>
+      <div class="mini-queue-title">当前队列</div>
+      <div id="mini-queue-count" class="mini-queue-count">0 首</div>
+    </div>
+    <button class="fx-mini-btn ghost" onclick="closeMiniQueue()" title="关闭" style="height:26px;padding:0 9px;font-size:13px">×</button>
+  </div>
+  <div id="mini-queue-list" class="mini-queue-list"></div>
 </div>
 
 <input type="file" id="file-input" accept=".mp3,.flac,.wav,.ogg,.m4a,.jpg,.jpeg,.png,.webp" multiple style="display:none">
@@ -20712,6 +20717,21 @@ function switchPlaylistTab(tab) {
   if (tab === 'playlists') animateVisiblePanelList(document.getElementById('pl-list'), '.pl-card', document.getElementById('playlist-panel'));
   if (tab === 'podcasts') animateVisiblePanelList(document.getElementById('podcast-list'), '.pl-card', document.getElementById('playlist-panel'));
 }
+/* ── 同步播放队列 popover 到底部控制栏上方 ──
+   popover 已移出 bottom-bar 作为 body 直接子元素（避免 bottom-bar z-index:6 的 stacking context
+   限制 popover 高度，使 z-index:80 的评论卡片容器在屏幕中部盖住 popover）。
+   改为 fixed 定位后，需要 JS 实时计算 bottom-bar 的视口位置并把 popover 锚定到其上方 14px。 */
+function syncMiniQueuePosition() {
+  var pop = document.getElementById('mini-queue-popover');
+  var bar = document.getElementById('bottom-bar');
+  if (!pop || !bar) return;
+  if (!miniQueueOpen) return;
+  var rect = bar.getBoundingClientRect();
+  /* popover bottom = bar top - 14px offset */
+  pop.style.bottom = (window.innerHeight - rect.top + 14) + 'px';
+  pop.style.left = (rect.left + rect.width / 2) + 'px';
+  pop.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+}
 function setMiniQueueOpen(open) {
   miniQueueOpen = !!open;
   var pop = document.getElementById('mini-queue-popover');
@@ -20719,14 +20739,28 @@ function setMiniQueueOpen(open) {
   if (pop) pop.classList.toggle('show', miniQueueOpen);
   if (btn) btn.classList.toggle('active', miniQueueOpen);
   if (miniQueueOpen) {
+    /* 显示前先同步位置，避免弹出位置错位 */
+    syncMiniQueuePosition();
     var seq = ++miniQueueRenderSeq;
     requestAnimationFrame(function(){
       if (seq !== miniQueueRenderSeq || !miniQueueOpen) return;
+      /* popover 高度依赖内容（min(420px, ...)），渲染后再次同步确保对齐 */
       renderMiniQueuePanel({ animate: true, scrollCurrent: true });
+      syncMiniQueuePosition();
     });
     revealBottomControls(1300);
+  } else {
+    if (pop) {
+      pop.style.bottom = '';
+      pop.style.left = '';
+      pop.style.transform = '';
+    }
   }
 }
+/* 窗口尺寸变化时重新同步 popover 位置 */
+window.addEventListener('resize', function(){
+  if (miniQueueOpen) syncMiniQueuePosition();
+});
 function toggleMiniQueue(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   setMiniQueueOpen(!miniQueueOpen);
@@ -29077,6 +29111,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var CARD_DISPLAY_MS = 12000; /* 每张卡片显示 12s（更紧凑的节奏） */
   var CARD_END_BUFFER_S = 5;   /* 歌曲尾部缓冲 5s，保证最后一张卡片有阅读时间 */
   var _cardQueue = []; /* [{el, comment, position: 'past'|'current'|'next'}] */
+  var _cardScheduled = false; /* 是否已有 scheduleNextCard 的 timer 在排队（防重复调度） */
+  var _cardStarting = false;  /* restartCardCarousel 启动中的临界区（防同帧多次重启） */
 
   /* 拖动状态 */
   var _cc_dragX = 0; /* 拖动 X 偏移（px） */
@@ -29188,11 +29224,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!song) return;
     var key = getSongKey();
     if (commentCache[key] && commentCache[key].length) {
+      /* 已有缓存：
+         - 若轮播已激活且评论列表与当前歌一致（_cardComments 不为空且 key 匹配），
+           什么也不做（避免 scheduleNextCard 被多事件重复触发导致 setTimeout 0 多次排队）
+         - 若轮播未激活（切歌后首次启动），调用 restartCardCarousel */
       if (_cardActive) {
-        scheduleNextCard();
-      } else {
-        restartCardCarousel();
+        /* 关键：仅在 _cardScheduled 为 false 时才补一次调度，
+           防止 audio.play/playing/loadedmetadata/durationchange/pollCommentCardPlayback
+           在同一帧内多次触发 ensureCommentsThenStart 导致 showCard 重复执行、第一张卡片闪烁 */
+        if (!_cardScheduled) scheduleNextCard();
+        return;
       }
+      restartCardCarousel();
     } else {
       fetchComments(song);
     }
@@ -29223,28 +29266,46 @@ document.addEventListener('DOMContentLoaded', function() {
      参考：macOS Notification Center 堆叠、Apple Music Now Playing 卡片
      ══════════════════════════════════════ */
   function restartCardCarousel() {
-    stopCardCarousel();
-    var key = getSongKey();
-    _cardComments = (commentCache[key] || []).slice();
-    console.log('[卡片-debug] restartCardCarousel key=', key, 'comments=', _cardComments.length);
-    if (!_cardComments.length) return;
-    _cardIdx = 0;
-    _cardActive = true;
-    scheduleNextCard();
+    /* 临界区：防止同帧内 fetchComments.then、ensureCommentsThenStart、pollCommentCardPlayback
+       多次调用 restartCardCarousel，导致 scheduleNextCard 的 setTimeout 0 被多次排队、
+       第一张卡片被 stopCardCarousel 反复清理、最终出现"闪烁-跳过"现象 */
+    if (_cardStarting) return;
+    _cardStarting = true;
+    try {
+      stopCardCarousel();
+      var key = getSongKey();
+      _cardComments = (commentCache[key] || []).slice();
+      console.log('[卡片-debug] restartCardCarousel key=', key, 'comments=', _cardComments.length);
+      if (!_cardComments.length) return;
+      _cardIdx = 0;
+      _cardActive = true;
+      scheduleNextCard();
+    } finally {
+      _cardStarting = false;
+    }
   }
 
   function scheduleNextCard() {
     if (!_cardActive) return;
     if (_cardPaused) return; /* 暂停时只等待恢复 */
     if (typeof audio === 'undefined' || !audio) return;
-    /* 清除已有定时器，防止 play+playing 双事件导致重复调度 */
+    /* 防重复调度：
+       切歌过程中 audio.play/playing/loadedmetadata/durationchange/pollCommentCardPlayback
+       几乎同时触发 ensureCommentsThenStart → scheduleNextCard。
+       旧的 _cardTimer 已经被 stopCardCarousel 清空，但已经排队的 setTimeout 0 回调无法被
+       clearTimeout 取消（浏览器已经接管该回调），因此会重复执行 showCard，
+       表现为"第一张卡片出现-立即 demote 到 past-被新卡片覆盖"的闪烁现象。
+       用 _cardScheduled 标志保证当前只有一个 showCard 待执行。 */
+    if (_cardScheduled) return;
+    /* 清除已有定时器（仅对尚未派发的 timer 有效） */
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
     var dur = audio.duration || 0;
     console.log('[卡片-debug] scheduleNextCard dur=', dur, '_cardActive=', _cardActive, '_cardPaused=', _cardPaused, 'comments=', _cardComments.length);
     /* duration 可能还没加载完（play 事件时），延迟重试 */
     if (!dur || isNaN(dur) || dur <= 10) {
       console.log('[卡片-debug] duration 不可用，300ms 后重试');
-      _cardTimer = setTimeout(function() { scheduleNextCard(); }, 300);
+      _cardScheduled = true;
+      _cardTimer = setTimeout(function() { _cardScheduled = false; scheduleNextCard(); }, 300);
       return;
     }
     var cur = audio.currentTime || 0;
@@ -29258,14 +29319,20 @@ document.addEventListener('DOMContentLoaded', function() {
     /* 节奏完全由 CARD_DISPLAY_MS 控制：每张卡片显示 12s，到点自动切换
        等待/延迟逻辑全部移除：首张立即显示，后续按固定间隔轮转 */
     var _idx = _cardIdx;
+    _cardScheduled = true;
     _cardTimer = setTimeout(function() {
+      /* showCard 前解除 _cardScheduled 锁，避免外部调用 scheduleNextCard 时被错误跳过
+         （本次回调中会立即重新设置 _cardScheduled=true 给 12s 后的下一个 timer） */
+      _cardScheduled = false;
       /* 一次性传入当前评论 + 下一条评论（用于右下方预览位的预填） */
       var currentC = comments[_idx];
       var nextC = (_idx + 1 < comments.length) ? comments[_idx + 1] : null;
       showCard(currentC, nextC, _idx + 1, comments.length);
       _cardIdx++;
       var extra = (_cardIdx >= comments.length) ? ((avail % (CARD_DISPLAY_MS / 1000)) * 1000) : 0;
+      _cardScheduled = true;
       _cardTimer = setTimeout(function() {
+        _cardScheduled = false;
         scheduleNextCard();
       }, CARD_DISPLAY_MS + extra);
     }, 0);
@@ -29419,6 +29486,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function stopCardCarousel() {
     _cardActive = false;
+    _cardScheduled = false; /* 重置调度标志，让新轮播可以正常启动 */
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
     var wrapper = document.getElementById('comment-card-drag-wrapper');
     if (!wrapper) {
