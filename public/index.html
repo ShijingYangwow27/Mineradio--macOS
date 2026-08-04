@@ -254,8 +254,7 @@ body.simple-mode #search-box{height:58px;border-radius:22px;background:var(--gla
 body.simple-mode #search-box:focus-within{border-color:rgba(0,245,212,.50);background:var(--glass-bg-focus);box-shadow:var(--glass-shadow-focus)}
 body.simple-mode #search-results{max-height:min(420px,calc(100vh - 210px))}
 body.simple-mode #quality-control,
-body.simple-mode #controls-hide-btn,
-body.simple-mode .fullscreen-toggle-btn{display:none!important}
+body.simple-mode #controls-hide-btn{display:none!important}
 body.simple-mode .control-cluster.modes{gap:12px}
 body.simple-mode #bottom-bar{width:min(1060px,calc(100vw - 56px))}
 body.simple-mode #controls{grid-template-columns:minmax(310px,1.05fr) minmax(344px,auto) minmax(230px,.72fr)}
@@ -831,8 +830,7 @@ body.diy-mode #controls{
 }
 @media (max-width:940px){
   body.diy-mode .lyrics-toggle-btn,
-  body.diy-mode #volume-control,
-  body.diy-mode .fullscreen-toggle-btn{display:none!important}
+  body.diy-mode #volume-control{display:none!important}
 }
 @media (max-width:620px){
   #controls,
@@ -885,8 +883,7 @@ body.immersive-mode #mini-queue-btn,
 body.immersive-mode #quality-control,
 body.immersive-mode #volume-control,
 body.immersive-mode #controls-hide-btn,
-body.immersive-mode .control-divider,
-body.immersive-mode .fullscreen-toggle-btn{display:none!important}
+body.immersive-mode .control-divider{display:none!important}
 body.immersive-mode #mini-queue-popover{display:none!important}
 body.immersive-mode .ctrl-btn{width:40px;height:40px;border-radius:12px}
 body.immersive-mode .ctrl-btn svg{width:22px;height:22px}
@@ -2014,41 +2011,9 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
   height: 100%;
 }
 
-/* ====== 评论弹幕系统 ====== */
-#comment-danmaku-toggle{position:fixed;z-index:20;right:36px;bottom:90px;width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);color:rgba(255,255,255,.42);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.6;transform:scale(1);transition:bottom .38s cubic-bezier(.16,1,.3,1),opacity .18s,transform .18s,background .18s,color .18s,border-color .18s,box-shadow .28s}
-#comment-danmaku-toggle:hover{opacity:1}
-#comment-danmaku-toggle.danmaku-mode{opacity:1;border-color:rgba(0,245,212,.34);background:rgba(0,245,212,.10);color:#00f5d4;box-shadow:0 0 12px rgba(0,245,212,.30)}
-#comment-danmaku-toggle.card-mode{opacity:1;border-color:rgba(255,180,60,.34);background:rgba(255,180,60,.10);color:#ffb43c;box-shadow:0 0 12px rgba(255,180,60,.30)}
-#comment-danmaku-toggle.loading::after{content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--home-accent,#00f5d4);border-radius:50%;animation:dm-spin .6s linear infinite}
-@keyframes dm-spin{to{transform:rotate(360deg)}}
-body.fx-fab-auto-hide #comment-danmaku-toggle{right:-76px;opacity:0;visibility:hidden;pointer-events:none;transform:scale(.92);transition:right .28s cubic-bezier(.16,1,.3,1),bottom .38s cubic-bezier(.16,1,.3,1),opacity .18s,visibility 0s linear .18s,transform .18s,background .18s,color .18s,border-color .18s}
-body.fx-fab-auto-hide.fx-fab-peek #comment-danmaku-toggle{right:36px;opacity:1;visibility:visible;pointer-events:auto;transform:scale(1);transition:right .28s cubic-bezier(.16,1,.3,1),bottom .38s cubic-bezier(.16,1,.3,1),opacity .16s,transform .18s,background .18s,color .18s,border-color .18s}
-body.controls-visible #comment-danmaku-toggle,
-body.desktop-shell.diy-mode.controls-visible #comment-danmaku-toggle{bottom:192px}
-body.immersive-mode #comment-danmaku-toggle{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
-body.desktop-shell.diy-mode #comment-danmaku-toggle{bottom:90px}
-@media(max-width:600px){body.desktop-shell.diy-mode #comment-danmaku-toggle{bottom:82px}}
-
-.danmaku-settings-pop{display:none;position:fixed;z-index:999;right:36px;bottom:168px;width:220px;padding:12px 14px;background:linear-gradient(142deg,rgba(18,21,26,.88),rgba(8,9,13,.94));backdrop-filter:blur(24px) saturate(1.12);-webkit-backdrop-filter:blur(24px) saturate(1.12);border:1px solid color-mix(in srgb,var(--home-accent,#00f5d4) 12%,rgba(255,255,255,.08));border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.45);color:rgba(255,255,255,.82);font-size:12px;animation:dm-pop-in .2s ease-out}
-.danmaku-settings-pop.visible{display:block}
-@keyframes dm-pop-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-body.controls-visible .danmaku-settings-pop{bottom:174px}
-.danmaku-pop-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.72);margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase}
-.danmaku-pop-modes{display:flex;gap:6px;margin-bottom:8px}
-.dm-mode-btn{flex:1;display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.04);color:rgba(255,255,255,.55);cursor:pointer;transition:all .18s;font-size:11px}
-.dm-mode-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.12)}
-.dm-mode-btn.active{background:color-mix(in srgb,var(--home-accent,#00f5d4) 14%,rgba(0,0,0,.3));border-color:color-mix(in srgb,var(--home-accent,#00f5d4) 35%,rgba(255,255,255,.08));color:var(--home-accent,#00f5d4);box-shadow:0 0 10px color-mix(in srgb,var(--home-accent,#00f5d4) 15%,transparent)}
-.dm-mode-icon{display:flex;align-items:center;flex-shrink:0}
-.dm-mode-label{white-space:nowrap;font-weight:500}
-.dm-params-panel{margin-top:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
-.danmaku-pop-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}
-.danmaku-pop-row span:first-child{width:36px;flex-shrink:0;font-size:10px;color:rgba(255,255,255,.50)}
-.danmaku-pop-row input[type=range]{flex:1;accent-color:var(--home-accent,#00f5d4);height:2px}
-.dm-val{width:24px;text-align:right;font-size:10px;color:var(--home-accent,#00f5d4);font-variant-numeric:tabular-nums}
-.danmaku-pop-hint{font-size:11px;color:rgba(255,255,255,.60);line-height:1.5}
-.danmaku-pop-hint span{color:var(--home-accent,#00f5d4);font-weight:600}
-.dm-off-btn{display:block;width:100%;margin-top:8px;padding:6px 0;border:none;border-radius:8px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.45);font-size:11px;cursor:pointer;transition:all .15s}
-.dm-off-btn:hover{background:rgba(255,60,60,.12);color:rgba(255,100,100,.80)}
+/* ====== 评论卡片按钮（控制栏） ====== */
+#comment-card-btn svg{transition:color .18s}
+#comment-card-btn[aria-pressed="true"]{color:var(--home-accent,#00f5d4)}
 
 /* 卡片容器 */
 #comment-card-container{position:fixed;z-index:80;left:50%;bottom:16%;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;justify-content:center}
@@ -2074,14 +2039,7 @@ html.control-glass-svg-ok .comment-card .cc-inner{background:rgba(0,0,0,.10);bac
 .comment-card .cc-source{font-size:9px;color:rgba(255,255,255,.55);letter-spacing:.04em}
 .comment-card .cc-counter{font-size:10px;color:color-mix(in srgb,var(--home-accent,#00f5d4) 40%,rgba(255,255,255,.25));font-variant-numeric:tabular-nums;font-weight:500}
 
-/* 弹幕容器 */
-#danmaku-container{position:fixed;z-index:79;top:50%;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none}
-.danmaku-item{position:absolute;white-space:nowrap;padding:6px 16px;border-radius:20px;background:rgba(0,0,0,.10);backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);-webkit-backdrop-filter:blur(12px) saturate(1.8) brightness(1.16);border:0;color:rgba(255,255,255,.88);font-size:13px;will-change:transform;animation:dm-fly linear forwards;box-shadow:inset 0 0 2px 1px rgba(255,255,255,.25),inset 0 0 8px 3px rgba(255,255,255,.08),0 2px 10px rgba(17,17,26,.06);overflow:hidden}
-html.control-glass-svg-ok .danmaku-item{backdrop-filter:url(#mineradio-control-glass-filter) saturate(1);-webkit-backdrop-filter:url(#mineradio-control-glass-filter) saturate(1)}
-.danmaku-item .dm-gradient{position:absolute;inset:0;border-radius:20px;opacity:.25;pointer-events:none;z-index:-1}
-.danmaku-item.hot{box-shadow:inset 0 0 2px 1px rgba(255,255,255,.30),inset 0 0 10px 4px rgba(255,255,255,.10),0 2px 10px rgba(17,17,26,.06),inset 0 0 0 1px var(--home-accent,#00f5d4)}
-@keyframes dm-fly{from{transform:translateX(100%)}to{transform:translateX(calc(-100vw - 100%))}}
-body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-container{opacity:0!important}
+body.immersive-mode #comment-card-container{opacity:0!important}
 </style>
 </head>
 <body>
@@ -2311,36 +2269,6 @@ body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-contain
 <button id="edge-glow-toggle" type="button" onclick="toggleEdgeGlow()" title="氛围光开关">
   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
 </button>
-<button id="comment-danmaku-toggle" type="button" title="评论弹幕">
-  <span style="font-size:12px;font-weight:700;line-height:1">弹</span>
-</button>
-<div id="danmaku-settings-pop" class="danmaku-settings-pop">
-  <div class="danmaku-pop-title">评论弹幕</div>
-  <div class="danmaku-pop-modes">
-    <button class="dm-mode-btn" data-mode="danmaku" type="button">
-      <span class="dm-mode-icon">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M4 6h16M4 10h12M4 14h14M4 18h10"/></svg>
-      </span>
-      <span class="dm-mode-label">弹幕滚动</span>
-    </button>
-    <button class="dm-mode-btn" data-mode="card" type="button">
-      <span class="dm-mode-icon">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 8h10M7 12h8M7 16h6"/></svg>
-      </span>
-      <span class="dm-mode-label">卡片轮播</span>
-    </button>
-  </div>
-  <div id="danmaku-settings-danmaku" class="dm-params-panel" style="display:none">
-    <div class="danmaku-pop-row"><span>密度</span><input type="range" id="dm-density" min="1" max="5" step="1"><span id="dm-density-val" class="dm-val">3</span></div>
-    <div class="danmaku-pop-row"><span>速度</span><input type="range" id="dm-speed" min="1" max="5" step="1"><span id="dm-speed-val" class="dm-val">3</span></div>
-    <div class="danmaku-pop-row"><span>字号</span><input type="range" id="dm-fontsize" min="1" max="3" step="1"><span id="dm-fontsize-val" class="dm-val">中</span></div>
-    <div class="danmaku-pop-row"><span>透明度</span><input type="range" id="dm-opacity" min="0.3" max="1" step="0.05"><span id="dm-opacity-val" class="dm-val">0.80</span></div>
-  </div>
-  <div id="danmaku-settings-card" class="dm-params-panel" style="display:none">
-    <div class="danmaku-pop-hint">每首歌展示 <span id="dm-card-count">—</span> 条高赞评论</div>
-  </div>
-  <button class="dm-off-btn" type="button" id="dm-off-btn">关闭弹幕</button>
-</div>
 
 <!-- 控制台 (右侧贴边自动显示, 无关闭按钮) -->
 <div id="fx-panel">
@@ -2797,7 +2725,7 @@ body.immersive-mode #danmaku-container,body.immersive-mode #comment-card-contain
     </div>
     <button id="controls-hide-btn" class="ctrl-btn active" onclick="toggleControlsAutoHide()" title="控制条自动隐藏"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14"/><path d="M8 12h8"/><path d="M10 16h4"/></svg></button>
     <button id="immersive-btn" class="ctrl-btn" onclick="toggleImmersiveMode()" title="全沉浸式" aria-label="全沉浸式" aria-pressed="false"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4"/><path d="M15 4h4a1 1 0 0 1 1 1v4"/><path d="M20 15v4a1 1 0 0 1-1 1h-4"/><path d="M9 20H5a1 1 0 0 1-1-1v-4"/><circle cx="12" cy="12" r="2.2"/></svg></button>
-    <button class="ctrl-btn fullscreen-toggle-btn" onclick="toggleFullscreen()" title="全屏 (F)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7V3h4"/><path d="M21 7V3h-4"/><path d="M3 17v4h4"/><path d="M21 17v4h-4"/></svg></button>
+    <button id="comment-card-btn" class="ctrl-btn" onclick="toggleCommentCards()" title="评论卡片" aria-label="评论卡片" aria-pressed="false"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.45L3 20.5l1.55-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg></button>
     <div id="time-display">0:00 / 0:00</div>
     </div>
   </div>
@@ -3779,11 +3707,7 @@ var fxDefaults = {
   performanceQuality: 'high',
   liveBackgroundKeep: false,
   cam: 'off',
-  danmakuMode: 'card',
-  danmakuDensity: 3,
-  danmakuSpeed: 3,
-  danmakuFontSize: 1,
-  danmakuOpacity: 0.8,
+  commentCardEnabled: true,
 };
 var PACKAGED_DEFAULT_USER_FX_ARCHIVE_NAME = '默认测试';
 var PACKAGED_DEFAULT_USER_FX_ARCHIVE_EXPORTED_AT = 1782276031784;
@@ -8679,11 +8603,6 @@ function readSavedLyricLayout() {
       shelfAccentColor: normalizeHexColor(raw.shelfAccentColor || fxDefaults.shelfAccentColor, fxDefaults.shelfAccentColor),
       cam: /^(off|gesture)$/.test(String(raw.cam || '')) ? raw.cam : fxDefaults.cam,
       bgMediaVisible: raw.bgMediaVisible !== false,
-      danmakuMode: /^(off|danmaku|card)$/.test(String(raw.danmakuMode || '')) ? raw.danmakuMode : fxDefaults.danmakuMode,
-      danmakuDensity: clampRange(Number(raw.danmakuDensity) || fxDefaults.danmakuDensity, 1, 5),
-      danmakuSpeed: clampRange(Number(raw.danmakuSpeed) || fxDefaults.danmakuSpeed, 1, 5),
-      danmakuFontSize: clampRange(Number(raw.danmakuFontSize) || fxDefaults.danmakuFontSize, 1, 3),
-      danmakuOpacity: clampRange(raw.danmakuOpacity == null ? fxDefaults.danmakuOpacity : Number(raw.danmakuOpacity), 0.3, 1),
     };
   } catch (e) {
     return {};
@@ -8777,11 +8696,6 @@ function saveLyricLayout() {
       shelfAccentColor: normalizeHexColor(fx.shelfAccentColor || fxDefaults.shelfAccentColor, fxDefaults.shelfAccentColor),
       cam: /^(off|gesture)$/.test(String(fx.cam || '')) ? fx.cam : fxDefaults.cam,
       bgMediaVisible: fx.bgMediaVisible !== false,
-      danmakuMode: fx.danmakuMode === undefined ? fxDefaults.danmakuMode : (/^(off|danmaku|card)$/.test(String(fx.danmakuMode || '')) ? fx.danmakuMode : fxDefaults.danmakuMode),
-      danmakuDensity: clampRange(Number(fx.danmakuDensity) || fxDefaults.danmakuDensity, 1, 5),
-      danmakuSpeed: clampRange(Number(fx.danmakuSpeed) || fxDefaults.danmakuSpeed, 1, 5),
-      danmakuFontSize: clampRange(Number(fx.danmakuFontSize) || fxDefaults.danmakuFontSize, 1, 3),
-      danmakuOpacity: clampRange(Number(fx.danmakuOpacity) == null ? fxDefaults.danmakuOpacity : Number(fx.danmakuOpacity), 0.3, 1),
     }));
   } catch (e) {}
 }
@@ -10260,7 +10174,7 @@ function updateStageLyrics3D(dt) {
       var opacityEase = shelfDetailOpen && currentOpacity > lyricOpacityTarget ? shelfDetailLyricProfile.easeDown : 0.16;
       opacity = clampRange(currentOpacity + (lyricOpacityTarget - currentOpacity) * opacityEase, 0, 1);
       if (data.textMat) data.textMat.uniforms.uOpacity.value = opacity;
-      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.62;
+      if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.80;
       if (data.readabilityMat) {
         var readabilityTarget = opacity * shelfDetailLyricProfile.readability;
         var readabilityEase = shelfDetailOpen && data.readabilityMat.opacity > readabilityTarget ? 0.28 : 0.16;
@@ -19978,8 +19892,8 @@ async function attemptAudioPlay(opts) {
   try {
       if (!audio) return false;
       if (!audioReady) initAudio();
-      /* 确保弹幕事件已绑定（audio 可能被重建） */
-      if (typeof bindDanmakuPlaybackEvents === 'function') bindDanmakuPlaybackEvents();
+      /* 确保评论卡片事件已绑定（audio 可能被重建） */
+      if (typeof bindCommentCardPlaybackEvents === 'function') bindCommentCardPlaybackEvents();
       if (opts.fade !== false) preparePlaybackFadeIn();
       if (opts.manual) {
         var manualPlay = audio.play();
@@ -23088,24 +23002,6 @@ function updateFxInputs() {
   updateVisualTintControls();
   applyControlGlassChromaticOffset();
   syncFxUniforms();
-  syncDanmakuSettingsUI();
-}
-function syncDanmakuSettingsUI() {
-  var btn = document.getElementById('comment-danmaku-toggle');
-  if (btn) {
-    btn.classList.remove('danmaku-mode', 'card-mode');
-    if (fx.danmakuMode === 'danmaku') btn.classList.add('danmaku-mode');
-    else if (fx.danmakuMode === 'card') btn.classList.add('card-mode');
-  }
-  var d = document.getElementById('dm-density'); if (d) d.value = fx.danmakuDensity;
-  var dv = document.getElementById('dm-density-val'); if (dv) dv.textContent = fx.danmakuDensity;
-  var s = document.getElementById('dm-speed'); if (s) s.value = fx.danmakuSpeed;
-  var sv = document.getElementById('dm-speed-val'); if (sv) sv.textContent = fx.danmakuSpeed;
-  var f = document.getElementById('dm-fontsize'); if (f) f.value = fx.danmakuFontSize;
-  var fv = document.getElementById('dm-fontsize-val'); if (fv) fv.textContent = ['小','中','大'][fx.danmakuFontSize - 1] || '中';
-  var o = document.getElementById('dm-opacity'); if (o) o.value = fx.danmakuOpacity;
-  var ov = document.getElementById('dm-opacity-val'); if (ov) ov.textContent = Number(fx.danmakuOpacity).toFixed(2);
-  if (typeof updateDanmakuSettingsPanelMode === 'function') updateDanmakuSettingsPanelMode();
 }
 function animateFxResetButton(btn) {
   if (!btn || !window.gsap) return;
@@ -26863,7 +26759,7 @@ document.addEventListener('keydown', function(e){
     else if (!immersiveMode) showToast('开启 DIY 玩家模式后可打开视觉控制台');
   }
   else if (e.code === 'KeyI') toggleImmersiveMode();
-  else if (e.code === 'KeyF') toggleFullscreen();
+  /* KeyF 全屏已删除（原控制栏全屏按钮被替换为评论卡片按钮） */
 });
 
 // ============================================================
@@ -28029,36 +27925,14 @@ setInterval(function(){
   if (fx && (fx.desktopLyrics || fx.wallpaperMode)) syncDesktopOverlayState();
 }, 320);
 
-// 全屏
+// 全屏：原控制栏按钮已替换为评论卡片按钮，控制栏不再触发全屏。
+// 桌面窗口仍可通过 titlebar 的 maximize 按钮进入最大化/全屏，逻辑见下方 initDesktopWindowShell。
 var desktopFullscreenActive = false;
 var documentFullscreenActive = false;
 var desktopWindowState = {};
 
-function toggleFullscreen() {
-  var api = window.desktopWindow;
-  if (api && api.isDesktop && typeof api.toggleFullscreen === 'function') {
-    if (document.fullscreenElement && document.exitFullscreen) {
-      document.exitFullscreen().catch(function(){});
-    }
-    api.toggleFullscreen();
-    scheduleMainRendererViewportRefresh('desktop-fullscreen-toggle');
-    return;
-  }
-  if (api && api.isDesktop && desktopFullscreenActive && !document.fullscreenElement && typeof api.exitFullscreenWindowed === 'function') {
-    api.exitFullscreenWindowed();
-    scheduleMainRendererViewportRefresh('desktop-fullscreen-exit');
-    return;
-  }
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(function(){
-      if (api && api.isDesktop && typeof api.toggleFullscreen === 'function') api.toggleFullscreen();
-      else showToast('全屏被浏览器拒绝');
-    });
-  } else {
-    document.exitFullscreen();
-    scheduleMainRendererViewportRefresh('document-fullscreen-exit');
-  }
-}
+/* toggleFullscreen 已移除；保留空对象防历史引用。 */
+function toggleFullscreen() { /* noop */ }
 
 (function initDesktopWindowShell(){
   var api = window.desktopWindow;
@@ -28105,7 +27979,10 @@ function toggleFullscreen() {
       e.stopPropagation();
       var action = btn.getAttribute('data-window-action');
       if (action === 'minimize') api.minimize();
-      if (action === 'maximize') toggleFullscreen();
+      if (action === 'maximize') {
+        /* titlebar 全屏按钮：调用桌面桥进入/退出最大化全屏 */
+        if (typeof api.toggleFullscreen === 'function') api.toggleFullscreen();
+      }
       if (action === 'close') api.close();
     });
   });
@@ -29119,15 +28996,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* ═══════════════════════════════════════════
-   评论弹幕系统
+   评论卡片系统
    ═══════════════════════════════════════════ */
 (function() {
   'use strict';
 
   /* ── 状态变量 ── */
   var commentCache = {};           // { songKey: [comments...] }
-  var _dm_lastSongKey = '';
-  var _dm_fetching = false;
+  var _cc_lastSongKey = '';
+  var _cc_fetching = false;
 
   /* 卡片模式 */
   var _cardTimer = null;
@@ -29136,21 +29013,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var _cardActive = false;
   var _cardCleanupTimer = null; /* 追踪 hideCurrentCard 的清理定时器 */
   var _cardPaused = false; /* 暂停标记，替代 playing 检查 */
-
-  /* 弹幕模式 */
-  var _dm_launchTimer = null;
-  var _dm_clearTimer = null;
-  var _dm_tracks = [];
-  var _dm_trackLastEl = [];
-  var _dm_active = false;
-  var _dm_shuffled = null;
-  var _dm_shuffleIdx = 0;
-  var _dm_shuffleSrc = null;
-  /* 近期防重窗口：记录最近 N 条已发射弹幕的 id，pick 时跳过这些
-     解决"500 条池 vs 7+ 分钟歌 + 高密度"必然重复的问题。
-     即使最终仍需从同一池里复用，最小重复间隔 = _dm_recentMax / density 次发射 */
-  var _dm_recentFired = [];
-  var _dm_recentMax = 60;
 
   /* ── 工具函数 ── */
   function getSongKey() {
@@ -29167,14 +29029,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function fetchComments(song) {
     if (!song) return;
     var key = (song.name || '') + '|' + (song.artist || '');
-    if (commentCache[key]) { console.log('[弹幕-debug] fetchComments 已有缓存:', key); return; }
-    if (_dm_fetching) { console.log('[弹幕-debug] fetchComments 正在拉取中，跳过'); return; }
-    _dm_fetching = true;
-    console.log('[弹幕-debug] fetchComments 开始拉取:', key);
-    _dm_lastSongKey = key;
-
-    var btn = document.getElementById('comment-danmaku-toggle');
-    if (btn) btn.classList.add('loading');
+    if (commentCache[key]) { console.log('[评论-card] fetchComments 已有缓存:', key); return; }
+    if (_cc_fetching) { console.log('[评论-card] fetchComments 正在拉取中，跳过'); return; }
+    _cc_fetching = true;
+    _cc_lastSongKey = key;
 
     /* 使用 app 已有的后端代理接口，拉取更多评论 */
     var commentUrl;
@@ -29190,7 +29048,7 @@ document.addEventListener('DOMContentLoaded', function() {
       : fetch(commentUrl).then(function(r){ return r.json(); });
 
     fetcher.then(function(cdata) {
-      if (_dm_lastSongKey !== key) { _dm_fetching = false; removeBtnLoading(); return; }
+      if (_cc_lastSongKey !== key) { _cc_fetching = false; return; }
       /* 合并 hotComments 和普通 comments，确保长歌曲有足够评论 */
       var hot = (cdata && cdata.hotComments) || [];
       var normal = (cdata && cdata.comments) || [];
@@ -29203,29 +29061,23 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       merged.sort(function(a, b) { return (b.likedCount || 0) - (a.likedCount || 0); });
       commentCache[key] = merged.length ? merged : hot;
-      console.log('[弹幕] 评论数据: hot=' + hot.length + ' normal=' + normal.length + ' merged=' + merged.length + ' total=' + total);
-      _dm_fetching = false;
-      removeBtnLoading();
-      /* 第 1 页满 100 时拉第 2-5 页凑齐 ~500 独立池；
-         长歌曲（≥5 min）+ 高密度（4-5）时 300 条池仍会重复，500 条可大幅缓解。
-         只有 total ≤ 100（短评论歌）才跳过 */
+      _cc_fetching = false;
+      /* 拉到 ≥100 时再翻 1-4 页凑齐 ~500 独立池，覆盖长歌曲 */
       if (total > 100 && !isQQ) {
         var pageOffset = 100;
         var pageNum = 2;
         function fetchNextPage() {
-          if (pageNum > 5) return; /* 最多拉到第 5 页（共 500 条） */
+          if (pageNum > 5) return;
           var url = '/api/song/comments?id=' + encodeURIComponent(song.id || '') + '&limit=100&offset=' + pageOffset;
           var fetcherN = (typeof apiJson === 'function') ? apiJson(url, { timeoutMs: 6000 }) : fetch(url).then(function(r){ return r.json(); });
           fetcherN.then(function(cdataN) {
             var more = (cdataN && cdataN.comments) || [];
-            var beforeLen = merged.length;
             more.forEach(function(c) {
               var cid = c.commentId || c.content;
               if (!seen[cid]) { seen[cid] = true; merged.push(c); }
             });
             merged.sort(function(a, b) { return (b.likedCount || 0) - (a.likedCount || 0); });
             commentCache[key] = merged;
-            console.log('[弹幕] 第' + pageNum + '页合并后: ' + merged.length + ' 条 (+' + (merged.length - beforeLen) + ')');
             pageOffset += 100;
             pageNum++;
             fetchNextPage();
@@ -29233,183 +29085,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         fetchNextPage();
       }
-      if (fx.danmakuMode === 'card') restartCardCarousel();
-      if (fx.danmakuMode === 'danmaku') restartDanmakuLoop();
+      if (fx.commentCardEnabled !== false) restartCardCarousel();
     }).catch(function() {
-      _dm_fetching = false;
-      removeBtnLoading();
+      _cc_fetching = false;
       commentCache[key] = [];
     });
   }
-  function removeBtnLoading() {
-    var btn = document.getElementById('comment-danmaku-toggle');
-    if (btn) btn.classList.remove('loading');
-  }
 
-  /* ── 模式切换（新版：直接选模式，非循环） ── */
-  function selectDanmakuMode(mode) {
-    var oldMode = fx.danmakuMode;
-    fx.danmakuMode = mode;
-    stopAllDanmaku();
-    syncDanmakuSettingsUI();
-    updateDanmakuSettingsPanelMode();
+  /* ── 评论卡片：开/关 ── */
+  function toggleCommentCards() {
+    var enabled = fx.commentCardEnabled !== false;
+    fx.commentCardEnabled = !enabled;
+    var btn = document.getElementById('comment-card-btn');
+    if (btn) btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
     try { saveLyricLayout(); } catch(e) {}
-    if (mode === 'off') {
-      showToast('评论弹幕已关闭');
-      toggleSettingsPop(false);
-    } else if (mode === 'danmaku') {
-      showToast('弹幕滚动模式');
-      ensureCommentsThenStart();
-    } else if (mode === 'card') {
-      showToast('卡片轮播模式');
-      ensureCommentsThenStart();
+    if (enabled) {
+      /* 用户关掉了评论卡片：停止并隐藏当前显示 */
+      stopCardCarousel();
+      hideCurrentCard();
+      showToast('评论卡片已隐藏');
+    } else {
+      /* 用户打开了评论卡片：立即重启 */
+      showToast('评论卡片已开启');
+      var song = getCurrentSong();
+      if (song) ensureCommentsThenStart();
     }
   }
 
   function ensureCommentsThenStart() {
     var song = getCurrentSong();
-    console.log('[弹幕-debug] ensureCommentsThenStart song=', !!song, 'mode=', fx.danmakuMode, 'idx=', currentIdx, 'qLen=', playQueue.length);
     if (!song) return;
     var key = getSongKey();
     if (commentCache[key] && commentCache[key].length) {
-      console.log('[弹幕-debug] 缓存命中:', key, commentCache[key].length, '条');
-      if (fx.danmakuMode === 'card') {
-        if (_cardActive) {
-          /* 暂停恢复：不重置索引，只重新启动定时器 */
-          scheduleNextCard();
-        } else {
-          restartCardCarousel();
-        }
+      if (_cardActive) {
+        scheduleNextCard();
+      } else {
+        restartCardCarousel();
       }
-      if (fx.danmakuMode === 'danmaku') restartDanmakuLoop();
     } else {
-      console.log('[弹幕-debug] 缓存未命中，开始拉取:', key);
       fetchComments(song);
     }
-  }
-
-  function stopAllDanmaku() {
-    stopCardCarousel();
-    stopDanmakuLoop();
-  }
-
-  /* ── 设置浮窗 ── */
-  var _popHoverTimer = null;
-
-  function toggleSettingsPop(show) {
-    var pop = document.getElementById('danmaku-settings-pop');
-    if (!pop) return;
-    if (show === false) { pop.classList.remove('visible'); }
-    else { pop.classList.add('visible'); }
-  }
-  window.updateDanmakuSettingsPanelMode = function() {
-    var dmPanel = document.getElementById('danmaku-settings-danmaku');
-    var cardPanel = document.getElementById('danmaku-settings-card');
-    var offBtn = document.getElementById('dm-off-btn');
-    /* 高亮当前模式按钮 */
-    var modeBtns = document.querySelectorAll('.dm-mode-btn');
-    modeBtns.forEach(function(b) {
-      b.classList.toggle('active', b.getAttribute('data-mode') === fx.danmakuMode);
-    });
-    if (fx.danmakuMode === 'danmaku') {
-      if (dmPanel) dmPanel.style.display = '';
-      if (cardPanel) cardPanel.style.display = 'none';
-      if (offBtn) offBtn.style.display = '';
-    } else if (fx.danmakuMode === 'card') {
-      if (dmPanel) dmPanel.style.display = 'none';
-      if (cardPanel) cardPanel.style.display = '';
-      if (offBtn) offBtn.style.display = '';
-      updateCardCountHint();
-    } else {
-      /* off 模式：显示两个模式按钮供选择，隐藏参数 */
-      if (dmPanel) dmPanel.style.display = 'none';
-      if (cardPanel) cardPanel.style.display = 'none';
-      if (offBtn) offBtn.style.display = 'none';
-    }
-  };
-  function updateCardCountHint() {
-    var el = document.getElementById('dm-card-count');
-    if (!el) return;
-    var dur = (typeof audio !== 'undefined' && audio) ? (audio.duration || 0) : 0;
-    var avail = Math.max(0, dur - 10);
-    var n = Math.floor(avail / 15);
-    el.textContent = n > 0 ? n : '—';
-  }
-
-  /* 浮窗交互事件 */
-  function bindSettingsEvents() {
-    var btn = document.getElementById('comment-danmaku-toggle');
-    var pop = document.getElementById('danmaku-settings-pop');
-
-    /* 鼠标悬停按钮 → 弹出浮窗 */
-    if (btn && pop) {
-      btn.addEventListener('mouseenter', function() {
-        clearTimeout(_popHoverTimer);
-        toggleSettingsPop(true);
-        updateDanmakuSettingsPanelMode();
-      });
-      btn.addEventListener('mouseleave', function() {
-        _popHoverTimer = setTimeout(function() {
-          if (!pop.matches(':hover')) toggleSettingsPop(false);
-        }, 200);
-      });
-      pop.addEventListener('mouseenter', function() {
-        clearTimeout(_popHoverTimer);
-      });
-      pop.addEventListener('mouseleave', function() {
-        _popHoverTimer = setTimeout(function() { toggleSettingsPop(false); }, 200);
-      });
-    }
-
-    /* 模式选择按钮 */
-    var modeBtns = document.querySelectorAll('.dm-mode-btn');
-    modeBtns.forEach(function(b) {
-      b.addEventListener('click', function() {
-        var mode = this.getAttribute('data-mode');
-        selectDanmakuMode(mode);
-      });
-    });
-
-    /* 关闭弹幕按钮 */
-    var offBtn = document.getElementById('dm-off-btn');
-    if (offBtn) {
-      offBtn.addEventListener('click', function() {
-        selectDanmakuMode('off');
-      });
-    }
-
-    /* 滑块事件 */
-    var dmDensity = document.getElementById('dm-density');
-    var dmSpeed = document.getElementById('dm-speed');
-    var dmFontsize = document.getElementById('dm-fontsize');
-    var dmOpacity = document.getElementById('dm-opacity');
-    if (dmDensity) dmDensity.addEventListener('input', function() {
-      fx.danmakuDensity = parseInt(this.value, 10);
-      var v = document.getElementById('dm-density-val'); if (v) v.textContent = fx.danmakuDensity;
-      try { saveLyricLayout(); } catch(e) {}
-    });
-    if (dmSpeed) dmSpeed.addEventListener('input', function() {
-      fx.danmakuSpeed = parseInt(this.value, 10);
-      var v = document.getElementById('dm-speed-val'); if (v) v.textContent = fx.danmakuSpeed;
-      try { saveLyricLayout(); } catch(e) {}
-    });
-    if (dmFontsize) dmFontsize.addEventListener('input', function() {
-      fx.danmakuFontSize = parseInt(this.value, 10);
-      var v = document.getElementById('dm-fontsize-val'); if (v) v.textContent = ['小','中','大'][fx.danmakuFontSize - 1] || '中';
-      try { saveLyricLayout(); } catch(e) {}
-    });
-    if (dmOpacity) dmOpacity.addEventListener('input', function() {
-      fx.danmakuOpacity = parseFloat(this.value);
-      var v = document.getElementById('dm-opacity-val'); if (v) v.textContent = Number(fx.danmakuOpacity).toFixed(2);
-      try { saveLyricLayout(); } catch(e) {}
-    });
-
-    /* 点击浮窗外部关闭 */
-    document.addEventListener('click', function(e) {
-      if (!pop || !pop.classList.contains('visible')) return;
-      if (e.target.closest('#danmaku-settings-pop') || e.target.closest('#comment-danmaku-toggle')) return;
-      pop.classList.remove('visible');
-    });
   }
 
   /* ══════════════════════════════════════
@@ -29419,7 +29134,7 @@ document.addEventListener('DOMContentLoaded', function() {
     stopCardCarousel();
     var key = getSongKey();
     _cardComments = (commentCache[key] || []).slice();
-    console.log('[弹幕-debug] restartCardCarousel key=', key, 'comments=', _cardComments.length);
+    console.log('[卡片-debug] restartCardCarousel key=', key, 'comments=', _cardComments.length);
     if (!_cardComments.length) return;
     _cardIdx = 0;
     _cardActive = true;
@@ -29433,10 +29148,10 @@ document.addEventListener('DOMContentLoaded', function() {
     /* 清除已有定时器，防止 play+playing 双事件导致重复调度 */
     if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
     var dur = audio.duration || 0;
-    console.log('[弹幕-debug] scheduleNextCard dur=', dur, '_cardActive=', _cardActive, '_cardPaused=', _cardPaused, 'comments=', _cardComments.length);
+    console.log('[卡片-debug] scheduleNextCard dur=', dur, '_cardActive=', _cardActive, '_cardPaused=', _cardPaused, 'comments=', _cardComments.length);
     /* duration 可能还没加载完（play 事件时），延迟重试 */
     if (!dur || isNaN(dur) || dur <= 10) {
-      console.log('[弹幕-debug] duration 不可用，300ms 后重试');
+      console.log('[卡片-debug] duration 不可用，300ms 后重试');
       _cardTimer = setTimeout(function() { scheduleNextCard(); }, 300);
       return;
     }
@@ -29536,264 +29251,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (container) container.innerHTML = '';
   }
 
-  /* ══════════════════════════════════════
-     弹幕滚动模式
-     ══════════════════════════════════════ */
-  var DM_TRACK_COUNT = 10;
-
-  function restartDanmakuLoop() {
-    stopDanmakuLoop();
-    var key = getSongKey();
-    var comments = commentCache[key] || [];
-    if (!comments.length) return;
-    _dm_active = true;
-    _dm_tracks = new Array(DM_TRACK_COUNT).fill(0);
-    _dm_trackLastEl = new Array(DM_TRACK_COUNT).fill(null);
-    /* 切歌时清空近期防重窗口：上一首歌的 id 跟当前歌没关系，留着会浪费窗口位 */
-    _dm_recentFired = [];
-    _dm_shuffled = null;
-    _dm_shuffleIdx = 0;
-    _dm_shuffleSrc = null;
-    launchDanmaku();
-  }
-
-  function launchDanmaku() {
-    if (!_dm_active || !playing) { stopDanmakuLoop(); return; }
-    var key = getSongKey();
-    var comments = commentCache[key] || [];
-    if (!comments.length) return;
-
-    /* 掐头去尾 */
-    if (typeof audio !== 'undefined' && audio) {
-      var cur = audio.currentTime || 0;
-      var dur = audio.duration || 0;
-      if (cur < 5 || cur > dur - 5) {
-        _dm_launchTimer = setTimeout(launchDanmaku, 1000);
-        return;
-      }
-    }
-
-    /* 发射一条弹幕 */
-    fireOneDanmaku(comments);
-
-    /* 频率：基于 density 1-5 → 2.5s ~ 0.8s */
-    var interval = 2800 - (fx.danmakuDensity - 1) * 500 + (Math.random() * 400 - 200);
-    interval = Math.max(600, interval);
-    _dm_launchTimer = setTimeout(launchDanmaku, interval);
-  }
-
-  function fireOneDanmaku(comments) {
-    var container = document.getElementById('danmaku-container');
-    if (!container) return;
-
-    /* 洗牌队列：若池子用尽或换歌则重新洗牌。
-       配合 _dm_recentFired 窗口，保证同一池被多次循环时也有最小重复间隔。 */
-    if (!_dm_shuffled || _dm_shuffleIdx >= _dm_shuffled.length || _dm_shuffleSrc !== comments) {
-      _dm_shuffled = comments.slice();
-      for (var i = _dm_shuffled.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = _dm_shuffled[i]; _dm_shuffled[i] = _dm_shuffled[j]; _dm_shuffled[j] = tmp;
-      }
-      _dm_shuffleIdx = 0;
-      _dm_shuffleSrc = comments;
-    }
-
-    /* 挑一条"最近没发射过"的弹幕：在洗牌数组里线性扫到第一个非近期项；
-       若整列都在近期窗口里（极端情况：池子 ≤ _dm_recentMax），允许重复。
-       commentCache 里元素可能来自 hot (raw, commentId) 或 normal (mapped, id)，
-       字段不统一，用 fallback chain 取唯一 id。 */
-    var c = null;
-    var scans = 0;
-    while (_dm_shuffleIdx < _dm_shuffled.length && scans < _dm_shuffled.length) {
-      var candidate = _dm_shuffled[_dm_shuffleIdx];
-      _dm_shuffleIdx++;
-      scans++;
-      if (!candidate) continue;
-      var cid = candidate.id != null ? candidate.id : candidate.commentId;
-      if (cid && _dm_recentFired.indexOf(cid) !== -1) continue;
-      c = candidate;
-      break;
-    }
-    /* 洗牌池被近期窗口耗尽：重洗一次（保留近期窗口，新洗牌依然会跳过这些） */
-    if (!c) {
-      _dm_shuffled = comments.slice();
-      for (var i = _dm_shuffled.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = _dm_shuffled[i]; _dm_shuffled[i] = _dm_shuffled[j]; _dm_shuffled[j] = tmp;
-      }
-      _dm_shuffleIdx = 0;
-      for (var k = 0; k < _dm_shuffled.length; k++) {
-        var cand = _dm_shuffled[k];
-        if (!cand) continue;
-        var kid = cand.id != null ? cand.id : cand.commentId;
-        if (kid && _dm_recentFired.indexOf(kid) !== -1) continue;
-        c = cand;
-        _dm_shuffleIdx = k + 1;
-        break;
-      }
-      /* 极端兜底：池子全部在近期里（池子太小）— 拿第一个 */
-      if (!c) { c = _dm_shuffled[0]; _dm_shuffleIdx = 1; }
-    }
-    if (!c) return;
-    var text = c.content || '';
-    if (!text) return;
-
-    /* 记录到近期窗口 */
-    var fireId = c.id != null ? c.id : c.commentId;
-    if (fireId) {
-      _dm_recentFired.push(fireId);
-      if (_dm_recentFired.length > _dm_recentMax) _dm_recentFired.shift();
-    }
-
-    /* 弹幕速度：固定速度，speed 1→80px/s, 5→200px/s
-       抖动随速度档位递增：低速档几乎不抖，保证速度 1 真正"慢"且稳定 */
-    var speed = 80 + (fx.danmakuSpeed - 1) * 30; /* px/s */
-    var jitter = (fx.danmakuSpeed - 1) * 2;       /* speed 1→0, 5→±8 */
-    speed += (Math.random() * 2 - 1) * jitter;
-    speed = Math.max(80, Math.min(220, speed));
-
-    /* 字号：基于 fontSize 1→19px, 2→21px, 3→23px，随机微调 */
-    var baseFont = 17 + fx.danmakuFontSize * 2 + (Math.random() * 2 - 1);
-    baseFont = Math.max(14, Math.min(24, baseFont));
-
-    /* 透明度 */
-    var opacity = fx.danmakuOpacity;
-    /* Top 10 高赞更亮 */
-    var isHot = comments.indexOf(c) < 10;
-    if (isHot) opacity = Math.min(1, opacity + 0.15);
-
-    /* 测宽：先创建隐藏 mirror 元素，测出真实宽度后再创建正式元素；
-       这样 duration 可以一次性设置正确值，避免在动画运行中改 duration
-       导致浏览器重启动画（"突然出现 + 滚动很快"的根因之一） */
-    var mirror = document.createElement('div');
-    mirror.className = 'danmaku-item';
-    mirror.style.cssText = 'position:absolute; visibility:hidden; pointer-events:none; top:0; right:0; left:auto;';
-    mirror.style.fontSize = baseFont + 'px';
-    var mirrorText = document.createElement('span');
-    mirrorText.textContent = text;
-    mirrorText.style.position = 'relative';
-    mirrorText.style.zIndex = '1';
-    mirror.appendChild(mirrorText);
-    container.appendChild(mirror);
-    var actualWidth = mirror.offsetWidth || 300;
-    container.removeChild(mirror);
-
-    /* 时长 = (屏幕宽度 + 2×弹幕宽度) / 速度
-       上限 25s → 60s → 90s：让大多数长评论按配置速度跑不被压缩；
-       仅极长评论（W > ~4400px @ speed 80）会被 90s 钳住 */
-    var realDur = (window.innerWidth + actualWidth * 2) / speed;
-    realDur = Math.max(4, Math.min(90, realDur));
-
-    /* 轨道分配：严格模式（必须上一条完全滚出） */
-    var track = pickTrack();
-    var trackH = 30;
-    var topPx = track * trackH + 8;
-
-    /* 随机渐变色背景 */
-    var dmGradients = [
-      'linear-gradient(135deg,#667eea,#764ba2)','linear-gradient(135deg,#f093fb,#f5576c)',
-      'linear-gradient(135deg,#4facfe,#00f2fe)','linear-gradient(135deg,#43e97b,#38f9d7)',
-      'linear-gradient(135deg,#fa709a,#fee140)','linear-gradient(135deg,#a18cd1,#fbc2eb)',
-      'linear-gradient(135deg,#fccb90,#d57eeb)','linear-gradient(135deg,#e0c3fc,#8ec5fc)',
-      'linear-gradient(135deg,#f5576c,#ff6a88)','linear-gradient(135deg,#667eea,#6dd5ed)',
-      'linear-gradient(135deg,#ee9ca7,#ffdde1)','linear-gradient(135deg,#2af598,#009efd)',
-      'linear-gradient(135deg,#c471f5,#fa71cd)','linear-gradient(135deg,#48c6ef,#6f86d6)',
-      'linear-gradient(135deg,#feada6,#f5efef)','linear-gradient(135deg,#a1c4fd,#c2e9fb)',
-      'linear-gradient(135deg,#d4fc79,#96e6a1)','linear-gradient(135deg,#84fab0,#8fd3f4)',
-      'linear-gradient(135deg,#fbc2eb,#a6c1ee)','linear-gradient(135deg,#fdcbf1,#e6dee9)',
-      'linear-gradient(135deg,#f6d365,#fda085)','linear-gradient(135deg,#fbc7d4,#9796f0)',
-      'linear-gradient(135deg,#0ba360,#3cba92)','linear-gradient(135deg,#6a11cb,#2575fc)',
-      'linear-gradient(135deg,#fc5c7d,#6a82fb)','linear-gradient(135deg,#ed6ea0,#ec8c69)',
-      'linear-gradient(135deg,#00c6fb,#005bea)','linear-gradient(135deg,#d9afd9,#97d9e1)',
-      'linear-gradient(135deg,#f83600,#f9d423)','linear-gradient(135deg,#abecd6,#fbed96)',
-      'linear-gradient(135deg,#c1dfc4,#deecdd)','linear-gradient(135deg,#00cdac,#8ddad5)',
-      'linear-gradient(135deg,#e8198b,#c7eafd)','linear-gradient(135deg,#642b73,#c6426e)',
-      'linear-gradient(135deg,#0052d4,#6fb1fc)','linear-gradient(135deg,#2b5876,#4e4376)',
-      'linear-gradient(135deg,#ff758c,#ff7eb3)','linear-gradient(135deg,#868f96,#596164)',
-      'linear-gradient(135deg,#00b4db,#0083b0)','linear-gradient(135deg,#11998e,#38ef7d)'
-    ];
-    var gradEl = document.createElement('span');
-    gradEl.className = 'dm-gradient';
-    gradEl.style.background = dmGradients[Math.floor(Math.random() * dmGradients.length)];
-    var textSpan = document.createElement('span');
-    textSpan.textContent = text;
-    textSpan.style.position = 'relative';
-    textSpan.style.zIndex = '1';
-
-    /* 创建正式元素，duration 一次性设好（不再 append 后改） */
-    var item = document.createElement('div');
-    item.className = 'danmaku-item' + (isHot ? ' hot' : '');
-    item.appendChild(gradEl);
-    item.appendChild(textSpan);
-    item.style.top = topPx + 'px';
-    item.style.right = '0';  /* 配合 keyframe：起点 translateX(100%) 把元素推到屏外右侧 */
-    item.style.fontSize = baseFont + 'px';
-    item.style.opacity = opacity;
-    item.style.animationDuration = realDur + 's';
-
-    container.appendChild(item);
-    _dm_trackLastEl[track] = item;
-
-    /* 动画结束：释放轨道 + 移除元素（用 animationend 替代 setTimeout，更准） */
-    var trackIdx = track;
-    function releaseDm() {
-      if (_dm_trackLastEl[trackIdx] === item) _dm_trackLastEl[trackIdx] = null;
-      _dm_tracks[trackIdx] = Math.max(0, _dm_tracks[trackIdx] - 1);
-      if (item.parentNode) item.parentNode.removeChild(item);
-    }
-    item.addEventListener('animationend', releaseDm);
-    /* 兜底：极端情况下 animationend 不触发（如元素被强制移除）也能清理 */
-    setTimeout(releaseDm, realDur * 1000 + 1500);
-  }
-
-  function pickTrack() {
-    /* 位置检查：必须"上一条弹幕已完全滚出屏幕"才允许新弹幕进入同轨道，
-       否则新弹幕从屏幕右侧出发后会追上同一轨道的旧弹幕造成视觉重叠。
-       10 轨道密度上限 = 10 / 单条时长（≈10s）= 1 条/s，覆盖密度 1-3 完全无重叠；
-       密度 4-5 时若全部轨道都被占，则 fallback 到"最不忙"轨道（仍可能重叠，
-       但这是用户主动选择的高密度）。 */
-    var vw = window.innerWidth;
-    for (var i = 0; i < DM_TRACK_COUNT; i++) {
-      var lastEl = _dm_trackLastEl[i];
-      if (!lastEl || !lastEl.parentNode) {
-        /* 上一条已不存在（动画结束被移除或从未发射） */
-        _dm_tracks[i]++;
-        return i;
-      }
-      var lastRect = lastEl.getBoundingClientRect();
-      if (lastRect.right < 0) {
-        /* 上一条已完全滚出屏幕左侧，轨道彻底空闲 */
-        _dm_tracks[i]++;
-        _dm_trackLastEl[i] = null;
-        return i;
-      }
-    }
-    /* 全部轨道都还有弹幕在屏幕中：选最不忙的（允许重叠，仅在 density 4-5 触发） */
-    var minVal = Infinity, minIdx = 0;
-    for (var i = 0; i < DM_TRACK_COUNT; i++) {
-      if (_dm_tracks[i] < minVal) { minVal = _dm_tracks[i]; minIdx = i; }
-    }
-    _dm_tracks[minIdx]++;
-    return minIdx;
-  }
-
-  function stopDanmakuLoop() {
-    _dm_active = false;
-    if (_dm_launchTimer) { clearTimeout(_dm_launchTimer); _dm_launchTimer = null; }
-    /* 渐隐清空 */
-    var container = document.getElementById('danmaku-container');
-    if (!container) return;
-    var items = container.querySelectorAll('.danmaku-item');
-    if (items.length === 0) { container.innerHTML = ''; return; }
-    items.forEach(function(el) {
-      el.style.transition = 'opacity 0.6s';
-      el.style.opacity = '0';
-    });
-    _dm_clearTimer = setTimeout(function() {
-      if (container) container.innerHTML = '';
-    }, 700);
-  }
-
   /* ── 辅助函数 ── */
   function escHtml(s) {
     var d = document.createElement('div');
@@ -29807,108 +29264,91 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /* ── 播放事件监听 ── */
-  var _dm_prevSongKey = '';
+  var _cc_prevSongKey = '';
   function checkSongChangeAndFetch() {
     var key = getSongKey();
-    console.log('[弹幕-debug] checkSongChangeAndFetch key=', key, 'prev=', _dm_prevSongKey, 'changed=', key !== _dm_prevSongKey);
-    if (key && key !== _dm_prevSongKey) {
-      _dm_prevSongKey = key;
-      stopAllDanmaku();
-      if (fx.danmakuMode !== 'off') {
+    if (key && key !== _cc_prevSongKey) {
+      _cc_prevSongKey = key;
+      stopCardCarousel();
+      if (fx.commentCardEnabled !== false) {
         fetchComments(getCurrentSong());
       }
     }
   }
 
   /* 拦截 audio 事件 */
-  function bindDanmakuPlaybackEvents() {
-    if (typeof audio === 'undefined' || !audio || audio._danmakuBound) return;
-    audio._danmakuBound = true;
+  function bindCommentCardPlaybackEvents() {
+    if (typeof audio === 'undefined' || !audio || audio._commentCardBound) return;
+    audio._commentCardBound = true;
 
     audio.addEventListener('play', function() {
-      console.log('[弹幕-debug] play 事件触发');
       _cardPaused = false;
       checkSongChangeAndFetch();
-      if (fx.danmakuMode !== 'off') ensureCommentsThenStart();
+      if (fx.commentCardEnabled !== false) ensureCommentsThenStart();
     });
     audio.addEventListener('playing', function() {
-      console.log('[弹幕-debug] playing 事件触发');
       _cardPaused = false;
       checkSongChangeAndFetch();
-      if (fx.danmakuMode !== 'off') ensureCommentsThenStart();
+      if (fx.commentCardEnabled !== false) ensureCommentsThenStart();
     });
     audio.addEventListener('pause', function() {
       /* 暂停时：只清定时器和隐藏卡片，不重置 _cardActive/_cardIdx，方便恢复时继续 */
-      if (_dm_launchTimer) { clearTimeout(_dm_launchTimer); _dm_launchTimer = null; }
-      if (_dm_clearTimer) { clearTimeout(_dm_clearTimer); _dm_clearTimer = null; }
       if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
       _cardPaused = true;
       hideCurrentCard();
-      var container = document.getElementById('danmaku-container');
-      if (container) container.innerHTML = '';
     });
     audio.addEventListener('ended', function() {
-      stopAllDanmaku();
-      _dm_prevSongKey = '';
+      stopCardCarousel();
+      _cc_prevSongKey = '';
     });
     audio.addEventListener('emptied', function() {
-      stopAllDanmaku();
+      stopCardCarousel();
     });
   }
 
   /* ── 初始化 ── */
-  function initDanmakuSystem() {
-    /* 每次启动默认卡片模式 */
-    if (fx.danmakuMode !== 'card') {
-      fx.danmakuMode = 'card';
-      saveLyricLayout();
-    }
-    bindSettingsEvents();
-    bindDanmakuPlaybackEvents();
-    syncDanmakuSettingsUI();
+  function initCommentCards() {
+    var btn = document.getElementById('comment-card-btn');
+    if (btn) btn.setAttribute('aria-pressed', fx.commentCardEnabled === false ? 'false' : 'true');
+    bindCommentCardPlaybackEvents();
   }
 
   /* DOMContentLoaded 或立即执行 */
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDanmakuSystem);
+    document.addEventListener('DOMContentLoaded', initCommentCards);
   } else {
-    initDanmakuSystem();
+    initCommentCards();
   }
 
   /* ── 播放状态轮询（不依赖 audio 事件，更可靠） ── */
-  var _dm_pollPlaying = false;
-  function pollDanmakuPlayback() {
-    if (fx.danmakuMode === 'off') { _dm_pollPlaying = false; return; }
+  var _cc_pollPlaying = false;
+  function pollCommentCardPlayback() {
+    if (fx.commentCardEnabled === false) { _cc_pollPlaying = false; return; }
     var isPlaying = !!(typeof audio !== 'undefined' && audio && audio.src && !audio.paused && !audio.ended && audio.readyState >= 2);
-    if (isPlaying && !_dm_pollPlaying) {
-      /* 刚开始播放 */
-      _dm_pollPlaying = true;
+    if (isPlaying && !_cc_pollPlaying) {
+      _cc_pollPlaying = true;
       _cardPaused = false;
       checkSongChangeAndFetch();
       ensureCommentsThenStart();
-    } else if (!isPlaying && _dm_pollPlaying) {
-      /* 刚暂停 */
-      _dm_pollPlaying = false;
+    } else if (!isPlaying && _cc_pollPlaying) {
+      _cc_pollPlaying = false;
       _cardPaused = true;
-      if (_dm_launchTimer) { clearTimeout(_dm_launchTimer); _dm_launchTimer = null; }
-      if (_dm_clearTimer) { clearTimeout(_dm_clearTimer); _dm_clearTimer = null; }
       if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
       hideCurrentCard();
     }
   }
-  setInterval(pollDanmakuPlayback, 500);
+  setInterval(pollCommentCardPlayback, 500);
 
   /* audio 元素可能后创建，轮询绑定 */
-  var _dm_bindRetries = 0;
-  var _dm_bindInterval = setInterval(function() {
-    _dm_bindRetries++;
-    if (_dm_bindRetries > 30) { clearInterval(_dm_bindInterval); return; }
-    bindDanmakuPlaybackEvents();
+  var _cc_bindRetries = 0;
+  var _cc_bindInterval = setInterval(function() {
+    _cc_bindRetries++;
+    if (_cc_bindRetries > 30) { clearInterval(_cc_bindInterval); return; }
+    bindCommentCardPlaybackEvents();
   }, 1000);
 
 })();
 </script>
 <div id="comment-card-container"></div>
-<div id="danmaku-container"></div>
 </body>
 </html>
