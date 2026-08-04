@@ -29251,7 +29251,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!comments.length) return;
     if (_cardIdx >= comments.length) { _cardActive = false; return; }
 
-    var waitStart = Math.max(0, 5 - cur);
+    /* 首张卡片立即显示，不等待；后续卡片在歌曲结束前 5s 内停止（保留尾部缓冲） */
+    var waitStart = _cardIdx === 0 ? 0 : Math.max(0, 5 - cur);
     var _idx = _cardIdx;
     _cardTimer = setTimeout(function() {
       showCard(comments[_idx], _idx + 1, comments.length);
@@ -29348,10 +29349,18 @@ document.addEventListener('DOMContentLoaded', function() {
       return entry.position === 'current' || entry.position === 'next';
     });
 
+    /* 4. 插入新卡片：
+     *    - 队列为空（首张卡）→ 直接作为 current（主展示位）
+     *    - 队列非空 → 作为 next（右下方淡入位置） */
     var newCard = createCardElement(c, idx, total);
-    newCard.classList.add('cc-position-next');
+    if (_cardQueue.length === 0) {
+      newCard.classList.add('cc-position-current');
+      _cardQueue.push({ el: newCard, comment: c, position: 'current' });
+    } else {
+      newCard.classList.add('cc-position-next');
+      _cardQueue.push({ el: newCard, comment: c, position: 'next' });
+    }
     wrapper.appendChild(newCard);
-    _cardQueue.push({ el: newCard, comment: c, position: 'next' });
 
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
@@ -29566,6 +29575,15 @@ document.addEventListener('DOMContentLoaded', function() {
       checkSongChangeAndFetch();
       if (fx.commentCardEnabled !== false) ensureCommentsThenStart();
     });
+    /* loadedmetadata / durationchange 兜底：自动切歌时 src 变化但 play 事件可能不触发 */
+    audio.addEventListener('loadedmetadata', function() {
+      checkSongChangeAndFetch();
+      if (fx.commentCardEnabled !== false) ensureCommentsThenStart();
+    });
+    audio.addEventListener('durationchange', function() {
+      checkSongChangeAndFetch();
+      if (fx.commentCardEnabled !== false) ensureCommentsThenStart();
+    });
     audio.addEventListener('pause', function() {
       if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
       _cardPaused = true;
@@ -29600,16 +29618,26 @@ document.addEventListener('DOMContentLoaded', function() {
   function pollCommentCardPlayback() {
     if (fx.commentCardEnabled === false) { _cc_pollPlaying = false; return; }
     var isPlaying = !!(typeof audio !== 'undefined' && audio && audio.src && !audio.paused && !audio.ended && audio.readyState >= 2);
+
+    /* 每次轮询都检查歌曲 key 变化，弥补自动切歌时 audio 事件丢失的问题 */
+    checkSongChangeAndFetch();
+
     if (isPlaying && !_cc_pollPlaying) {
       _cc_pollPlaying = true;
       _cardPaused = false;
-      checkSongChangeAndFetch();
       ensureCommentsThenStart();
     } else if (!isPlaying && _cc_pollPlaying) {
       _cc_pollPlaying = false;
       _cardPaused = true;
       if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
       hideCurrentCard();
+    } else if (isPlaying && _cc_pollPlaying) {
+      /* 持续播放中：若检测到歌曲变化（checkSongChangeAndFetch 已 stopCardCarousel），
+         重新拉取评论并启动新轮播 */
+      var key = getSongKey();
+      if (key && commentCache[key] && commentCache[key].length && !_cardActive) {
+        ensureCommentsThenStart();
+      }
     }
   }
   setInterval(pollCommentCardPlayback, 500);
