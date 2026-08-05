@@ -273,33 +273,10 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-hero{position:relative;grid-row:1 / span 2;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:visible}
 .home-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,.060),transparent 24%,rgba(255,83,103,.070) 54%,rgba(122,215,194,.055) 82%,transparent 100%),linear-gradient(90deg,rgba(255,255,255,.032) 0 1px,transparent 1px 48px),linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 44px);opacity:.72;pointer-events:none}
 .home-hero::after{content:'';position:absolute;left:28px;right:28px;bottom:22px;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--home-accent) 0%,transparent),color-mix(in srgb,var(--home-accent) 52%,transparent),rgba(36,66,255,.24),rgba(248,244,238,.18),color-mix(in srgb,var(--home-accent) 0%,transparent));opacity:.82;pointer-events:none}
-.home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:.68fr 1fr;grid-template-rows:auto auto auto 1fr;gap:12px}
+.home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:.95fr 1.05fr;grid-template-rows:auto 1fr;gap:14px;min-height:0}
 .home-hero-inner.home-construction-inner{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:18px;padding:4px 2px;min-height:100%}
 .home-kicker,.home-title,.home-sub{display:none}
-.home-weather-meta{grid-column:1;grid-row:2;display:flex;flex-wrap:wrap;gap:6px;align-self:start;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(16px) saturate(1.04);-webkit-backdrop-filter:blur(16px) saturate(1.04)}
-.home-weather-pill{height:26px;padding:0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);display:inline-flex;align-items:center;color:rgba(255,255,255,.68);font-size:11px;font-weight:680;gap:4px}
-.home-now-card{grid-column:1;grid-row:3;display:flex;gap:16px;align-items:stretch;padding:18px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px) saturate(1.06);-webkit-backdrop-filter:blur(20px) saturate(1.06)}
-.home-now-cover{width:clamp(80px,12vw,120px);height:clamp(80px,12vw,120px);border-radius:16px;background:rgba(255,255,255,.06);flex-shrink:0;background-size:cover;background-position:center;box-shadow:0 6px 20px rgba(0,0,0,.28);position:relative;overflow:hidden}
-.home-now-cover.empty{background:rgba(255,255,255,.04)}
-.home-now-cover.empty::before{content:'';position:absolute;inset:22%;border-radius:50%;border:2px solid rgba(255,255,255,.10)}
-.home-now-body{display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-width:0;flex:1;padding:2px 0}
-.home-now-top{display:flex;flex-direction:column;gap:3px;min-width:0}
-.home-now-title{font:700 15px/1.35 var(--font-sans);color:rgba(255,255,255,.92);word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-clamp:3}
-.home-now-artist{font:500 11px/1.3 var(--font-sans);color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.home-now-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.home-now-source{display:inline-flex;align-self:flex-start;padding:2px 7px;border-radius:5px;font:600 9px/1.4 var(--font-sans);letter-spacing:.4px;text-transform:uppercase}
-.home-now-source.ne{background:rgba(217,91,103,.55);color:#fff}
-.home-now-source.qq{background:rgba(0,245,212,.35);color:#fff}
-.home-now-source.local{background:rgba(157,184,207,.35);color:#fff}
-.home-now-ctrls{display:flex;align-items:center;gap:5px}
-.home-now-btn{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.10);color:rgba(255,255,255,.80);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,transform .18s;padding:0}
-.home-now-btn:hover{background:rgba(255,255,255,.20);transform:scale(1.08)}
-.home-now-btn:active{transform:scale(.94)}
-.home-now-play{width:34px;height:34px}
-.home-now-play::before{content:'';display:block;width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent rgba(255,255,255,.85);margin-left:2px}
-.home-now-play.playing::before{border-width:0;width:11px;height:14px;border-style:solid;border-color:rgba(255,255,255,.85);border-width:0 3.5px 0 3.5px;margin-left:0}
-@media (max-height:700px){.home-now-title{font-size:13px}.home-now-artist{font-size:10px}.home-now-cover{width:clamp(64px,10vw,90px);height:clamp(64px,10vw,90px)}.home-now-btn{width:26px;height:26px}.home-now-play{width:30px;height:30px}}
-.home-hero-visual{grid-column:2;grid-row:2 / span 2;position:relative;align-self:stretch;justify-self:end;width:100%;min-height:0;border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:border-color .2s,box-shadow .2s}
+.home-hero-visual{grid-column:1;grid-row:2;position:relative;align-self:stretch;width:100%;min-height:0;border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:border-color .2s,box-shadow .2s}
 .home-hero-visual:hover{border-color:rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.18)}
 .home-hero-visual-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:100%;color:rgba(255,255,255,.22)}
 .home-hero-visual-placeholder svg{opacity:.6}
@@ -329,8 +306,6 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .crop-viewport .crop-play-btn{position:absolute;z-index:5;left:50%;top:50%;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(0,0,0,.45);color:rgba(255,255,255,.9);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);pointer-events:auto;transition:background .2s,border-color .2s}
 .crop-viewport .crop-play-btn:hover{background:rgba(0,0,0,.6);border-color:#fff}
 .crop-video-hint{font-size:10px;color:rgba(255,255,255,.4);text-align:center}
-.home-weather-pill-btn{cursor:pointer;transition:background .2s,border-color .2s,color .2s}
-.home-weather-pill-btn:hover{background:rgba(232,160,107,.14);border-color:rgba(232,160,107,.52);color:rgba(232,160,107,.96)}
 .home-chip{height:32px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.060);color:rgba(255,255,255,.76);font-family:inherit;font-size:11.5px;font-weight:680;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s,box-shadow .18s}
 .home-chip:hover{background:color-mix(in srgb,var(--home-accent) 10%,transparent);border-color:color-mix(in srgb,var(--home-accent) 38%,rgba(255,255,255,.10));color:#fff;box-shadow:0 10px 26px color-mix(in srgb,var(--home-accent) 8%,transparent);transform:translateY(-1px)}
 .home-visual{grid-column:2;grid-row:3 / span 2;position:relative;align-self:center;justify-self:end;width:100%;max-width:300px;height:74px;margin-top:0;pointer-events:none;filter:drop-shadow(0 18px 34px rgba(0,0,0,.28))}
@@ -345,11 +320,8 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-eq{display:none}
 .home-eq span{display:block;flex:1;min-width:5px;height:var(--h,28px);border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.94),var(--bar,#ff5367));box-shadow:0 0 18px color-mix(in srgb,var(--bar,#ff5367) 52%,transparent);animation:home-eq-rise 1.8s ease-in-out infinite;animation-delay:var(--d,0s)}
 .home-radio-badge{display:none}
-.home-wave-track{position:absolute;left:0;right:0;top:50%;height:44px;display:flex;align-items:center;gap:4px;opacity:.94;mix-blend-mode:screen;transform:translateY(-50%)}
-.home-wave-track span{flex:1;min-width:3px;border-radius:999px;background:linear-gradient(180deg,#fff,var(--home-accent));box-shadow:0 0 12px color-mix(in srgb,var(--home-accent) 55%,transparent);height:5px;transform-origin:bottom;transition:height .08s linear,opacity .08s linear}
 @keyframes home-disc-turn{to{transform:rotate(360deg)}}
 @keyframes home-eq-rise{0%,100%{transform:scaleY(.68);opacity:.66}45%{transform:scaleY(1);opacity:1}}
-.home-mosaic{grid-column:1 / -1;grid-row:4;align-self:end;display:grid;grid-template-columns:1.18fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:min(260px,32vh);min-height:190px;margin-top:18px}
 .home-portrait{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:clamp(20px,2.5vw,32px);padding:clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px) saturate(1.06);-webkit-backdrop-filter:blur(20px) saturate(1.06);margin-bottom:10px}
 .home-portrait-left{display:flex;align-items:center;gap:clamp(12px,1.4vw,18px);flex-shrink:0}
 .home-portrait-avatar{width:clamp(44px,4vw,52px);height:clamp(44px,4vw,52px);border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.08);box-shadow:0 2px 12px rgba(0,0,0,.25);background:rgba(255,255,255,.04);flex-shrink:0}
@@ -367,30 +339,29 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-portrait-empty{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.06);margin-bottom:10px}
 .home-portrait-empty-text{font-size:clamp(12px,1.2vw,14px);color:rgba(255,255,255,.32);font-weight:500;letter-spacing:.01em}
 @media (max-width:840px){.home-portrait{flex-wrap:wrap;gap:12px}.home-portrait-stats{margin-left:0;width:100%;justify-content:space-around}}
-.home-mosaic-cell{position:relative;border-radius:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--home-accent) 10%,rgba(255,255,255,.085));box-shadow:0 18px 44px rgba(0,0,0,.26);cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),border-color .22s,box-shadow .22s}
-.home-mosaic-cell:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--home-accent) 42%,rgba(255,255,255,.18));box-shadow:0 28px 84px rgba(0,0,0,.36),0 0 34px color-mix(in srgb,var(--home-accent) 16%,transparent)}
-.home-mosaic-radio{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;min-height:0;padding:clamp(10px,2vw,16px) clamp(10px,2vw,16px) clamp(40px,5vw,52px);gap:clamp(6px,1.2vw,10px);text-align:center;background:linear-gradient(142deg,rgba(18,22,30,.82),rgba(8,12,22,.92));border:1px solid color-mix(in srgb,var(--home-accent) 14%,rgba(255,255,255,.12));backdrop-filter:blur(28px) saturate(1.2);-webkit-backdrop-filter:blur(28px) saturate(1.2);box-shadow:0 20px 64px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10),inset 0 -1px 0 rgba(0,0,0,.3)}
-.home-mosaic-radio::before{content:'';position:absolute;inset:0;background:linear-gradient(118deg,rgba(0,245,212,.10),transparent 38%,rgba(36,66,255,.07) 74%,transparent),linear-gradient(180deg,rgba(255,255,255,.06) 0%,transparent 55%,rgba(0,0,0,.04) 100%);pointer-events:none;border-radius:inherit;opacity:.9}
-.home-mosaic-radio-head{display:flex;align-items:center;gap:clamp(6px,1vw,10px);flex-shrink:0}
-.home-mosaic-radio-logo{width:clamp(32px,4vw,48px);height:clamp(32px,4vw,48px);border-radius:clamp(8px,1.2vw,12px);position:relative;z-index:1;filter:drop-shadow(0 clamp(1px,.2vw,3px) clamp(2px,.6vw,8px) rgba(0,0,0,.4));flex-shrink:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85)}
-.home-mosaic-radio-logo svg{width:70%;height:70%}
-.home-mosaic-radio-title{font-size:clamp(12px,1.5vw,16px);font-weight:650;letter-spacing:clamp(.01em,.1vw,.04em);position:relative;z-index:1;text-shadow:0 clamp(1px,.2vw,2px) clamp(1px,.4vw,4px) rgba(0,0,0,.5);line-height:clamp(1.2,1.25vw,1.3);white-space:nowrap;color:rgba(255,255,255,.96)}
-.home-mosaic-radio-desc{font-size:clamp(8px,1vw,10px);line-height:clamp(1.35,1.45vw,1.55);color:rgba(255,255,255,.55);position:relative;z-index:1;max-width:92%;flex:1 1 0%;min-height:0;padding:4px 0;text-shadow:0 clamp(1px,.15vw,2px) clamp(1px,.3vw,3px) rgba(0,0,0,.3);overflow:hidden;word-break:break-word}
-.home-mosaic-radio-btns{position:absolute;z-index:1;bottom:clamp(6px,1vw,12px);left:clamp(8px,1.5vw,16px);right:clamp(8px,1.5vw,16px);display:flex;gap:4px;justify-content:center}
-.home-mosaic-radio-btn{height:clamp(22px,2.6vw,30px);min-width:clamp(52px,6vw,72px);padding:0 clamp(8px,1.2vw,16px);border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:rgba(255,255,255,.88);font-family:inherit;font-size:clamp(9px,1.1vw,12px);font-weight:500;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);text-align:center;justify-content:center}
-.home-mosaic-radio-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.40);transform:translateY(-1px);box-shadow:0 clamp(4px,.8vw,8px) clamp(12px,2vw,24px) rgba(255,255,255,.12)}
-.home-mosaic-shortcut{border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;text-align:center;background:linear-gradient(142deg,rgba(18,21,26,.66),rgba(8,9,13,.76))!important;border:1px solid color-mix(in srgb,var(--home-accent) 10%,rgba(255,255,255,.085))!important;backdrop-filter:blur(24px) saturate(1.12)!important;-webkit-backdrop-filter:blur(24px) saturate(1.12)!important;box-shadow:0 20px 64px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.060)!important;transition:border-color .22s,background .22s,box-shadow .22s,transform .22s cubic-bezier(.16,1,.3,1);color:rgba(255,255,255,.82)}
-.home-mosaic-cell.home-mosaic-shortcut{background:linear-gradient(142deg,rgba(18,21,26,.66),rgba(8,9,13,.76))!important;backdrop-filter:blur(24px) saturate(1.12)!important;-webkit-backdrop-filter:blur(24px) saturate(1.12)!important;box-shadow:0 20px 64px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.060)!important;border-color:color-mix(in srgb,var(--home-accent) 10%,rgba(255,255,255,.085))!important}
-.home-mosaic-shortcut::before{content:''!important;position:absolute;inset:0;background:linear-gradient(118deg,color-mix(in srgb,var(--home-accent) 22%,transparent),transparent 38%,color-mix(in srgb,var(--home-accent) 16%,transparent) 74%,transparent),linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 38px)!important;opacity:.86;pointer-events:none;border-radius:inherit}
-.home-mosaic-shortcut:hover{border-color:color-mix(in srgb,var(--home-accent) 42%,rgba(255,255,255,.18))!important;box-shadow:0 28px 84px rgba(0,0,0,.36),0 0 34px color-mix(in srgb,var(--home-accent) 16%,transparent),inset 0 1px 0 rgba(255,255,255,.085)!important;transform:translateY(-3px)}
-.home-mosaic-shortcut-icon{font-size:22px;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:transform .2s cubic-bezier(.16,1,.3,1),filter .2s}
-.home-mosaic-shortcut-icon svg{width:1em;height:1em;vertical-align:-.12em}
-.home-mosaic-shortcut-label{font-size:11px;font-weight:700;letter-spacing:.03em;position:relative;z-index:1;color:rgba(255,255,255,.88);text-shadow:0 1px 3px rgba(0,0,0,.32);line-height:1.2;white-space:nowrap;transition:color .2s,text-shadow .2s}
-.home-mosaic-shortcut-hint{font-size:8px;font-weight:560;color:rgba(255,255,255,.38);letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:1;transition:color .2s}
-.home-mosaic-shortcut.active{border-color:color-mix(in srgb,var(--home-accent) 80%,#fff);background:linear-gradient(142deg,rgba(20,44,42,.88),rgba(8,20,28,.92));box-shadow:0 0 0 1px color-mix(in srgb,var(--home-accent) 40%,transparent),0 0 30px color-mix(in srgb,var(--home-accent) 45%,transparent),0 0 70px color-mix(in srgb,var(--home-accent) 25%,transparent),0 0 120px color-mix(in srgb,var(--home-accent) 12%,transparent),0 28px 84px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.18);transform:translateY(-3px)}
-.home-mosaic-shortcut.active .home-mosaic-shortcut-icon{transform:scale(1.16);filter:drop-shadow(0 3px 12px color-mix(in srgb,var(--home-accent) 65%,transparent))}
-.home-mosaic-shortcut.active .home-mosaic-shortcut-label{color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--home-accent) 55%,transparent)}
-.home-mosaic-shortcut.active .home-mosaic-shortcut-hint{color:rgba(255,255,255,.82);text-shadow:0 0 10px color-mix(in srgb,var(--home-accent) 30%,transparent)}
+.home-report{grid-column:2;grid-row:2;position:relative;align-self:stretch;width:100%;min-height:0;border-radius:18px;overflow:hidden;border:1px solid rgba(255,143,177,.12);background:linear-gradient(145deg,rgba(30,16,28,.66),rgba(12,8,16,.78));box-shadow:0 24px 72px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.045)}
+.home-report:hover{border-color:rgba(255,143,177,.22)}
+.home-report-marquee{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(4px,.6vw,8px);opacity:.55;pointer-events:none;will-change:transform;mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)}
+.home-report-track{display:flex;gap:clamp(6px,.8vw,10px);width:max-content;animation:home-report-marquee 60s linear infinite;will-change:transform}
+.home-report-track.r2{animation-duration:80s;animation-direction:reverse;margin-top:0}
+.home-report-card{width:clamp(58px,7vw,88px);aspect-ratio:1/1;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.04);background-size:cover;background-position:center;box-shadow:0 6px 18px rgba(0,0,0,.30);opacity:.85;transition:opacity .3s,transform .3s}
+.home-report-card.empty{background:linear-gradient(135deg,rgba(255,143,177,.18),rgba(120,30,80,.32));position:relative}
+.home-report-card.empty::after{content:'';position:absolute;inset:30%;border-radius:50%;border:1.5px solid rgba(255,255,255,.20)}
+.home-report-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,8,16,.30) 0%,rgba(12,8,16,.55) 60%,rgba(12,8,16,.78) 100%);pointer-events:none}
+.home-report-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;padding:clamp(14px,2vw,22px);gap:clamp(6px,1vw,10px)}
+.home-report-tabs{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.home-report-tab{height:clamp(20px,2.4vw,26px);padding:0 clamp(8px,1vw,12px);border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:rgba(255,255,255,.68);font-family:inherit;font-size:clamp(9px,1vw,11px);font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s}
+.home-report-tab:hover{background:rgba(255,143,177,.10);border-color:rgba(255,143,177,.32);color:#fff}
+.home-report-tab.active{background:linear-gradient(135deg,rgba(255,143,177,.30),rgba(255,45,111,.40));border-color:rgba(255,143,177,.55);color:#fff;box-shadow:0 4px 16px rgba(255,45,111,.32)}
+.home-report-body{flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:0;margin-top:clamp(2px,.5vw,8px)}
+.home-report-label{font-size:clamp(9px,1vw,11px);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,143,177,.84);line-height:1.2}
+.home-report-period{font-size:clamp(9px,.95vw,11px);font-weight:500;color:rgba(255,255,255,.42);letter-spacing:.06em;line-height:1.2}
+.home-report-number{font:700 clamp(34px,5.4vw,68px)/1 var(--font-sans);background:linear-gradient(135deg,#FF8FB1 0%,#FF2D6F 60%,#C0266E 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-shadow:0 4px 18px rgba(255,45,111,.20);line-height:1}
+.home-report-unit{font-size:clamp(11px,1.2vw,14px);font-weight:600;color:rgba(255,255,255,.74);letter-spacing:.04em;margin-top:-4px}
+.home-report-detail-btn{align-self:flex-start;margin-top:clamp(4px,.8vw,8px);height:clamp(26px,3vw,32px);padding:0 clamp(14px,1.6vw,18px);border-radius:999px;border:1px solid rgba(255,143,177,.45);background:linear-gradient(135deg,rgba(255,143,177,.18),rgba(255,45,111,.20));color:#fff;font-family:inherit;font-size:clamp(10px,1.05vw,12px);font-weight:600;letter-spacing:.06em;cursor:pointer;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.home-report-detail-btn:hover{background:linear-gradient(135deg,rgba(255,143,177,.34),rgba(255,45,111,.38));border-color:rgba(255,143,177,.75);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,45,111,.32)}
+.home-report-detail-btn:active{transform:translateY(0)}
+@keyframes home-report-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .home-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;min-height:38px}
 .home-section-title{font-size:13px;font-weight:760;color:rgba(255,255,255,.84);letter-spacing:.04em}
 .home-section-note{font-size:11px;color:rgba(255,255,255,.38);white-space:nowrap}
@@ -436,11 +407,11 @@ body.empty-home-active .home-visual{animation:home-visual-drift 8.8s ease-in-out
 .home-skeleton{position:relative;overflow:hidden}
 .home-skeleton::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);animation:home-shimmer 1.5s ease-in-out infinite}
 @keyframes home-shimmer{100%{transform:translateX(100%)}}
-@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:.65fr 1fr;gap:10px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-mosaic{height:280px;min-height:240px;margin-top:14px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
-@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:.63fr 1fr;gap:10px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-mosaic{height:200px;min-height:180px;margin-top:14px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
-@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-mosaic{height:170px;min-height:150px}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
-@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:1fr}.home-hero-visual{display:none}.home-mosaic{height:240px;min-height:210px}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
-@media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto}.home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto}.home-mosaic{height:172px;min-height:150px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:.65fr 1fr;gap:10px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
+@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:.63fr 1fr;gap:10px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
+@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
+@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:1fr}.home-hero-visual{display:none}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
+@media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto}.home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:620px){#empty-home{top:146px;bottom:44px;width:calc(100vw - 24px)}.home-hero{padding:20px;border-radius:22px}.home-hero-inner{display:flex;flex-direction:column}.home-hero-visual{display:none}.home-mosaic{display:none}.home-grid{grid-template-columns:1fr}.home-tile-row{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-cover{height:auto;aspect-ratio:1}.home-tile-sub{display:block}.home-card-art{width:88px;height:88px}.home-card-title,.home-card-sub{max-width:68%}}
 .home-visual.generated{height:clamp(140px,18vh,220px)!important;max-width:clamp(180px,22vw,300px)!important;align-self:center!important;border-radius:18px;overflow:hidden}
 @media (max-height:760px){.home-visual.generated{height:clamp(100px,14vh,160px)!important;max-width:clamp(140px,18vw,220px)!important}}
@@ -490,17 +461,17 @@ body.desktop-shell.desktop-fullscreen .empty-home-shell,html:fullscreen body.des
 body.desktop-shell.desktop-fullscreen .home-hero,html:fullscreen body.desktop-shell .home-hero{align-self:stretch;padding:22px}
 body.desktop-shell.desktop-fullscreen .home-hero-inner,html:fullscreen body.desktop-shell .home-hero-inner{height:100%;grid-template-rows:auto auto auto 1fr}
 body.desktop-shell.desktop-fullscreen .home-hero-visual,html:fullscreen body.desktop-shell .home-hero-visual{align-self:stretch;max-width:100%}
-body.desktop-shell.desktop-fullscreen .home-now-card,html:fullscreen body.desktop-shell .home-now-card{padding:14px!important}
-body.desktop-shell.desktop-fullscreen .home-now-cover,html:fullscreen body.desktop-shell .home-now-cover{width:clamp(72px,10vw,90px)!important;height:clamp(72px,10vw,90px)!important}
+
+
 body.desktop-shell.desktop-fullscreen .home-visual,html:fullscreen body.desktop-shell .home-visual{height:166px;max-width:206px}
 body.desktop-shell.desktop-fullscreen .home-right-col,html:fullscreen body.desktop-shell .home-right-col{align-self:stretch;height:100%}
 body.desktop-shell.desktop-fullscreen .home-grid,html:fullscreen body.desktop-shell .home-grid{flex:1 1 auto;min-height:0}
 body.desktop-shell.desktop-fullscreen .home-card,html:fullscreen body.desktop-shell .home-card{min-height:128px!important;padding:14px!important}
 body.desktop-shell.desktop-fullscreen .home-tile,html:fullscreen body.desktop-shell .home-tile{min-height:130px!important}
 body.desktop-shell.desktop-fullscreen .home-tile-cover,html:fullscreen body.desktop-shell .home-tile-cover{height:70px!important}
-body.desktop-shell.desktop-fullscreen .home-mosaic,html:fullscreen body.desktop-shell .home-mosaic{height:150px!important;min-height:126px;margin-top:14px;align-self:end;overflow:hidden}
+body.desktop-shell.desktop-fullscreen .home-mosaic,html:fullscreen body.desktop-shell 
 body.desktop-shell.desktop-fullscreen .home-grid,html:fullscreen body.desktop-shell .home-grid{gap:22px}
-body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscreen body.desktop-shell .home-mosaic-cell.has-cover{background-size:contain;background-repeat:no-repeat;background-color:rgba(8,10,14,.54)}
+body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscreen body.desktop-shell 
 @media (max-height:760px){
   body.desktop-shell #empty-home{top:118px;bottom:34px}
   body.desktop-shell .home-hero{padding:22px}
@@ -508,7 +479,7 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .home-card{min-height:128px;padding:14px}
   body.desktop-shell .home-tile{min-height:130px}
   body.desktop-shell .home-tile-cover{height:70px}
-  body.desktop-shell .home-mosaic{height:150px;min-height:126px}
+
 }
 @media (max-width:1120px){
   body.desktop-shell #empty-home{width:calc(100vw - 44px)}
@@ -518,7 +489,7 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .home-title{font-size:clamp(30px,4vw,48px);max-width:340px}
   body.desktop-shell .home-sub{font-size:12.5px;line-height:1.5;max-width:314px}
   body.desktop-shell .home-visual{height:190px;max-width:226px}
-  body.desktop-shell .home-mosaic{height:132px;min-height:116px;margin-top:14px}
+
   body.desktop-shell .home-grid{gap:10px}
   body.desktop-shell .home-card{min-height:122px;padding:14px}
   body.desktop-shell .home-card-label{margin-bottom:6px}
@@ -537,7 +508,7 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .home-sub{font-size:11.8px;line-height:1.4}
   body.desktop-shell .home-weather-meta{margin-top:0}
   body.desktop-shell .home-visual{height:166px;max-width:206px}
-  body.desktop-shell .home-mosaic{height:104px;min-height:98px}
+
   body.desktop-shell .home-card{min-height:104px;padding:12px}
   body.desktop-shell .home-card-title{font-size:15px}
   body.desktop-shell .home-card-sub{font-size:10.2px;line-height:1.28}
@@ -551,7 +522,7 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell .empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}
   body.desktop-shell .home-hero-inner{grid-template-columns:minmax(0,1fr)}
   body.desktop-shell .home-visual{display:none}
-  body.desktop-shell .home-mosaic{height:112px;min-height:100px}
+
   body.desktop-shell .home-card{min-height:102px}
   body.desktop-shell .home-card-title{font-size:14.8px;max-width:68%}
   body.desktop-shell .home-card-sub{font-size:10px;max-width:62%}
@@ -2196,26 +2167,6 @@ body.immersive-mode #comment-card-container{opacity:0!important}
     <div class="home-hero">
       <div class="home-hero-inner">
         <div class="home-portrait" id="home-portrait"></div>
-        <div class="home-weather-meta" id="home-weather-meta"></div>
-        <div class="home-now-card" id="home-now-card">
-          <div class="home-now-cover" id="home-now-cover">
-            <div class="home-wave-track" id="home-wave-track"></div>
-          </div>
-          <div class="home-now-body">
-            <div class="home-now-top">
-              <div class="home-now-title" id="home-now-title"></div>
-              <div class="home-now-artist" id="home-now-artist"></div>
-              <div class="home-now-source" id="home-now-source"></div>
-            </div>
-            <div class="home-now-bottom">
-              <div class="home-now-ctrls">
-                <button class="home-now-btn" id="home-now-prev" title="上一首" onclick="prevTrack()"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
-                <button class="home-now-btn home-now-play" id="home-now-play" title="播放/暂停" onclick="togglePlay()"></button>
-                <button class="home-now-btn" id="home-now-next" title="下一首" onclick="nextTrack()"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M16 6h2v12h-2zM4 18l8.5-6L4 6z"/></svg></button>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="home-hero-visual" id="home-hero-visual" onclick="document.getElementById('hero-visual-input').click()">
           <input type="file" id="hero-visual-input" accept="image/*,video/mp4,video/webm,video/quicktime" style="display:none">
           <div class="home-hero-visual-placeholder" id="home-hero-visual-placeholder">
@@ -2225,37 +2176,23 @@ body.immersive-mode #comment-card-container{opacity:0!important}
           <img class="home-hero-visual-img" id="home-hero-visual-img" style="display:none">
           <video class="home-hero-visual-img" id="home-hero-visual-video" style="display:none" muted loop playsinline autoplay></video>
         </div>
-        <div class="home-mosaic" id="home-mosaic">
-          <div class="home-mosaic-cell home-mosaic-radio">
-            <div class="home-mosaic-radio-head">
-              <div class="home-mosaic-radio-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></div>
-              <div class="home-mosaic-radio-title">私人电台</div>
+        <div class="home-report" id="home-report">
+          <div class="home-report-marquee" id="home-report-marquee" aria-hidden="true"></div>
+          <div class="home-report-overlay"></div>
+          <div class="home-report-content">
+            <div class="home-report-tabs" id="home-report-tabs">
+              <button class="home-report-tab active" data-range="week" type="button">本周</button>
+              <button class="home-report-tab" data-range="today" type="button">今日</button>
+              <button class="home-report-tab" data-range="month" type="button">本月</button>
+              <button class="home-report-tab" data-range="all" type="button">全部</button>
             </div>
-            <div class="home-mosaic-radio-desc">给你放点不一样的歌</div>
-            <div class="home-mosaic-radio-btns">
-              <button class="home-mosaic-radio-btn" type="button" data-home-radio-start>启动</button>
-              <button class="home-mosaic-radio-btn home-mosaic-radio-refresh" type="button" data-home-radio-refresh>换一批</button>
+            <div class="home-report-body">
+              <div class="home-report-label" id="home-report-label">本周收听</div>
+              <div class="home-report-period" id="home-report-period">—</div>
+              <div class="home-report-number" id="home-report-number">0</div>
+              <div class="home-report-unit">首</div>
+              <button class="home-report-detail-btn" type="button" onclick="openReportModal()">查看听歌报告</button>
             </div>
-          </div>
-          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="wallpaper">
-            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-            <div class="home-mosaic-shortcut-label">壁纸模式</div>
-            <div class="home-mosaic-shortcut-hint">WALLPAPER</div>
-          </div>
-          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="lyrics">
-            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 10h12"/><path d="M4 14h8"/><path d="M4 18h10"/><path d="M17 13v6"/><path d="M14 16h6"/></svg></div>
-            <div class="home-mosaic-shortcut-label">桌面歌词</div>
-            <div class="home-mosaic-shortcut-hint">LYRICS</div>
-          </div>
-          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="preset">
-            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z"/><path d="M18 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" opacity=".6"/></svg></div>
-            <div class="home-mosaic-shortcut-label">随机预设特效</div>
-            <div class="home-mosaic-shortcut-hint">PRESET</div>
-          </div>
-          <div class="home-mosaic-cell home-mosaic-shortcut" data-shortcut="shelf">
-            <div class="home-mosaic-shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M4 5v14l8-4 8 4V5"/><path d="M4 12h16"/></svg></div>
-            <div class="home-mosaic-shortcut-label">3D 歌单</div>
-            <div class="home-mosaic-shortcut-hint">SHELF</div>
           </div>
         </div>
       </div>
@@ -2265,8 +2202,8 @@ body.immersive-mode #comment-card-container{opacity:0!important}
     <div class="home-grid">
       <button class="home-card" data-home-tone="library" type="button" onclick="openHomeLibrary()">
         <div class="home-card-label">Library</div>
-        <div class="home-card-title" id="home-weather-card-title">我的歌单</div>
-        <div class="home-card-sub" id="home-weather-card-sub">打开左侧歌单库</div>
+        <div class="home-card-title" id="home-library-card-title">我的歌单</div>
+        <div class="home-card-sub" id="home-library-card-sub">打开左侧歌单库</div>
         <div class="home-card-art" id="home-weather-art"></div>
       </button>
       <button class="home-card" data-home-tone="mix" type="button" onclick="playHomeSong(0)">
@@ -3156,6 +3093,7 @@ var listenStatsState = loadListenStatsState();
 var listenSession = null;
 var appPerfMarks = [];
 function markAppPerf(name) {
+
   try {
     var value = performance.now();
     appPerfMarks.push({ name: name, value: Math.round(value) });
@@ -3164,6 +3102,203 @@ function markAppPerf(name) {
   } catch (e) {}
 }
 markAppPerf('script-start');
+
+// ============================================================
+//  播放打点（scrobble）：把一次真实播放回写网易云
+//  复刻自 Mineradio- IPad适配/public/index.html
+//  关键点：
+//  - 听满 SCROBBLE_THRESHOLD 秒（默认 30s）才上报
+//  - 一首歌一次连续播放只报一次（scrobbleState.reported 防重）
+//  - 失败/离线时入队持久化，启动时/定时/online 自动补发
+// ============================================================
+var SCROBBLE_THRESHOLD = 30;
+var SCROBBLE_QUEUE_KEY = 'mineradio_scrobble_queue';
+var scrobbleState = { songId: '', reported: false, total: 0 };
+var scrobbleFlushInFlight = false;
+var listenTracker = {
+  current: null,
+  lastTickAt: 0,
+  tickInterval: null,
+  scrobbleSec: 0
+};
+function resetScrobbleSession(songId, total){
+  scrobbleState.songId = songId || '';
+  scrobbleState.reported = false;
+  scrobbleState.total = total || getCurrentSongDurationSec();
+}
+function loadScrobbleQueue(){
+  try { return JSON.parse(localStorage.getItem(SCROBBLE_QUEUE_KEY) || '[]') || []; }
+  catch(e){ return []; }
+}
+function saveScrobbleQueue(q){
+  try { localStorage.setItem(SCROBBLE_QUEUE_KEY, JSON.stringify(q.slice(-50))); } catch(e){}
+}
+// 发送队列头部一条；成功则出队，失败保留待重试（不会因 server 掉线而丢播放）
+// 修复：fetch 必须有 AbortController 超时，否则 server 卡死时队列永远卡住
+function flushScrobbleQueue(){
+  if (scrobbleFlushInFlight) return;
+  var q = loadScrobbleQueue();
+  if (!q.length) return;
+  scrobbleFlushInFlight = true;
+  var entry = q[0];
+  var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = setTimeout(function(){
+    try { if (ac) ac.abort(); } catch(e){}
+  }, 8000);
+  fetch('/api/scrobble', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: entry.id, time: entry.time, total: entry.total }),
+    signal: ac ? ac.signal : undefined
+  }).then(function(r){ return r.json().catch(function(){ return {}; }); }).then(function(resp){
+    // 关键修复：必须看 server 实际返回的 code（PLV/PLD 成功），而不仅看 loggedIn
+    // 原逻辑在 server 返回 {loggedIn:true, code:502} 时也会误判为成功
+    var drop = false;
+    if (resp && resp.code === 200) drop = true;
+    else if (resp && resp.error === 'LOGIN_REQUIRED') drop = true; // 未登录：丢弃，登录后下首歌会重新打点
+    if (drop) {
+      var nq = loadScrobbleQueue();
+      var idx = -1;
+      for (var i=0;i<nq.length;i++){ if (nq[i].key === entry.key){ idx = i; break; } }
+      if (idx >= 0) { nq.splice(idx, 1); saveScrobbleQueue(nq); }
+    } else if (resp && resp.loggedIn === false) {
+      // 明确未登录：出队（避免无限重试）
+      var nq2 = loadScrobbleQueue();
+      var idx2 = -1;
+      for (var j=0;j<nq2.length;j++){ if (nq2[j].key === entry.key){ idx2 = j; break; } }
+      if (idx2 >= 0) { nq2.splice(idx2, 1); saveScrobbleQueue(nq2); }
+    } else {
+      // 真上传失败（502 等）：保留重试，但加日志便于排查
+      console.warn('[scrobble] upload failed; will retry. resp=', resp);
+    }
+  }).catch(function(err){
+    /* 网络失败/abort超时：保留在队列，等下次重试（不出队） */
+    console.warn('[scrobble] fetch error; will retry.', err && err.message || err);
+  }).then(function(){ clearTimeout(timer); scrobbleFlushInFlight = false; });
+}
+function getCurrentSongDurationSec(){
+  try {
+    var song = (typeof currentIdx !== 'undefined' && currentIdx >= 0 && playQueue[currentIdx]) ? playQueue[currentIdx] : null;
+    var d = 0;
+    if (song && song.dt) d = Number(song.dt);
+    else if (typeof audio !== 'undefined' && audio && audio.duration && isFinite(audio.duration)) d = Number(audio.duration);
+    if (!d || d <= 0) return 0;
+    if (d > 10000) d = d / 1000;
+    return Math.max(1, Math.round(d));
+  } catch(e){ return 0; }
+}
+function scrobbleSong(id, time, total){
+  if (!/^\d+$/.test(String(id))) return;
+  var q = loadScrobbleQueue();
+  var entry = { id: String(id), time: Math.max(1, Math.floor(time||0)), total: Math.max(1, Math.floor(total||0)) || Math.max(1, Math.floor(time||0)), ts: Date.now(), key: String(id) + '_' + Date.now() };
+  var dup = q.some(function(e){ return e.id === entry.id && (Date.now() - e.ts) < 60000; });
+  if (!dup) { q.push(entry); saveScrobbleQueue(q); }
+  flushScrobbleQueue();
+}
+function reportCurrentSong(){
+  if (!scrobbleState.songId) return;
+  if (scrobbleState.reported) return;
+  var t = Math.floor(listenTracker.scrobbleSec || 0);
+  if (t < SCROBBLE_THRESHOLD) return;
+  scrobbleState.reported = true;
+  scrobbleSong(scrobbleState.songId, t, scrobbleState.total || getCurrentSongDurationSec());
+}
+function tryScrobble(){ reportCurrentSong(); }
+function getCurrentSongMeta(){
+  var meta = { songId: '', title: '', artist: '', coverUrl: '', artistId: '' };
+  try {
+    var song = (typeof currentIdx !== 'undefined' && currentIdx >= 0 && playQueue[currentIdx]) ? playQueue[currentIdx] : null;
+    if (song) {
+      meta.title = (song.name || song.title || '').toString().trim();
+      meta.artist = (song.artist || song.ar || song.author || '').toString().trim();
+      meta.coverUrl = (song.cover || '').toString().trim();
+      meta.artistId = (typeof currentArtistId === 'function' ? currentArtistId(song) : '') || '';
+      if (song.id) meta.songId = String(song.id);
+    }
+    if (!meta.songId && typeof audio !== 'undefined' && audio && audio.src) {
+      meta.songId = audio.src;
+    }
+  } catch(e){}
+  return meta;
+}
+function onAudioPlay(){
+  var m = getCurrentSongMeta();
+  var nearStart = (typeof audio !== 'undefined' && audio && audio.currentTime < 3);
+  if (m.songId && (scrobbleState.songId !== m.songId || nearStart)) {
+    reportCurrentSong();
+  }
+  if (m.songId) {
+    if (!listenTracker.current || listenTracker.current.songId !== m.songId) {
+      listenTracker.current = Object.assign({}, m, { startedAt: Date.now() });
+      listenTracker.lastTickAt = Date.now();
+    }
+    if (scrobbleState.songId !== m.songId || nearStart) {
+      resetScrobbleSession(m.songId, getCurrentSongDurationSec());
+      listenTracker.scrobbleSec = 0;
+    }
+  }
+  flushScrobbleQueue();
+}
+function startListenTracking(){
+  if (typeof audio === 'undefined' || !audio) {
+    if (!listenTracker.initRetry) {
+      listenTracker.initRetry = setInterval(function(){
+        if (typeof audio !== 'undefined' && audio) {
+          clearInterval(listenTracker.initRetry);
+          listenTracker.initRetry = null;
+          startListenTracking();
+        }
+      }, 1000);
+    }
+    return;
+  }
+  if (listenTracker.initRetry) { clearInterval(listenTracker.initRetry); listenTracker.initRetry = null; }
+  if (!audio.paused) {
+    var meta = getCurrentSongMeta();
+    if (meta.songId) {
+      listenTracker.current = Object.assign({}, meta, { startedAt: Date.now() });
+      listenTracker.lastTickAt = Date.now();
+    }
+  }
+  if (!listenTracker.tickInterval) {
+    listenTracker.tickInterval = setInterval(function(){
+      if (typeof audio === 'undefined' || !audio || audio.paused) return;
+      if (!listenTracker.current) {
+        var m = getCurrentSongMeta();
+        if (!m.songId) return;
+        listenTracker.current = Object.assign({}, m, { startedAt: Date.now() });
+        listenTracker.lastTickAt = Date.now();
+        return;
+      }
+      var now = Date.now();
+      var delta = (now - listenTracker.lastTickAt) / 1000;
+      listenTracker.lastTickAt = now;
+      listenTracker.scrobbleSec = (listenTracker.scrobbleSec || 0) + delta;
+    }, 5000);
+  }
+  if (!listenTracker.eventsBound) {
+    listenTracker.eventsBound = true;
+    audio.addEventListener('play', onAudioPlay);
+    audio.addEventListener('playing', onAudioPlay);
+    audio.addEventListener('pause', function(){
+      listenTracker.current = null;
+    });
+    audio.addEventListener('ended', function(){
+      reportCurrentSong();
+    });
+    window.addEventListener('pagehide', function(){ reportCurrentSong(); });
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') reportCurrentSong(); });
+  }
+}
+// 启动 scrobble 追踪 + 兜底补发
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startListenTracking);
+} else {
+  setTimeout(startListenTracking, 100);
+}
+try { flushScrobbleQueue(); } catch(e){}
+setInterval(function(){ try { flushScrobbleQueue(); } catch(e){} }, 60000);
+window.addEventListener('online', function(){ try { flushScrobbleQueue(); } catch(e){} });
 function installStartupLongTaskObserver() {
   try {
     if (!('PerformanceObserver' in window)) return;
@@ -16601,6 +16736,132 @@ function topListenArtist() {
   list.sort(function(a, b){ return (b.plays - a.plays) || (b.listenMs - a.listenMs) || (b.lastPlayedAt - a.lastPlayedAt); });
   return list[0] || null;
 }
+/* 听歌报告 mini 视图渲染：从 listenStatsState.history 聚合数据 */
+var homeReportState = { range: 'week' };
+function reportRangeMs(range) {
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (range === 'today') return today;
+  if (range === 'week') {
+    var day = (now.getDay() + 6) % 7; /* 周一为 0 */
+    return today - day * 86400000;
+  }
+  if (range === 'month') return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  return 0; /* all */
+}
+function reportRangeLabel(range) {
+  if (range === 'today') return '今日收听';
+  if (range === 'week') return '本周收听';
+  if (range === 'month') return '本月收听';
+  return '累计收听';
+}
+function reportRangePeriod(range) {
+  var now = new Date();
+  if (range === 'today') return fmtDate(now.getTime());
+  if (range === 'week') {
+    var start = new Date();
+    start.setDate(start.getDate() - ((now.getDay() + 6) % 7));
+    return fmtDate(start.getTime()) + ' - ' + fmtDate(now.getTime());
+  }
+  if (range === 'month') return now.getFullYear() + '-' + (now.getMonth() + 1);
+  var first = (listenStatsState.history && listenStatsState.history[0] && listenStatsState.history[0].playedAt) || Date.now();
+  return fmtDate(first) + ' - ' + fmtDate(now.getTime());
+}
+function fmtDate(ms) {
+  var d = new Date(ms);
+  return (d.getMonth() + 1) + '.' + d.getDate();
+}
+function reportCountForRange(range) {
+  var since = reportRangeMs(range);
+  var history = listenStatsState.history || [];
+  var keys = {};
+  for (var i = 0; i < history.length; i++) {
+    var h = history[i];
+    if ((h.playedAt || 0) >= since) keys[h.key] = true;
+  }
+  return Object.keys(keys).length;
+}
+function reportCoversForRange(range, n) {
+  var since = reportRangeMs(range);
+  var history = listenStatsState.history || [];
+  var seen = {};
+  var out = [];
+  for (var i = 0; i < history.length && out.length < n; i++) {
+    var h = history[i];
+    if ((h.playedAt || 0) < since) continue;
+    if (seen[h.key]) continue;
+    seen[h.key] = true;
+    out.push({ cover: h.cover, key: h.key });
+  }
+  /* 不够时用占位（empty 状态由 CSS 处理） */
+  while (out.length < n) out.push({ cover: '', key: '' });
+  return out;
+}
+function renderHomeMarquee(range) {
+  var wrap = document.getElementById('home-report-marquee');
+  if (!wrap) return;
+  var covers = reportCoversForRange(range, 20);
+  /* 双倍拼接实现无缝循环（保留空 cover 时显示占位） */
+  var html = '<div class="home-report-track" id="home-report-track-1">';
+  for (var i = 0; i < covers.length; i++) {
+    var bg = covers[i].cover ? cssImageUrl(covers[i].cover) : '';
+    html += '<div class="home-report-card' + (bg ? '" style="background-image:url(&quot;' + escHtmlAttr(bg) + '&quot;)' : ' empty') + '"></div>';
+  }
+  html += '</div><div class="home-report-track r2" id="home-report-track-2">';
+  for (var j = 0; j < covers.length; j++) {
+    var bg2 = covers[j].cover ? cssImageUrl(covers[j].cover) : '';
+    html += '<div class="home-report-card' + (bg2 ? '" style="background-image:url(&quot;' + escHtmlAttr(bg2) + '&quot;)' : ' empty') + '"></div>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+function escHtmlAttr(s) { return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function renderHomeReport() {
+  var el = document.getElementById('home-report');
+  if (!el) return;
+  var num = document.getElementById('home-report-number');
+  var label = document.getElementById('home-report-label');
+  var period = document.getElementById('home-report-period');
+  var tabs = document.querySelectorAll('#home-report-tabs .home-report-tab');
+  var range = homeReportState.range;
+  if (label) label.textContent = reportRangeLabel(range);
+  if (period) period.textContent = reportRangePeriod(range);
+  if (num) animateReportNumber(num, reportCountForRange(range));
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle('active', tabs[i].getAttribute('data-range') === range);
+  }
+  renderHomeMarquee(range);
+}
+function animateReportNumber(el, target) {
+  var start = parseInt(el.textContent || '0', 10) || 0;
+  var duration = 600;
+  var startT = Date.now();
+  function tick() {
+    var t = Math.min(1, (Date.now() - startT) / duration);
+    var v = Math.round(start + (target - start) * (1 - Math.pow(1 - t, 3)));
+    el.textContent = v;
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  tick();
+}
+function bindHomeReportTabs() {
+  var tabs = document.querySelectorAll('#home-report-tabs .home-report-tab');
+  for (var i = 0; i < tabs.length; i++) {
+    (function(btn){
+      btn.addEventListener('click', function(){
+        var r = btn.getAttribute('data-range');
+        if (r && r !== homeReportState.range) {
+          homeReportState.range = r;
+          renderHomeReport();
+        }
+      });
+    })(tabs[i]);
+  }
+}
+function openReportModal() {
+  showToast('听歌报告功能开发中');
+}
+
 function homeListenSummary() {
   var history = listenStatsState.history || [];
   var recent = history.length ? history[history.length - 1] : null;
@@ -16715,22 +16976,7 @@ function homeToneForItem(item, index) {
   if (item.kind === 'search') return 'search';
   return ['daily', 'playlist', 'local', 'guide', 'search'][index % 5];
 }
-function renderHomeMosaic(items) {
-  var cells = document.querySelectorAll('#home-mosaic .home-mosaic-cell');
-  if (!cells.length) return;
-  for (var i = 0; i < cells.length; i++) {
-    if (cells[i].classList.contains('home-mosaic-radio') || cells[i].classList.contains('home-mosaic-shortcut')) continue;
-    var covers = [];
-    (items || []).forEach(function(item){
-      var cover = homeTileCover(item);
-      if (cover) covers.push(cover);
-    });
-    var src = covers[i] || covers[(i + 1) % Math.max(1, covers.length)] || '';
-    cells[i].style.backgroundImage = src ? 'url("' + cssImageUrl(src) + '")' : '';
-    cells[i].classList.toggle('has-cover', !!src);
-    cells[i].classList.toggle('home-skeleton', !src && homeDiscoverState.loading);
-  }
-}
+function renderHomeMosaic(items) { /* mosaic 已删除，保留 noop */ }
 function renderHomeTiles() {
   var row = document.getElementById('home-tile-row');
   var title = document.getElementById('home-rail-title');
@@ -16738,7 +16984,7 @@ function renderHomeTiles() {
   if (!row) return;
   var tiles = [];
   var loggedOutHome = !homeDiscoverState.loggedIn && !hasAnyPlatformLogin();
-  var weatherSongs = homeWeatherRadioState.radio && homeWeatherRadioState.radio.songs || [];
+  var weatherSongs = []; /* 天气已删除 */
   var summary = homeListenSummary();
   if (summary.recent && tiles.length < 5) {
     tiles.push({ kind: 'recent', title: summary.recent.name || '继续听', sub: summary.recent.artist || summary.recent.source || '', cover: summary.recent.cover, record: summary.recent });
@@ -16746,10 +16992,6 @@ function renderHomeTiles() {
   if (summary.topSong && tiles.length < 5) {
     tiles.push({ kind: 'topSong', song: summary.topSong, title: summary.topSong.name || '常听歌曲', sub: summary.topSong.artist || '常听歌曲 · ' + (summary.topSong.plays || 0) + ' 次' });
   }
-  var weatherBudget = Math.min(3, 5 - tiles.length);
-  weatherSongs.slice(0, weatherBudget).forEach(function(song, i){
-    tiles.push({ kind: 'weatherSong', index: i, song: song, title: song.name || '私人电台歌曲', sub: song.artist || songSourceLabel(song), reason: song.matchReason || '' });
-  });
   if (!loggedOutHome) {
     homeDiscoverState.songs.slice(0, Math.max(0, 4 - tiles.length)).forEach(function(song, i){
       tiles.push({ kind: 'song', index: i, song: song, title: song.name || '今日歌曲', sub: song.artist || songSourceLabel(song) });
@@ -16763,17 +17005,12 @@ function renderHomeTiles() {
       });
     }
   }
-  if (tiles.length < 5 && weatherSongs.length > weatherBudget) {
-    weatherSongs.slice(weatherBudget, weatherBudget + (5 - tiles.length)).forEach(function(song, i){
-      tiles.push({ kind: 'weatherSong', index: weatherBudget + i, song: song, title: song.name || '私人电台歌曲', sub: song.artist || songSourceLabel(song), reason: song.matchReason || '' });
-    });
-  }
   if (!tiles.length) tiles = fallbackHomeTiles();
   tiles = tiles.slice(0, 5);
   if (title) title.textContent = summary.recent ? '接着听' : (loggedOutHome ? '先从这里开始' : '你的歌单与推荐');
   if (note) {
     var liveNote = homeDiscoverState.updatedAt ? '刚刚更新 · 点击即可播放' : '点击即可播放';
-    note.textContent = homeDiscoverState.loading ? '正在整理推荐' : (loggedOutHome && !weatherSongs.length ? '不会自动拉取外部推荐' : (homeDiscoverState.error ? '离线精选' : liveNote));
+    note.textContent = homeDiscoverState.loading ? '正在整理推荐' : (homeDiscoverState.error ? '离线精选' : liveNote);
   }
   row.innerHTML = tiles.map(function(item, i){
     var cover = homeTileCover(item);
@@ -16791,31 +17028,9 @@ function renderHomeTiles() {
 function renderHomeDiscover() {
   var sub = document.getElementById('home-subtitle');
   var loggedOutHome = !homeDiscoverState.loggedIn && !hasAnyPlatformLogin();
-  var weather = homeWeatherRadioState.weather;
-  var radio = homeWeatherRadioState.radio;
-  var weatherLocation = weather && weather.location && weather.location.name || homeWeatherRadioState.city || '上海';
-  var weatherTitle = document.getElementById('home-weather-title');
-  var weatherKicker = document.getElementById('home-weather-kicker');
-  var weatherMeta = document.getElementById('home-weather-meta');
-  if (weatherTitle) weatherTitle.textContent = '我的音乐库';
-  if (weatherKicker) weatherKicker.textContent = 'Mineradio · Your Library';
   if (sub) {
     if (loggedOutHome) sub.textContent = '登录后会把你的歌单、常听歌手和最近播放放在这里；也可以直接搜索或导入本地音乐。';
-    else sub.textContent = '从你的歌单、最近播放和常听歌手开始，私人电台放在需要氛围的时候再开。';
-  }
-  if (weatherMeta) {
-    var meta = [];
-    if (weather) {
-      meta.push(weatherLocation);
-      meta.push(weather.label + ' · ' + Math.round(weather.temperature || 0) + '°');
-      meta.push('体感 ' + Math.round(weather.apparentTemperature || weather.temperature || 0) + '°');
-    } else {
-      meta.push(weatherLocation);
-      meta.push(homeWeatherRadioState.error ? '天气暂不可用' : '正在整理天气');
-    }
-    var pillsHtml = meta.map(function(text){ return '<span class="home-weather-pill">' + escHtml(text) + '</span>'; }).join('');
-    pillsHtml += '<button class="home-weather-pill home-weather-pill-btn" onclick="relocateWeatherRadio()" type="button">重新定位</button>';
-    weatherMeta.innerHTML = pillsHtml;
+    else sub.textContent = '从你的歌单、最近播放和常听歌手开始。';
   }
   var daily = homeDiscoverState.songs[0] || null;
   var cardSongB = homeDiscoverState.songs[1] || null;
@@ -16823,8 +17038,8 @@ function renderHomeDiscover() {
   var playlistItem = homeDiscoverState.playlists[0] || null;
   var podcastItem = homeDiscoverState.podcasts[0] || null;
   var summary = homeListenSummary();
-  var weatherCardTitle = document.getElementById('home-weather-card-title');
-  var weatherCardSub = document.getElementById('home-weather-card-sub');
+  var libraryCardTitle = document.getElementById('home-library-card-title');
+  var libraryCardSub = document.getElementById('home-library-card-sub');
   var dailyTitle = document.getElementById('home-daily-title');
   var dailySub = document.getElementById('home-daily-sub');
   var privateTitle = document.getElementById('home-private-title');
@@ -16835,9 +17050,9 @@ function renderHomeDiscover() {
   var profileSub = document.getElementById('home-profile-sub');
   var libTitle = document.getElementById('home-library-title');
   var libSub = document.getElementById('home-library-sub');
-  if (weatherCardTitle) weatherCardTitle.textContent = '我的歌单';
-  if (weatherCardSub) {
-    weatherCardSub.textContent = playlistItem ? (((playlistItem.trackCount || 0) ? playlistItem.trackCount + ' 首 · ' : '') + (playlistItem.creator || '打开左侧歌单库')) : '打开左侧歌单库';
+  if (libraryCardTitle) libraryCardTitle.textContent = '我的歌单';
+  if (libraryCardSub) {
+    libraryCardSub.textContent = playlistItem ? (((playlistItem.trackCount || 0) ? playlistItem.trackCount + ' 首 · ' : '') + (playlistItem.creator || '打开左侧歌单库')) : '打开左侧歌单库';
   }
   if (continueTitle) continueTitle.textContent = summary.recent ? summary.recent.name : '继续听';
   if (continueSub) continueSub.textContent = summary.recent ? (summary.recent.artist || summary.recent.source || '最近播放') : '最近播放会出现在这里';
@@ -16872,6 +17087,7 @@ function renderHomeDiscover() {
   }
   renderHomeTiles();
   renderHomePortrait();
+  renderHomeReport();
   if (summary.topArtist) loadArtistAvatar(summary.topArtist.name);
 }
 var _artistAvatarCache = {};
@@ -27741,6 +27957,7 @@ document.addEventListener('DOMContentLoaded', function(){
   markAppPerf('dom-content-loaded');
   armSplashSoundFallback();
   prewarmHomeWallpaperPreview();
+  bindHomeReportTabs();
   // 每次打开应用自动重新定位
   setTimeout(function(){ relocateWeatherRadio(); }, 600);
   function requestSplashEnter() {

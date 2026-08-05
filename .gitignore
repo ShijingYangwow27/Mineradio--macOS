@@ -43,6 +43,12 @@ SingletonSocket
 # Local tools and utilities
 tools/
 
+# 但 scrobble 回写网易云依赖 tools/meting/ 下的 NCBL 加密模块，必须入库
+!tools/meting/
+!tools/meting/scrobble_v1.js
+!tools/meting/ncbl.js
+!tools/meting/config.json
+
 # Historical local experiment files
 !public/index.*.html
 !public/index.html

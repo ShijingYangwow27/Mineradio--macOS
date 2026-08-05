@@ -54,6 +54,8 @@ const tls = require('tls');
 const { once } = require('events');
 const { fileURLToPath } = require('url');
 const { analyzePodcastDjStream, analyzePodcastDjIntro } = require('./dj-analyzer');
+// 听歌打卡（NCBL 加密版 scrobble）— 复刻自 IPad 适配项目
+const scrobbleV1 = require('./tools/meting/scrobble_v1');
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -4235,6 +4237,29 @@ const server = http.createServer(async (req, res) => {
       sendJSON(res, { loggedIn: true, id, liked: nextLike, code, body: r.body || r });
     } catch (err) {
       console.error('[Like]', err);
+      sendJSON(res, { error: err.message }, 500);
+    }
+    return;
+  }
+
+  // ---------- 播放打点（听歌打卡：回写网易云播放量 / 听歌报告 / 推荐种子） ----------
+  if (pn === '/api/scrobble') {
+    try {
+      const info = await requireLogin(res);
+      if (!info) return;
+      const body = req.method === 'POST' ? await readRequestBody(req) : {};
+      const id = body.id || url.searchParams.get('id');
+      const time = Number(body.time || url.searchParams.get('time') || 0);
+      const total = Number(body.total || url.searchParams.get('total') || 0);
+      if (!id) { sendJSON(res, { error: 'Missing song id' }, 400); return; }
+      const safeTime = Math.max(1, Math.floor(time || 0));
+      const safeTotal = Math.max(1, Math.floor(total || 0));
+      const r = await scrobbleV1({ id: String(id), time: safeTime, total: safeTotal, sourceid: 'al', cookie: userCookie });
+      const code = (r.body && r.body.code) || r.code || 200;
+      console.log('[Scrobble] NCBL id=' + id + ' time=' + safeTime + ' total=' + safeTotal + ' code=' + code);
+      sendJSON(res, { loggedIn: true, id: String(id), time: safeTime, code, body: r.body || r });
+    } catch (err) {
+      console.error('[Scrobble]', err);
       sendJSON(res, { error: err.message }, 500);
     }
     return;
