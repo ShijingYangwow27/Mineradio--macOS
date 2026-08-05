@@ -9,31 +9,6 @@
 <script src="vendor/three.r128.min.js"></script>
 <script src="vendor/music-tempo.min.js"></script>
 <script src="vendor/gsap.min.js"></script>
-<!-- Hero Image Crop Modal -->
-<div class="crop-modal-mask" id="crop-modal-mask" style="display:none">
-  <div class="crop-modal">
-    <div class="crop-modal-header">
-      <span class="crop-modal-title">裁剪图片</span>
-      <button class="crop-modal-close" onclick="closeCropModal()" type="button">&times;</button>
-    </div>
-    <div class="crop-viewport" id="crop-viewport">
-      <img class="crop-img" id="crop-img" draggable="false">
-      <video class="crop-video" id="crop-video" style="display:none" muted loop playsinline></video>
-      <button class="crop-play-btn" id="crop-play-btn" style="display:none" type="button">&#9654;</button>
-    </div>
-    <div class="crop-controls" id="crop-video-controls" style="display:none">
-      <span class="crop-video-hint">拖拽视频画面调整显示区域，点播放按钮预览</span>
-    </div>
-    <div class="crop-controls" id="crop-image-controls">
-      <span class="crop-zoom-label" style="width:auto;font-size:12px;color:rgba(255,255,255,.5)">拖拽移动图片到理想位置</span>
-    </div>
-    <div class="crop-actions">
-      <button class="crop-action-btn crop-cancel" onclick="closeCropModal()" type="button">取消</button>
-      <button class="crop-action-btn crop-confirm" onclick="confirmCrop()" type="button">确认</button>
-    </div>
-  </div>
-</div>
-
 <script>
 try {
   document.documentElement.classList.add(localStorage.getItem('mineradio-diy-player-mode-v1') === '1' ? 'diy-mode-preload' : 'simple-mode-preload');
@@ -269,43 +244,13 @@ body.splash-active #empty-home,body.immersive-mode #empty-home{opacity:0!importa
 body.empty-home-active #empty-home{pointer-events:auto!important}
 body.empty-home-active #canvas-container{filter:none}
 body.home-wallpaper-preview #canvas-container{filter:none}
-.empty-home-shell{height:100%;min-height:440px;display:grid;grid-template-columns:minmax(370px,.94fr) minmax(520px,1.06fr);grid-template-rows:auto auto;gap:14px;align-content:start}
-.home-hero{position:relative;grid-row:1 / span 2;padding:28px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:visible}
+.empty-home-shell{height:100%;min-height:440px;display:grid;grid-template-columns:minmax(370px,.94fr) minmax(520px,1.06fr);grid-template-rows:minmax(0,1fr);gap:14px;align-content:stretch}
+.home-hero{position:relative;grid-row:1;padding:32px;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--home-accent) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow:visible;display:flex;flex-direction:column;min-height:0}
 .home-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,.060),transparent 24%,rgba(255,83,103,.070) 54%,rgba(122,215,194,.055) 82%,transparent 100%),linear-gradient(90deg,rgba(255,255,255,.032) 0 1px,transparent 1px 48px),linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 44px);opacity:.72;pointer-events:none}
 .home-hero::after{content:'';position:absolute;left:28px;right:28px;bottom:22px;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--home-accent) 0%,transparent),color-mix(in srgb,var(--home-accent) 52%,transparent),rgba(36,66,255,.24),rgba(248,244,238,.18),color-mix(in srgb,var(--home-accent) 0%,transparent));opacity:.82;pointer-events:none}
-.home-hero-inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:.95fr 1.05fr;grid-template-rows:auto 1fr;gap:14px;min-height:0}
+.home-hero-inner{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;gap:14px;min-height:0}
 .home-hero-inner.home-construction-inner{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:18px;padding:4px 2px;min-height:100%}
 .home-kicker,.home-title,.home-sub{display:none}
-.home-hero-visual{grid-column:1;grid-row:2;position:relative;align-self:stretch;width:100%;min-height:0;border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:border-color .2s,box-shadow .2s}
-.home-hero-visual:hover{border-color:rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.18)}
-.home-hero-visual-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:100%;color:rgba(255,255,255,.22)}
-.home-hero-visual-placeholder svg{opacity:.6}
-.home-hero-visual-placeholder span{font-size:11px;font-weight:600;letter-spacing:.3px}
-.home-hero-visual-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-/* ── Hero Crop Modal ── */
-.crop-modal-mask{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-.crop-modal{width:auto;display:inline-flex;flex-direction:column;max-width:90vw;background:rgba(18,18,22,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
-.crop-modal-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
-.crop-modal-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.88);letter-spacing:.3px}
-.crop-modal-close{width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:rgba(255,255,255,.4);font-size:16px;cursor:pointer;border-radius:5px}
-.crop-modal-close:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8)}
-.crop-viewport{position:relative;width:100%;aspect-ratio:4/3;background:#000;overflow:hidden;cursor:grab;user-select:none;-webkit-user-select:none}
-.crop-viewport.dragging{cursor:grabbing}
-.crop-img{position:absolute;top:0;left:0;transform-origin:0 0;pointer-events:none}
-.crop-controls{display:flex;align-items:center;padding:8px 14px;border-top:1px solid rgba(255,255,255,.06)}
-.crop-actions{display:flex;gap:8px;padding:8px 14px 10px;justify-content:flex-end}
-.crop-action-btn{padding:6px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);transition:all .15s}
-.crop-cancel{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
-.crop-cancel:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
-.crop-confirm{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-color:transparent}
-.crop-confirm:hover{filter:brightness(1.1)}
-.crop-viewport::before,.crop-viewport::after{content:'';position:absolute;z-index:4;pointer-events:none}
-.crop-viewport::before{inset:0;border:2px solid rgba(255,255,255,.55);border-radius:3px}
-.crop-viewport::after{inset:0;background:linear-gradient(to right,rgba(255,255,255,.22) 1px,transparent 1px) 0 0/calc(100% / 3) 100% no-repeat,linear-gradient(to bottom,rgba(255,255,255,.22) 1px,transparent 1px) 0 0/100% calc(100% / 3) no-repeat}
-.crop-viewport .crop-video{position:absolute;top:0;left:0;transform-origin:0 0;pointer-events:none}
-.crop-viewport .crop-play-btn{position:absolute;z-index:5;left:50%;top:50%;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(0,0,0,.45);color:rgba(255,255,255,.9);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);pointer-events:auto;transition:background .2s,border-color .2s}
-.crop-viewport .crop-play-btn:hover{background:rgba(0,0,0,.6);border-color:#fff}
-.crop-video-hint{font-size:10px;color:rgba(255,255,255,.4);text-align:center}
 .home-chip{height:32px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.060);color:rgba(255,255,255,.76);font-family:inherit;font-size:11.5px;font-weight:680;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s,box-shadow .18s}
 .home-chip:hover{background:color-mix(in srgb,var(--home-accent) 10%,transparent);border-color:color-mix(in srgb,var(--home-accent) 38%,rgba(255,255,255,.10));color:#fff;box-shadow:0 10px 26px color-mix(in srgb,var(--home-accent) 8%,transparent);transform:translateY(-1px)}
 .home-visual{grid-column:2;grid-row:3 / span 2;position:relative;align-self:center;justify-self:end;width:100%;max-width:300px;height:74px;margin-top:0;pointer-events:none;filter:drop-shadow(0 18px 34px rgba(0,0,0,.28))}
@@ -322,7 +267,7 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-radio-badge{display:none}
 @keyframes home-disc-turn{to{transform:rotate(360deg)}}
 @keyframes home-eq-rise{0%,100%{transform:scaleY(.68);opacity:.66}45%{transform:scaleY(1);opacity:1}}
-.home-portrait{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:clamp(20px,2.5vw,32px);padding:clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px) saturate(1.06);-webkit-backdrop-filter:blur(20px) saturate(1.06);margin-bottom:10px}
+.home-portrait{display:flex;align-items:center;flex-shrink:0;gap:clamp(20px,2.5vw,32px);padding:var(--card-pad-top,17px) clamp(20px,2.4vw,30px) clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px) saturate(1.06);-webkit-backdrop-filter:blur(20px) saturate(1.06)}
 .home-portrait-left{display:flex;align-items:center;gap:clamp(12px,1.4vw,18px);flex-shrink:0}
 .home-portrait-avatar{width:clamp(44px,4vw,52px);height:clamp(44px,4vw,52px);border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.08);box-shadow:0 2px 12px rgba(0,0,0,.25);background:rgba(255,255,255,.04);flex-shrink:0}
 .home-portrait-info{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -336,38 +281,140 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-portrait-stat:last-child{border-right:none}
 .home-portrait-stat-value{font-size:clamp(13px,1.4vw,15px);font-weight:700;color:rgba(255,255,255,.88);letter-spacing:-.015em;white-space:nowrap;line-height:1.2}
 .home-portrait-stat-label{font-size:8px;font-weight:540;color:rgba(255,255,255,.28);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
-.home-portrait-empty{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:clamp(12px,1.4vw,16px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.06);margin-bottom:10px}
+.home-portrait-empty{display:flex;align-items:center;justify-content:center;flex-shrink:0;gap:10px;padding:var(--card-pad-top,17px) clamp(20px,2.4vw,30px);border-radius:18px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.06)}
 .home-portrait-empty-text{font-size:clamp(12px,1.2vw,14px);color:rgba(255,255,255,.32);font-weight:500;letter-spacing:.01em}
 @media (max-width:840px){.home-portrait{flex-wrap:wrap;gap:12px}.home-portrait-stats{margin-left:0;width:100%;justify-content:space-around}}
-.home-report{grid-column:2;grid-row:2;position:relative;align-self:stretch;width:100%;min-height:0;border-radius:18px;overflow:hidden;border:1px solid rgba(255,143,177,.12);background:linear-gradient(145deg,rgba(30,16,28,.66),rgba(12,8,16,.78));box-shadow:0 24px 72px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.045)}
-.home-report:hover{border-color:rgba(255,143,177,.22)}
-.home-report-marquee{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(4px,.6vw,8px);opacity:.55;pointer-events:none;will-change:transform;mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)}
+.home-report{position:relative;align-self:stretch;width:100%;min-height:0;flex:1 1 auto;border-radius:18px;overflow:hidden;border:none;background:transparent;box-shadow:none}
+.home-report:hover{border-color:transparent}
+.home-report-marquee{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(4px,.6vw,8px);opacity:.55;pointer-events:none;will-change:transform;mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)}
 .home-report-track{display:flex;gap:clamp(6px,.8vw,10px);width:max-content;animation:home-report-marquee 60s linear infinite;will-change:transform}
 .home-report-track.r2{animation-duration:80s;animation-direction:reverse;margin-top:0}
+.home-report-track.r3{animation-duration:110s;animation-delay:-25s;margin-top:0}
 .home-report-card{width:clamp(58px,7vw,88px);aspect-ratio:1/1;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.04);background-size:cover;background-position:center;box-shadow:0 6px 18px rgba(0,0,0,.30);opacity:.85;transition:opacity .3s,transform .3s}
-.home-report-card.empty{background:linear-gradient(135deg,rgba(255,143,177,.18),rgba(120,30,80,.32));position:relative}
+.home-report-card.empty{background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent) 18%,transparent),color-mix(in srgb,var(--home-accent) 8%,rgba(120,30,80,.20)));position:relative}
 .home-report-card.empty::after{content:'';position:absolute;inset:30%;border-radius:50%;border:1.5px solid rgba(255,255,255,.20)}
 .home-report-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,8,16,.30) 0%,rgba(12,8,16,.55) 60%,rgba(12,8,16,.78) 100%);pointer-events:none}
 .home-report-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;padding:clamp(14px,2vw,22px);gap:clamp(6px,1vw,10px)}
 .home-report-tabs{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .home-report-tab{height:clamp(20px,2.4vw,26px);padding:0 clamp(8px,1vw,12px);border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:rgba(255,255,255,.68);font-family:inherit;font-size:clamp(9px,1vw,11px);font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s}
-.home-report-tab:hover{background:rgba(255,143,177,.10);border-color:rgba(255,143,177,.32);color:#fff}
-.home-report-tab.active{background:linear-gradient(135deg,rgba(255,143,177,.30),rgba(255,45,111,.40));border-color:rgba(255,143,177,.55);color:#fff;box-shadow:0 4px 16px rgba(255,45,111,.32)}
+.home-report-tab:hover{background:color-mix(in srgb,var(--home-accent) 10%,transparent);border-color:color-mix(in srgb,var(--home-accent) 32%,rgba(255,255,255,.10));color:#fff}
+.home-report-tab.active{background:color-mix(in srgb,var(--home-accent) 36%,transparent);border-color:color-mix(in srgb,var(--home-accent) 55%,rgba(255,255,255,.10));color:#fff;box-shadow:0 4px 16px color-mix(in srgb,var(--home-accent) 32%,transparent)}
 .home-report-body{flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:0;margin-top:clamp(2px,.5vw,8px)}
-.home-report-label{font-size:clamp(9px,1vw,11px);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,143,177,.84);line-height:1.2}
+.home-report-label{font-size:clamp(9px,1vw,11px);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--home-accent) 84%,#fff);line-height:1.2}
 .home-report-period{font-size:clamp(9px,.95vw,11px);font-weight:500;color:rgba(255,255,255,.42);letter-spacing:.06em;line-height:1.2}
-.home-report-number{font:700 clamp(34px,5.4vw,68px)/1 var(--font-sans);background:linear-gradient(135deg,#FF8FB1 0%,#FF2D6F 60%,#C0266E 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-shadow:0 4px 18px rgba(255,45,111,.20);line-height:1}
+.home-report-number{font:700 clamp(34px,5.4vw,68px)/1 var(--font-sans);background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent) 92%,#fff) 0%,var(--home-accent) 60%,color-mix(in srgb,var(--home-accent) 70%,#000) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-shadow:0 4px 18px color-mix(in srgb,var(--home-accent) 20%,transparent);line-height:1}
 .home-report-unit{font-size:clamp(11px,1.2vw,14px);font-weight:600;color:rgba(255,255,255,.74);letter-spacing:.04em;margin-top:-4px}
-.home-report-detail-btn{align-self:flex-start;margin-top:clamp(4px,.8vw,8px);height:clamp(26px,3vw,32px);padding:0 clamp(14px,1.6vw,18px);border-radius:999px;border:1px solid rgba(255,143,177,.45);background:linear-gradient(135deg,rgba(255,143,177,.18),rgba(255,45,111,.20));color:#fff;font-family:inherit;font-size:clamp(10px,1.05vw,12px);font-weight:600;letter-spacing:.06em;cursor:pointer;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.home-report-detail-btn:hover{background:linear-gradient(135deg,rgba(255,143,177,.34),rgba(255,45,111,.38));border-color:rgba(255,143,177,.75);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,45,111,.32)}
+.home-report-detail-btn{align-self:flex-start;margin-top:clamp(4px,.8vw,8px);height:clamp(26px,3vw,32px);padding:0 clamp(14px,1.6vw,18px);border-radius:999px;border:1px solid color-mix(in srgb,var(--home-accent) 45%,rgba(255,255,255,.10));background:color-mix(in srgb,var(--home-accent) 18%,rgba(255,255,255,.04));color:#fff;font-family:inherit;font-size:clamp(10px,1.05vw,12px);font-weight:600;letter-spacing:.06em;cursor:pointer;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.home-report-detail-btn:hover{background:color-mix(in srgb,var(--home-accent) 36%,rgba(255,255,255,.04));border-color:color-mix(in srgb,var(--home-accent) 75%,rgba(255,255,255,.10));transform:translateY(-1px);box-shadow:0 8px 24px color-mix(in srgb,var(--home-accent) 32%,transparent)}
 .home-report-detail-btn:active{transform:translateY(0)}
+.home-report-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 @keyframes home-report-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ============================================================
+   听歌报告 dashboard modal（复刻自 iPad）
+   ============================================================ */
+.report-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:24px}
+.report-modal[data-open="true"]{display:flex;animation:reportFadeIn .3s ease-out}
+@keyframes reportFadeIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+body.modal-open{overflow:hidden}
+.report-modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%)}
+.report-modal-card{position:relative;width:min(900px,100%);max-height:92vh;background:rgba(28,28,34,.66);backdrop-filter:blur(50px) saturate(180%);-webkit-backdrop-filter:blur(50px) saturate(180%);border:1px solid rgba(255,255,255,.10);border-radius:28px;box-shadow:0 40px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);overflow:hidden;display:flex;flex-direction:column}
+.report-modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:26px 28px 16px;position:relative}
+.report-modal-head::after{content:'';position:absolute;left:28px;right:28px;bottom:0;height:1px;background:linear-gradient(90deg,rgba(255,94,138,.5),rgba(255,45,111,.1),transparent)}
+.report-modal-eyebrow{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;background:linear-gradient(135deg,#FF8FB1,#FF2D6F);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:6px}
+.report-modal-h1{font-size:30px;font-weight:800;color:#fff;letter-spacing:-.02em;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Helvetica Neue",sans-serif}
+.report-modal-close{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.10);color:rgba(255,255,255,.8);font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.report-modal-close:hover{background:rgba(255,255,255,.18);color:#fff;transform:scale(1.05)}
+.report-modal-tabs{display:flex;gap:3px;padding:14px 28px 0}
+.report-tab{padding:9px 20px;border:0;background:transparent;color:rgba(255,255,255,.58);font-size:13.5px;font-weight:600;border-radius:18px;cursor:pointer;transition:all .18s;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+.report-tab:hover{color:rgba(255,255,255,.92)}
+.report-tab.active{background:rgba(255,255,255,.92);color:#1a1a1e;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.report-modal-body{padding:20px 28px 28px;overflow-y:auto;overflow-x:hidden;flex:1 1 auto}
+.report-modal-body::-webkit-scrollbar{width:6px}
+.report-modal-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+
+.report-source{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:20px;background:rgba(255,94,138,.12);border:1px solid rgba(255,94,138,.28);color:rgba(255,150,180,.95);font-size:11.5px;font-weight:600;margin-bottom:18px;letter-spacing:.01em}
+.report-source-dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#FF8FB1,#FF2D6F);box-shadow:0 0 8px rgba(255,45,111,.6)}
+
+.report-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+.report-stat{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:20px 16px;text-align:center;transition:transform .2s,background .2s}
+.report-stat:hover{background:rgba(255,255,255,.07);transform:translateY(-2px)}
+.report-stat-num{font-size:32px;font-weight:800;color:#fff;line-height:1.05;letter-spacing:-.03em;font-feature-settings:"tnum";margin-bottom:7px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif}
+.report-stat-label{font-size:11px;color:rgba(235,235,245,.5);letter-spacing:.05em;font-weight:500}
+.report-stat-sub{font-size:10px;color:rgba(235,235,245,.38);margin-top:2px;font-weight:500;line-height:1.3}
+.report-note{font-size:10.5px;color:rgba(235,235,245,.4);line-height:1.5;margin:-14px 0 18px;letter-spacing:.01em}
+
+.report-section{margin-bottom:26px}
+.report-section-h{font-size:16px;font-weight:700;color:rgba(255,255,255,.95);margin-bottom:14px;display:flex;align-items:center;gap:8px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+.report-section-meta{font-size:10px;color:rgba(255,140,170,.7);font-weight:700;letter-spacing:.1em}
+
+.report-artists{display:grid;grid-template-columns:repeat(10,1fr);gap:10px}
+.report-artist{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:default}
+.report-artist-avatar{width:100%;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;letter-spacing:-.02em;position:relative;overflow:hidden;background-size:cover;background-position:center;box-shadow:0 4px 14px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.08)}
+.report-artist-avatar::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45))}
+.report-artist-initial{position:relative;z-index:1;transition:opacity .2s ease}
+.report-artist-count{font-size:10px;color:rgba(255,255,255,.55);font-weight:600}
+.report-artist-name{position:absolute;bottom:0;left:0;right:0;font-size:8.5px;color:#fff;text-align:center;padding:2px 0;line-height:1.15;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+
+.report-songs{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto}
+.report-songs::-webkit-scrollbar{width:4px}
+.report-songs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+.report-song{display:flex;align-items:center;gap:14px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.03);transition:background .15s}
+.report-song:hover{background:rgba(255,255,255,.07)}
+.report-song-rank{width:22px;font-size:14px;color:rgba(255,255,255,.35);font-weight:700;text-align:center;flex-shrink:0;font-feature-settings:"tnum"}
+.report-song-rank.top{background:linear-gradient(135deg,#FF8FB1,#FF2D6F);-webkit-background-clip:text;background-clip:text;color:transparent}
+.report-song-cover{width:46px;height:46px;border-radius:12px;background-size:cover;background-position:center;flex-shrink:0;background-color:rgba(255,255,255,.08);box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.report-song-info{flex:1;min-width:0}
+.report-song-title{color:rgba(255,255,255,.95);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+.report-song-artist{color:rgba(235,235,245,.5);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.report-song-count{font-size:12px;color:rgba(255,140,170,.85);font-weight:600;flex-shrink:0;font-feature-settings:"tnum"}
+
+.report-hours{display:flex;align-items:flex-end;gap:3px;height:84px;padding:0 2px 18px}
+.report-hour{flex:1;background:linear-gradient(180deg,rgba(255,143,177,.85),rgba(255,45,111,.6));border-radius:5px 5px 0 0;min-height:3px;position:relative;transition:all .2s;cursor:default}
+.report-hour:hover{filter:brightness(1.15);transform:scaleY(1.04)}
+.report-hour::after{content:attr(data-h);position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:8.5px;color:rgba(235,235,245,.4);font-feature-settings:"tnum"}
+.report-hour.peak{background:linear-gradient(180deg,#FFD0E0,#FF2D6F);box-shadow:0 0 14px rgba(255,45,111,.7)}
+
+.report-styles{display:flex;flex-direction:column;padding:4px 2px 6px;position:relative;overflow:hidden;border-radius:16px}
+.report-styles-bg{position:absolute;inset:0;background-color:#1a1426;background-size:cover;background-position:center;filter:blur(36px) brightness(.5) saturate(1.15);transform:scale(1.25);z-index:0;pointer-events:none}
+.report-styles-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,6,16,.30),rgba(8,6,16,.62));z-index:0;pointer-events:none}
+.report-styles-legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:11px;color:rgba(255,255,255,.85);position:relative;z-index:1}
+.report-legend-item{display:flex;align-items:center;gap:5px}
+.report-legend-item i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.report-bubbles-canvas{position:relative;height:220px;margin-top:6px;z-index:1}
+.report-bubble{position:absolute;transform:translate(-50%,-50%) scale(0);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;transition:transform .6s cubic-bezier(.22,1.5,.4,1);will-change:transform;overflow:hidden}
+.report-bubble.in{transform:translate(-50%,-50%) scale(1)}
+.report-bubble.in.float{animation:bubbleFloat 7s ease-in-out infinite}
+.report-bubble::after{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),rgba(255,255,255,0) 55%);pointer-events:none}
+@keyframes bubbleFloat{0%,100%{transform:translate(-50%,-50%) scale(1) translateY(0)}50%{transform:translate(-50%,-50%) scale(1) translateY(-5px)}}
+.report-bubble-pct{font-size:14px;font-weight:700;font-feature-settings:"tnum";text-shadow:0 1px 4px rgba(0,0,0,.35);line-height:1;position:relative;z-index:1}
+.report-bubble-name{font-size:10.5px;font-weight:600;opacity:.95;margin-top:3px;text-shadow:0 1px 4px rgba(0,0,0,.35);max-width:92%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
+.report-styles-note{font-size:10.5px;color:rgba(255,255,255,.6);text-align:center;margin-top:6px;position:relative;z-index:1}
+
+.report-summary{text-align:center;font-size:14px;font-weight:600;color:rgba(255,255,255,.9);padding:16px 18px;background:linear-gradient(135deg,rgba(255,94,138,.16),rgba(255,45,111,.08));border-radius:16px;border:1px solid rgba(255,94,138,.22);margin-top:8px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+
+.report-empty{text-align:center;padding:18px 0;color:rgba(235,235,245,.4);font-size:12.5px}
+
+@media (max-width:1023px){
+  .report-modal{padding:12px}
+  .report-modal-card{max-height:94vh;border-radius:22px}
+  .report-modal-head{padding:18px 20px 12px}
+  .report-modal-tabs{padding:10px 20px 0}
+  .report-modal-body{padding:16px 20px 20px}
+  .report-stats{grid-template-columns:repeat(2,1fr);gap:10px}
+  .report-artists{grid-template-columns:repeat(5,1fr)}
+  .report-stat-num{font-size:26px}
+  .report-modal-h1{font-size:24px}
+}
 .home-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;min-height:38px}
 .home-section-title{font-size:13px;font-weight:760;color:rgba(255,255,255,.84);letter-spacing:.04em}
 .home-section-note{font-size:11px;color:rgba(255,255,255,.38);white-space:nowrap}
-.home-right-col{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:14px;min-height:0;height:100%}
-.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;flex:1 1 auto;min-height:0;align-content:center}
-.home-card{--tone-a:#00f5d4;--tone-b:#2442ff;--tone-c:#f8f4ee;position:relative;min-height:120px;border:1px solid color-mix(in srgb,var(--home-accent) 10%,rgba(255,255,255,.085));border-radius:22px;background:linear-gradient(142deg,rgba(18,21,26,.66),rgba(8,9,13,.76));box-shadow:0 20px 64px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.060);backdrop-filter:blur(24px) saturate(1.12);-webkit-backdrop-filter:blur(24px) saturate(1.12);padding:17px;overflow:hidden;color:#fff;text-align:left;font-family:inherit;cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),border-color .22s,background .22s,box-shadow .22s}
+.home-right-col{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:14px;min-height:0;height:100%;overflow-y:auto;padding:4px 0 6px 0}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;flex:0 0 auto;min-height:0;align-content:start;padding:4px 0;margin:-4px 0}
+.home-rail{margin:-4px 0 -6px 0;padding-bottom:6px}
+.home-right-col::-webkit-scrollbar{width:4px}
+.home-right-col::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+.home-card{--tone-a:#00f5d4;--tone-b:#2442ff;--tone-c:#f8f4ee;position:relative;min-height:100px;border:1px solid color-mix(in srgb,var(--home-accent) 10%,rgba(255,255,255,.085));border-radius:22px;background:linear-gradient(142deg,rgba(18,21,26,.66),rgba(8,9,13,.76));box-shadow:0 20px 64px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.060);backdrop-filter:blur(24px) saturate(1.12);-webkit-backdrop-filter:blur(24px) saturate(1.12);padding:17px;overflow:hidden;color:#fff;text-align:left;font-family:inherit;cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),border-color .22s,background .22s,box-shadow .22s}
 .home-card[data-home-tone="mix"]{--tone-a:#9db8cf;--tone-b:#00f5d4;--tone-c:#2442ff}
 .home-card[data-home-tone="local"]{--tone-a:#f8f4ee;--tone-b:#00f5d4;--tone-c:#2442ff}
 .home-card[data-home-tone="library"]{--tone-a:#00f5d4;--tone-b:#f8f4ee;--tone-c:#2442ff}
@@ -407,12 +454,12 @@ body.empty-home-active .home-visual{animation:home-visual-drift 8.8s ease-in-out
 .home-skeleton{position:relative;overflow:hidden}
 .home-skeleton::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);animation:home-shimmer 1.5s ease-in-out infinite}
 @keyframes home-shimmer{100%{transform:translateX(100%)}}
-@media (max-width:1120px){#empty-home{width:calc(100vw - 48px)}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:24px}.home-hero-inner{grid-template-columns:.65fr 1fr;gap:10px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-grid{gap:10px}.home-card{min-height:126px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16.5px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
-@media (max-height:760px){#empty-home{top:132px;bottom:44px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:22px}.home-hero-inner{grid-template-columns:.63fr 1fr;gap:10px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-card{min-height:134px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:132px}.home-tile-cover{height:72px}}
-@media (max-height:700px){#empty-home{top:126px;bottom:34px}.home-hero{padding:20px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
-@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:1fr}.home-hero-visual{display:none}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
-@media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto}.home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:620px){#empty-home{top:146px;bottom:44px;width:calc(100vw - 24px)}.home-hero{padding:20px;border-radius:22px}.home-hero-inner{display:flex;flex-direction:column}.home-hero-visual{display:none}.home-mosaic{display:none}.home-grid{grid-template-columns:1fr}.home-tile-row{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-cover{height:auto;aspect-ratio:1}.home-tile-sub{display:block}.home-card-art{width:88px;height:88px}.home-card-title,.home-card-sub{max-width:68%}}
+@media (max-width:1120px){#empty-home{width:calc(100vw - 48px);--card-pad-top:14px}.empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(440px,1.12fr);gap:12px}.home-hero{padding:32px 32px 32px 32px}.home-hero-inner{grid-template-columns:1fr;gap:10px}.home-title{font-size:clamp(30px,4vw,48px);max-width:340px}.home-sub{font-size:12.5px;line-height:1.5;max-width:314px}.home-grid{gap:10px}.home-card{min-height:108px;padding:14px;border-radius:20px}.home-card-label{margin-bottom:6px}.home-card-title{font-size:16px;max-width:66%}.home-card-sub{margin-top:6px;font-size:10.8px;line-height:1.34;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.home-card-art{right:11px;bottom:11px;width:80px;height:80px;border-radius:18px}.home-card-art:not(.has-cover)::before{inset:14px;box-shadow:inset 0 0 0 11px rgba(5,5,8,.44),0 10px 24px rgba(0,0,0,.24)}.home-card::after{right:88px;bottom:14px;width:30px;height:56px}.home-rail{gap:8px}.home-tile{min-height:128px}.home-tile-cover{height:66px}}
+@media (max-height:760px){#empty-home{top:132px;bottom:44px;--card-pad-top:14px}.empty-home-shell{min-height:0}.home-hero{min-height:0;padding:32px 32px 32px 32px}.home-hero-inner{grid-template-columns:1fr;gap:10px}.home-title{font-size:clamp(31px,3.75vw,48px);max-width:360px}.home-sub{font-size:12.5px;line-height:1.55;max-width:330px}.home-card{min-height:120px;padding:14px}.home-card-title{font-size:17px}.home-card-art{width:92px;height:92px;border-radius:21px}.home-tile{min-height:128px}.home-tile-cover{height:72px}}
+@media (max-height:700px){#empty-home{top:126px;bottom:34px;--card-pad-top:12px}.home-hero{padding:32px 32px 32px 32px}.home-title{font-size:clamp(28px,3.55vw,42px)}.home-sub{font-size:12px;line-height:1.42}.home-card{min-height:112px;padding:12px}.home-card-title{font-size:15.5px}.home-card-sub{font-size:10.5px;line-height:1.28;-webkit-line-clamp:2}.home-card-art{width:70px;height:70px;border-radius:16px}.home-card::after{right:78px;height:48px}.home-tile{min-height:112px;padding:9px}.home-tile-cover{height:54px;margin-bottom:8px}.home-section-head{min-height:30px}}
+@media (max-width:840px){.empty-home-shell{grid-template-columns:minmax(250px,.86fr) minmax(360px,1.14fr)}.home-hero-inner{grid-template-columns:1fr}.home-card{min-height:108px}.home-card-title{font-size:15px;max-width:68%}.home-card-sub{font-size:10.3px;max-width:62%}.home-card-art{width:66px;height:66px;border-radius:15px}.home-card::after{right:72px;width:24px;height:44px}.home-tile-title{font-size:11.5px}}
+@media (max-width:760px){#empty-home{top:150px;bottom:56px;width:calc(100vw - 40px)}.empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto;padding-bottom:4px}.home-hero{grid-row:auto}.home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto;overflow:visible;padding:0}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:0;margin:0}.home-rail{margin:0;padding-bottom:0}.home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:620px){#empty-home{top:146px;bottom:44px;width:calc(100vw - 24px)}.home-hero{padding:32px 32px 32px 32px;border-radius:22px}.home-hero-inner{display:flex;flex-direction:column}.home-mosaic{display:none}.home-grid{grid-template-columns:1fr}.home-tile-row{grid-template-columns:repeat(2,minmax(0,1fr))}.home-tile-cover{height:auto;aspect-ratio:1}.home-tile-sub{display:block}.home-card-art{width:88px;height:88px}.home-card-title,.home-card-sub{max-width:68%}}
 .home-visual.generated{height:clamp(140px,18vh,220px)!important;max-width:clamp(180px,22vw,300px)!important;align-self:center!important;border-radius:18px;overflow:hidden}
 @media (max-height:760px){.home-visual.generated{height:clamp(100px,14vh,160px)!important;max-width:clamp(140px,18vw,220px)!important}}
 /* Home card sizes */
@@ -452,15 +499,22 @@ body.user-capsule-auto-hide #top-right::before{content:'';position:absolute;righ
 body.empty-home-active #home-btn{border-color:rgba(255,83,103,.36);background:rgba(255,83,103,.11);color:#fff}
 body.desktop-shell #empty-home{top:132px;bottom:46px;width:calc(100vw - 44px)}
 body.desktop-shell .empty-home-shell{min-height:0}
-body.desktop-shell .home-hero{padding:24px}
-body.desktop-shell .home-card{min-height:148px}
-body.desktop-shell .home-tile{min-height:154px}
-body.desktop-shell .home-tile-cover{height:84px}
+body.desktop-shell .home-hero{padding:32px 32px 32px 32px}
+body.desktop-shell .home-card{min-height:122px;padding:14px}
+body.desktop-shell .home-card-label{margin-bottom:6px}
+body.desktop-shell .home-card-title{font-size:16px;max-width:66%}
+body.desktop-shell .home-card-sub{margin-top:6px;font-size:10.6px;line-height:1.32;max-width:64%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+body.desktop-shell .home-card-art{right:11px;bottom:11px;width:78px;height:78px;border-radius:18px}
+body.desktop-shell .home-card::after{right:86px;bottom:14px;width:30px;height:54px}
+body.desktop-shell .home-tile{min-height:118px}
+body.desktop-shell .home-tile-cover{height:62px}
+body.desktop-shell .home-tile-title{-webkit-line-clamp:1}
+body.desktop-shell .home-rail{gap:8px}
+body.desktop-shell .home-section-head{min-height:28px}
 body.desktop-shell.desktop-fullscreen #empty-home,html:fullscreen body.desktop-shell #empty-home{top:96px;bottom:52px;width:min(1480px,calc(100vw - 96px));display:flex;align-items:center;justify-content:center}
 body.desktop-shell.desktop-fullscreen .empty-home-shell,html:fullscreen body.desktop-shell .empty-home-shell{max-width:1480px;margin:0 auto;grid-template-columns:minmax(380px,.92fr) minmax(560px,1.08fr);height:auto;align-content:start}
-body.desktop-shell.desktop-fullscreen .home-hero,html:fullscreen body.desktop-shell .home-hero{align-self:stretch;padding:22px}
-body.desktop-shell.desktop-fullscreen .home-hero-inner,html:fullscreen body.desktop-shell .home-hero-inner{height:100%;grid-template-rows:auto auto auto 1fr}
-body.desktop-shell.desktop-fullscreen .home-hero-visual,html:fullscreen body.desktop-shell .home-hero-visual{align-self:stretch;max-width:100%}
+body.desktop-shell.desktop-fullscreen .home-hero,html:fullscreen body.desktop-shell .home-hero{align-self:stretch;padding:32px 32px 32px 32px}
+body.desktop-shell.desktop-fullscreen .home-hero-inner,html:fullscreen body.desktop-shell .home-hero-inner{height:100%;grid-template-rows:auto 1fr}
 
 
 body.desktop-shell.desktop-fullscreen .home-visual,html:fullscreen body.desktop-shell .home-visual{height:166px;max-width:206px}
@@ -474,7 +528,7 @@ body.desktop-shell.desktop-fullscreen .home-grid,html:fullscreen body.desktop-sh
 body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscreen body.desktop-shell 
 @media (max-height:760px){
   body.desktop-shell #empty-home{top:118px;bottom:34px}
-  body.desktop-shell .home-hero{padding:22px}
+  body.desktop-shell .home-hero{padding:32px 32px 32px 32px}
   body.desktop-shell .home-visual{height:196px;max-width:260px}
   body.desktop-shell .home-card{min-height:128px;padding:14px}
   body.desktop-shell .home-tile{min-height:130px}
@@ -484,8 +538,8 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
 @media (max-width:1120px){
   body.desktop-shell #empty-home{width:calc(100vw - 44px)}
   body.desktop-shell .empty-home-shell{grid-template-columns:minmax(300px,.88fr) minmax(430px,1.12fr);gap:12px}
-  body.desktop-shell .home-hero{padding:22px}
-  body.desktop-shell .home-hero-inner{grid-template-columns:minmax(0,1.16fr) minmax(126px,.52fr);column-gap:14px}
+  body.desktop-shell .home-hero{padding:32px 32px 32px 32px}
+  body.desktop-shell .home-hero-inner{grid-template-columns:1fr;column-gap:14px}
   body.desktop-shell .home-title{font-size:clamp(30px,4vw,48px);max-width:340px}
   body.desktop-shell .home-sub{font-size:12.5px;line-height:1.5;max-width:314px}
   body.desktop-shell .home-visual{height:190px;max-width:226px}
@@ -503,7 +557,7 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
 }
 @media (max-height:700px){
   body.desktop-shell #empty-home{top:106px;bottom:30px}
-  body.desktop-shell .home-hero{min-height:0;padding:18px}
+  body.desktop-shell .home-hero{min-height:0;padding:32px 32px 32px 32px}
   body.desktop-shell .home-title{font-size:clamp(27px,3.5vw,40px)}
   body.desktop-shell .home-sub{font-size:11.8px;line-height:1.4}
   body.desktop-shell .home-weather-meta{margin-top:0}
@@ -532,8 +586,12 @@ body.desktop-shell.desktop-fullscreen .home-mosaic-cell.has-cover,html:fullscree
   body.desktop-shell #empty-home{top:128px;bottom:48px;width:calc(100vw - 36px)}
   body.desktop-shell .empty-home-shell{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto;padding-bottom:4px}
   body.desktop-shell .home-hero{grid-row:auto}
-  body.desktop-shell .home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto}
-  body.desktop-shell .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.desktop-shell .home-right-col{grid-column:auto;grid-row:auto;display:block;min-height:auto;height:auto;overflow:visible;padding:0}
+  body.desktop-shell .home-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:0;margin:0}
+  body.desktop-shell .home-rail{margin:0;padding-bottom:0}
+  body.desktop-shell .home-tile{min-height:124px}
+  body.desktop-shell .home-tile-cover{height:66px}
+  body.desktop-shell .home-section-head{min-height:38px}
   body.desktop-shell .home-tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 #user-btn.logged-out{justify-content:center;padding:0 17px;min-width:60px;color:rgba(255,255,255,.78);font-size:13px;font-weight:650;letter-spacing:.08em;border-color:rgba(244,210,138,.28);background:rgba(255,255,255,.045);box-shadow:0 12px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08)}
@@ -2167,15 +2225,6 @@ body.immersive-mode #comment-card-container{opacity:0!important}
     <div class="home-hero">
       <div class="home-hero-inner">
         <div class="home-portrait" id="home-portrait"></div>
-        <div class="home-hero-visual" id="home-hero-visual" onclick="document.getElementById('hero-visual-input').click()">
-          <input type="file" id="hero-visual-input" accept="image/*,video/mp4,video/webm,video/quicktime" style="display:none">
-          <div class="home-hero-visual-placeholder" id="home-hero-visual-placeholder">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-            <span>点击上传图片</span>
-          </div>
-          <img class="home-hero-visual-img" id="home-hero-visual-img" style="display:none">
-          <video class="home-hero-visual-img" id="home-hero-visual-video" style="display:none" muted loop playsinline autoplay></video>
-        </div>
         <div class="home-report" id="home-report">
           <div class="home-report-marquee" id="home-report-marquee" aria-hidden="true"></div>
           <div class="home-report-overlay"></div>
@@ -2187,7 +2236,9 @@ body.immersive-mode #comment-card-container{opacity:0!important}
               <button class="home-report-tab" data-range="all" type="button">全部</button>
             </div>
             <div class="home-report-body">
-              <div class="home-report-label" id="home-report-label">本周收听</div>
+              <div class="home-report-row">
+                <div class="home-report-label" id="home-report-label">本周收听</div>
+              </div>
               <div class="home-report-period" id="home-report-period">—</div>
               <div class="home-report-number" id="home-report-number">0</div>
               <div class="home-report-unit">首</div>
@@ -16764,6 +16815,7 @@ function reportRangePeriod(range) {
     return fmtDate(start.getTime()) + ' - ' + fmtDate(now.getTime());
   }
   if (range === 'month') return now.getFullYear() + '-' + (now.getMonth() + 1);
+  if (range === 'all' && loginStatus.loggedIn && activeAccountProvider === 'netease') return '账号累计';
   var first = (listenStatsState.history && listenStatsState.history[0] && listenStatsState.history[0].playedAt) || Date.now();
   return fmtDate(first) + ' - ' + fmtDate(now.getTime());
 }
@@ -16772,12 +16824,24 @@ function fmtDate(ms) {
   return (d.getMonth() + 1) + '.' + d.getDate();
 }
 function reportCountForRange(range) {
+  /* 「全部/累计」优先用网易云官方账号累计听歌数（含所有设备、全部历史）.
+     syncedReport.all.songs 只是全部时间排行前若干名的切片，远小于官方累计，不能去重代表累计。 */
+  if (range === 'all' && loginStatus.loggedIn && activeAccountProvider === 'netease' && loginStatus.userListenSongs > 0) {
+    return loginStatus.userListenSongs;
+  }
   var since = reportRangeMs(range);
   var history = listenStatsState.history || [];
   var keys = {};
   for (var i = 0; i < history.length; i++) {
     var h = history[i];
     if ((h.playedAt || 0) >= since) keys[h.key] = true;
+  }
+  /* 叠加网易云同步数据（跨设备全量），按 song:<id> 与本地去重 */
+  if (syncedReport && syncedReport[range] && syncedReport[range].songs) {
+    var _sg = syncedReport[range].songs;
+    for (var _s = 0; _s < _sg.length; _s++) {
+      if (_sg[_s] && _sg[_s].id) keys['song:' + _sg[_s].id] = true;
+    }
   }
   return Object.keys(keys).length;
 }
@@ -16792,6 +16856,18 @@ function reportCoversForRange(range, n) {
     if (seen[h.key]) continue;
     seen[h.key] = true;
     out.push({ cover: h.cover, key: h.key });
+  }
+  /* 网易云同步封面补充（本地不足 n 张时），按 song:<id> 去重 */
+  if (syncedReport && syncedReport[range] && syncedReport[range].songs) {
+    var _sg2 = syncedReport[range].songs;
+    for (var _k = 0; _k < _sg2.length && out.length < n; _k++) {
+      var _id = _sg2[_k] && _sg2[_k].id;
+      if (!_id) continue;
+      var _sk = 'song:' + _id;
+      if (seen[_sk]) continue;
+      seen[_sk] = true;
+      out.push({ cover: _sg2[_k].coverUrl || '', key: _sk });
+    }
   }
   /* 不够时用占位（empty 状态由 CSS 处理） */
   while (out.length < n) out.push({ cover: '', key: '' });
@@ -16811,6 +16887,12 @@ function renderHomeMarquee(range) {
   for (var j = 0; j < covers.length; j++) {
     var bg2 = covers[j].cover ? cssImageUrl(covers[j].cover) : '';
     html += '<div class="home-report-card' + (bg2 ? '" style="background-image:url(&quot;' + escHtmlAttr(bg2) + '&quot;)' : ' empty') + '"></div>';
+  }
+  html += '</div><div class="home-report-track r3" id="home-report-track-3">';
+  for (var k = 0; k < covers.length; k++) {
+    var idx = (k + Math.floor(covers.length / 2)) % covers.length;
+    var bg3 = covers[idx].cover ? cssImageUrl(covers[idx].cover) : '';
+    html += '<div class="home-report-card' + (bg3 ? '" style="background-image:url(&quot;' + escHtmlAttr(bg3) + '&quot;)' : ' empty') + '"></div>';
   }
   html += '</div>';
   wrap.innerHTML = html;
@@ -16858,9 +16940,533 @@ function bindHomeReportTabs() {
     })(tabs[i]);
   }
 }
-function openReportModal() {
-  showToast('听歌报告功能开发中');
+function formatDuration(seconds){
+  if (!seconds || seconds < 1) return '0m';
+  var m = Math.floor(seconds / 60);
+  if (m < 60) return m + 'm';
+  var h = Math.floor(m / 60);
+  var rm = m % 60;
+  return h + 'h' + (rm > 0 ? rm + 'm' : '');
 }
+
+function artistColorHash(name){
+  var colors = [
+    ['#7c5cff','#4ea3ff'], ['#ff6b9d','#c84eff'], ['#ffb84d','#ff6b6b'],
+    ['#4effc4','#4ea3ff'], ['#c84eff','#7c5cff'], ['#ff8c5c','#ffb84d'],
+    ['#5cffa8','#4effc4'], ['#ff5c8c','#ff6b9d'], ['#4ec8ff','#7c5cff'],
+    ['#ffd24d','#ff8c5c']
+  ];
+  var h = 0;
+  for (var i = 0; i < (name||'').length; i++) h = (h * 31 + (name||'').charCodeAt(i)) & 0xffffffff;
+  return colors[Math.abs(h) % colors.length];
+}
+function hexA(hex, a){
+  var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return 'rgba(255,140,200,' + a + ')';
+  return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',' + a + ')';
+}
+function styleBubbleColor(name){
+  // Apple Music 风明快色板：[高光中心色, 边缘基色]
+  var pal = [
+    ['#FF7AA2', '#FF2D6F'], ['#B98CFF', '#8A4DFF'], ['#5AC8FA', '#0A84FF'],
+    ['#6FE3C4', '#15B58C'], ['#7BE08A', '#34C759'], ['#FFB45A', '#FF9F0A'],
+    ['#FF8A95', '#FF3B30'], ['#8E8CFF', '#5E5CE6']
+  ];
+  var h = 0;
+  for (var i = 0; i < (name || '').length; i++) h = (h * 31 + (name || '').charCodeAt(i)) & 0xffffffff;
+  return pal[Math.abs(h) % pal.length];
+}
+function splitArtistNames(artistStr){
+  if (!artistStr) return [];
+  return artistStr.split(/\s*\/\s*|\s*,\s*|\s*、\s*|\s*&\s*/).filter(function(a){ return a.trim(); });
+}
+function artistInitial(name){
+  if (!name) return '?';
+  // 简单取首字符（中文或英文）
+  return (name.match(/[一-龥]/) || name[0] || '?')[0];
+}
+
+function countUpNumber(el, target, format){
+  if (target === null || target === undefined || (typeof target === 'number' && isNaN(target))) { if (el) el.textContent = '—'; return; }
+  var duration = 1200;
+  var start = performance.now();
+  var startVal = 0;
+  function step(now){
+    var t = Math.min(1, (now - start) / duration);
+    var eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    var v = startVal + (target - startVal) * eased;
+    el.textContent = format === 'duration' ? formatDuration(v) : Math.floor(v).toString();
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = format === 'duration' ? formatDuration(target) : Math.floor(target).toString();
+  }
+  requestAnimationFrame(step);
+}
+
+// 报告弹窗用：归一化歌曲主键
+function reportNormKey(title, artist){
+  return ((title || '') + '|' + (artist || '')).toLowerCase().replace(/\s+/g, '');
+}
+// 报告弹窗用：从 listenStatsState 获取历史（兼容旧版无 history 的场景）
+function getListenHistory(){
+  if (listenStatsState && Array.isArray(listenStatsState.history)) return listenStatsState.history;
+  return [];
+}
+
+/* ============================================================
+ * 听歌报告 dashboard modal（复刻自 iPad）
+ * 关键点：
+ *  - 服务端 /api/listen-report 命中即视为「网易云真实记录」，否则显示「未登录」
+ *  - 「今日/本周/本月」次数改用本地 Mineradio 播放计数覆盖
+ *  - 弹窗打开强制刷新（force=1 绕过前端 60s 缓存），后端 5min 缓存仍兜底
+ * ============================================================ */
+var reportCurrentRange = 'week';
+var reportAccountCreateTime = 0; // 由 /api/listen-report 返回，避免依赖 loginStatus 异步时序
+var reportAccountListenSongs = 0;
+var reportServerCache = null;
+var reportServerCacheTs = 0;
+var reportStylesCache = null;
+var syncedReport = null; // 网易云同步的跨设备听歌记录（today/week/month/all），由 syncNeteaseHistory 填充
+
+function fetchServerReport(force){
+  var now = Date.now();
+  // force(打开报告)模式: 15s 去抖避免狂点刷爆网易云接口(风控); 非 force: 60s 缓存
+  if (force && reportServerCache && (now - reportServerCacheTs) < 15000) return Promise.resolve(reportServerCache);
+  if (!force && reportServerCache && (now - reportServerCacheTs) < 60000) return Promise.resolve(reportServerCache);
+  return apiJson('/api/listen-report' + (force ? '?force=1' : ''), { cache: 'no-store' }).then(function(j){
+    reportServerCache = j; reportServerCacheTs = now; return j;
+  }).catch(function(e){ console.warn('[report] server fetch failed', e); return null; });
+}
+function syncNeteaseHistory(force, silent) {
+  if (!loginStatus || !loginStatus.loggedIn || activeAccountProvider !== 'netease') {
+    return Promise.resolve(null);
+  }
+  return fetchServerReport(force).then(function(j){
+    if (j && j.loggedIn && (j.today || j.week || j.month || j.all)) {
+      syncedReport = j;
+      renderHomeReport();
+      renderHomeMarquee(homeReportState.range);
+      renderHomePortrait();
+    }
+    return j;
+  }).catch(function(e){
+    console.warn('[sync] netease listen history failed', e);
+    return null;
+  });
+}
+function normKey(title, artist){
+  return ((title || '') + '|' + (artist || '')).toLowerCase().replace(/\s+/g, '');
+}
+// 合并：网易云真实记录(全站) ∪ 本机本地记录，按「歌名|艺人」去重
+function mergeReport(localAgg, serverSongs){
+  var map = {};
+  var artistIdMap = {}; // 艺人名字 -> 网易云 artistId
+  var artistCoverMap = {}; // 艺人名字 -> 本地兜底封面
+  function add(title, artist, coverUrl, plays, durationSec){
+    if (!title && !artist) return;
+    var k = normKey(title, artist);
+    if (!map[k]) map[k] = { title: title || '未知歌曲', artist: artist || '', coverUrl: '', plays: 0, durationSec: 0 };
+    map[k].plays += (plays || 0);
+    map[k].durationSec += (durationSec || 0);
+    if (!map[k].coverUrl && coverUrl) map[k].coverUrl = coverUrl;
+  }
+  function addArtistIds(artistStr, artistIds){
+    if (!artistStr || !artistIds || !artistIds.length) return;
+    artistStr.split('/').forEach(function(a, i){
+      a = (a || '').trim();
+      if (!a) return;
+      if (!artistIdMap[a] && artistIds[i]) artistIdMap[a] = artistIds[i];
+    });
+  }
+  (localAgg.allSongs || []).forEach(function(s){
+    add(s.title, s.artist, s.coverUrl, s.count || 0, s.duration || 0);
+    if (s.artist && s.coverUrl) {
+      s.artist.split('/').forEach(function(a){
+        a = (a || '').trim();
+        if (!a) return;
+        if (!artistCoverMap[a]) artistCoverMap[a] = s.coverUrl;
+      });
+    }
+  });
+  (serverSongs || []).forEach(function(s){
+    add(s.title, s.artist, s.coverUrl, s.plays || 0, s.durationSec || 0);
+    addArtistIds(s.artist, s.artistIds);
+  });
+  var songs = Object.keys(map).map(function(k){ return map[k]; });
+  var topSongs = songs.slice().sort(function(a, b){ return b.plays - a.plays; }).slice(0, 10)
+    .map(function(s){ return { title: s.title, artist: s.artist, coverUrl: s.coverUrl, count: s.plays }; });
+  var artistMap = {};
+  songs.forEach(function(s){
+    s.artist.split('/').forEach(function(a){
+      a = (a || '').trim();
+      if (!a) return;
+      artistMap[a] = (artistMap[a] || 0) + s.plays;
+    });
+  });
+  var topArtists = Object.keys(artistMap)
+    .map(function(k){ return { name: k, count: artistMap[k], artistId: artistIdMap[k] || null, coverUrl: artistCoverMap[k] || '' }; })
+    .sort(function(a, b){ return b.count - a.count; })
+    .slice(0, 10);
+  var totalPlays = 0, durationSec = 0;
+  songs.forEach(function(s){ totalPlays += s.plays; durationSec += s.durationSec; });
+  return {
+    durationSec: durationSec,
+    totalPlays: totalPlays,
+    distinctSongs: songs.length,
+    uniqueArtists: Object.keys(artistMap).length,
+    topArtists: topArtists,
+    topSongs: topSongs,
+    hourMap: localAgg.hourMap,
+    peakHour: localAgg.peakHour,
+    hasData: songs.length > 0
+  };
+}
+function paintReportStats(data){
+  countUpNumber(document.getElementById('report-stat-duration'), data.durationSec, 'duration');
+  countUpNumber(document.getElementById('report-stat-songs'), data.totalPlays, 'int');
+  countUpNumber(document.getElementById('report-stat-streak'), data.distinctSongs, 'int');
+  // 第4张卡：全部视图显示「注册时长」(真实账号数据，完整天数+注册日期)，其余显示「不同艺人」(Top100 推导)
+  var topdayEl = document.getElementById('report-stat-topday');
+  var labelEl = document.getElementById('report-stat-topday-label') || (topdayEl && topdayEl.parentElement && topdayEl.parentElement.querySelector('.report-stat-label'));
+  var subEl = document.getElementById('report-stat-topday-sub');
+  if (reportCurrentRange === 'all' && reportAccountCreateTime) {
+    var ct = reportAccountCreateTime;
+    var days = Math.max(0, Math.floor((Date.now() - ct) / 86400000));
+    var years = Math.floor(days / 365);
+    var months = Math.floor((days % 365) / 30);
+    countUpNumber(topdayEl, days, 'int');
+    if (labelEl) labelEl.textContent = '注册天数';
+    var d = new Date(ct);
+    var ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    if (subEl) subEl.textContent = '注册于 ' + ds + ' · 约' + years + '年' + (months > 0 ? months + '个月' : '');
+  } else {
+    countUpNumber(topdayEl, data.uniqueArtists, 'int');
+    if (labelEl) labelEl.textContent = '不同艺人';
+    if (subEl) subEl.textContent = '';
+  }
+}
+
+// 艺人头像缓存
+var artistPicCache = {};
+function fetchArtistPic(artistId, cb){
+  if (artistPicCache[artistId]) { cb(artistPicCache[artistId]); return; }
+  apiJson('/api/artist-info?id=' + encodeURIComponent(artistId)).then(function(j){
+    if (j && j.picUrl) {
+      artistPicCache[artistId] = j.picUrl;
+      cb(j.picUrl);
+    }
+  }).catch(function(e){ console.warn('[artist pic]', e); });
+}
+// 按艺人名搜索 ID（本地累计无 artistId 时兜底）
+var artistNameIdCache = {};
+function fetchArtistIdByName(name, cb){
+  if (!name || artistNameIdCache[name] !== undefined) { cb(artistNameIdCache[name] || null); return; }
+  apiJson('/api/artist/search?keywords=' + encodeURIComponent(name) + '&limit=1').then(function(j){
+    var a = (j && j.artists && j.artists[0]) || null;
+    artistNameIdCache[name] = a;
+    cb(a);
+  }).catch(function(e){ artistNameIdCache[name] = null; cb(null); });
+}
+function setReportArtistAvatar(avatar, picUrl){
+  if (!avatar || !picUrl) return;
+  var proxy = coverProxySrc(coverUrlWithSize(picUrl, 180)) || coverProxySrc(picUrl);
+  if (!proxy) return;
+  avatar.style.background = 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.45)), url(' + proxy + ') center/cover';
+  var initial = avatar.querySelector('.report-artist-initial');
+  if (initial) initial.style.opacity = '0';
+}
+function paintReportArtists(data){
+  var el = document.getElementById('report-artists');
+  if (!data.topArtists || data.topArtists.length === 0) { el.innerHTML = '<div class="report-empty">暂无数据</div>'; return; }
+  el.innerHTML = data.topArtists.map(function(a){
+    var colors = artistColorHash(a.name);
+    var initial = artistInitial(a.name);
+    var artistIdAttr = a.artistId ? (' data-artist-id="' + a.artistId + '"') : '';
+    var artistNameAttr = ' data-artist-name="' + escHtml(a.name) + '"';
+    var bg = 'linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')';
+    if (!a.artistId && a.coverUrl) {
+      var proxy = isProxyableCoverUrl(a.coverUrl) ? coverProxySrc(coverUrlWithSize(a.coverUrl, 180)) : a.coverUrl;
+      if (proxy) bg = 'url(' + proxy + '), linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')';
+    }
+    return '<div class="report-artist" title="' + escHtml(a.name) + (a.count ? (' · ' + a.count + ' 次') : '') + '">' +
+      '<div class="report-artist-avatar"' + artistIdAttr + artistNameAttr + ' style="background-image:' + bg + '">' +
+        '<span class="report-artist-initial">' + initial + '</span>' +
+        '<div class="report-artist-name">' + (a.name.length > 4 ? escHtml(a.name.slice(0,4) + '…') : escHtml(a.name)) + '</div>' +
+      '</div>' +
+      (a.count ? '<div class="report-artist-count">' + a.count + ' 次</div>' : '') +
+    '</div>';
+  }).join('');
+  // 异步拉取并显示艺人真实头像
+  Array.from(el.querySelectorAll('.report-artist-avatar[data-artist-id]')).forEach(function(avatar){
+    var id = avatar.getAttribute('data-artist-id');
+    fetchArtistPic(id, function(picUrl){ setReportArtistAvatar(avatar, picUrl); });
+  });
+  // 本地累计无 artistId 时，按艺人名搜索并显示真实头像
+  Array.from(el.querySelectorAll('.report-artist-avatar:not([data-artist-id])')).forEach(function(avatar){
+    var name = avatar.getAttribute('data-artist-name');
+    if (!name) return;
+    fetchArtistIdByName(name, function(a){
+      if (!a) return;
+      if (a.avatar) setReportArtistAvatar(avatar, a.avatar);
+      else if (a.id) fetchArtistPic(a.id, function(picUrl){ setReportArtistAvatar(avatar, picUrl); });
+    });
+  });
+}
+function paintReportSongs(data){
+  var el = document.getElementById('report-songs');
+  if (!data.topSongs || data.topSongs.length === 0) { el.innerHTML = '<div class="report-empty">暂无数据</div>'; return; }
+  el.innerHTML = data.topSongs.map(function(s, i){
+    var coverStyle = '';
+    if (s.coverUrl) {
+      var cover = isProxyableCoverUrl(s.coverUrl) ? coverProxySrc(coverUrlWithSize(s.coverUrl, 120)) : (coverProxySrc(s.coverUrl) || s.coverUrl);
+      coverStyle = 'background-image:url(' + cover + ')';
+    } else {
+      // 无封面时按歌名生成渐变色兜底
+      var c = artistColorHash(s.title || s.artist || 'song');
+      coverStyle = 'background:linear-gradient(135deg,' + c[0] + ',' + c[1] + ')';
+    }
+    return '<div class="report-song">' +
+      '<div class="report-song-rank' + (i < 3 ? ' top' : '') + '">' + (i + 1) + '</div>' +
+      '<div class="report-song-cover" style="' + coverStyle + '"></div>' +
+      '<div class="report-song-info">' +
+        '<div class="report-song-title">' + escHtml(s.title) + '</div>' +
+        '<div class="report-song-artist">' + escHtml(s.artist || '') + '</div>' +
+      '</div>' +
+      (s.count ? '<div class="report-song-count">' + s.count + ' 次</div>' : '') +
+    '</div>';
+  }).join('');
+}
+function paintReportHours(data){
+  var el = document.getElementById('report-hours');
+  if (!data.hourMap || data.hourMap.every(function(v){ return v === 0; })) { el.innerHTML = '<div class="report-empty">暂无数据</div>'; return; }
+  var maxV = Math.max.apply(null, data.hourMap) || 1;
+  el.innerHTML = data.hourMap.map(function(v, i){
+    var h = Math.max(4, (v / maxV) * 60);
+    var isPeak = (i === data.peakHour && v > 0);
+    return '<div class="report-hour' + (isPeak ? ' peak' : '') + '" style="height:' + h + 'px" data-h="' + i + '"></div>';
+  }).join('');
+}
+// 听歌风格标签（全部视图）：拉取网易云「曲风偏好」渲染占比条形
+function paintReportStyles(){
+  var el = document.getElementById('report-styles');
+  if (!el) return;
+  if (reportStylesCache) { renderReportStyles(el, reportStylesCache); return; }
+  el.innerHTML = '<div class="report-empty">加载中…</div>';
+  apiJson('/api/listen-style').then(function(j){
+    if (j && j.loggedIn && j.tags && j.tags.length) {
+      reportStylesCache = j.tags;
+      renderReportStyles(el, j.tags);
+    } else {
+      el.innerHTML = '<div class="report-empty">暂无风格数据（未登录或网易云无记录）</div>';
+    }
+  }).catch(function(e){
+    console.warn('[report styles]', e);
+    el.innerHTML = '<div class="report-empty">风格数据加载失败</div>';
+  });
+}
+function renderReportStyles(el, tags){
+  var maxRatio = tags.reduce(function(m, t){ return Math.max(m, t.ratio || 0); }, 1) || 1;
+  var maxR = 50, minR = 20;
+  // 按占比降序：大圆在上方左右，小圆在下方，自然错落（Apple Music 风）
+  var sorted = tags.slice().sort(function(a, b){ return (b.ratio || 0) - (a.ratio || 0); });
+  var anchors = [[32, 40], [68, 38], [83, 72], [48, 76], [18, 72]];
+  var bubbles = sorted.map(function(t, i){
+    var c = styleBubbleColor(t.tagName || 'style');
+    var ratio = t.ratio || 0;
+    var r = minR + Math.sqrt(ratio) / Math.sqrt(maxRatio) * (maxR - minR);
+    var a = anchors[i] || [50, 50];
+    var showName = r >= 26;
+    return '<div class="report-bubble" style="left:' + a[0] + '%;top:' + a[1] + '%;width:' + (2 * r) + 'px;height:' + (2 * r) + 'px;' +
+      'background:radial-gradient(circle at 35% 30%,' + c[0] + ',' + c[1] + ');' +
+      'box-shadow:0 0 26px ' + hexA(c[1], 0.45) + '" data-i="' + i + '">' +
+      '<span class="report-bubble-pct">' + Math.round(ratio) + '%</span>' +
+      (showName ? '<span class="report-bubble-name">' + escHtml(t.tagName) + '</span>' : '') +
+    '</div>';
+  }).join('');
+  var legend = '<div class="report-styles-legend">' + sorted.map(function(t){
+    var c = styleBubbleColor(t.tagName || 'style');
+    return '<span class="report-legend-item"><i style="background:' + c[0] + ';box-shadow:0 0 6px ' + hexA(c[1], 0.7) + '"></i>' + escHtml(t.tagName) + ' ' + Math.round(t.ratio || 0) + '%</span>';
+  }).join('') + '</div>';
+  // 整块模糊背景：用占比最高的主风格图铺满 section（经 /api/cover 代理），前景气泡清晰浮于其上
+  var bgTag = sorted[0];
+  var bgUrl = (bgTag && bgTag.picUrl) ? coverProxySrc(bgTag.picUrl) : '';
+  el.innerHTML = '<div class="report-styles-bg"' + (bgUrl ? ' style="background-image:url(\'' + bgUrl + '\')"' : '') + '></div><div class="report-styles-scrim"></div>' + legend + '<div class="report-bubbles-canvas">' + bubbles + '</div>' + '<div class="report-styles-note">基于网易云曲风偏好 · 全站累计</div>';
+  // 入场弹入，随后轻微漂浮
+  Array.from(el.querySelectorAll('.report-bubble')).forEach(function(b, i){
+    b.style.transitionDelay = (i * 70) + 'ms';
+    requestAnimationFrame(function(){ b.classList.add('in'); });
+    setTimeout(function(){ b.classList.add('float'); }, 750 + i * 70);
+  });
+}
+function paintReportSummary(data){
+  var el = document.getElementById('report-summary');
+  if (!data.hasData) { el.textContent = '开始听歌，开启你的听歌旅程 ✨'; return; }
+  var ph = data.peakHour;
+  var timeOfDay = '深夜';
+  if (ph >= 0 && ph < 5) timeOfDay = '深夜';
+  else if (ph < 9) timeOfDay = '清晨';
+  else if (ph < 12) timeOfDay = '上午';
+  else if (ph < 14) timeOfDay = '午间';
+  else if (ph < 18) timeOfDay = '下午';
+  else if (ph < 22) timeOfDay = '夜晚';
+  else timeOfDay = '深夜';
+  var topArtist = data.topArtists && data.topArtists[0];
+  var topSong = data.topSongs && data.topSongs[0];
+  var txt = timeOfDay + '音乐家';
+  if (topArtist) txt += ' · 最爱 ' + topArtist.name;
+  if (topSong) txt += ' · 循环最多《' + topSong.title + '》';
+  el.textContent = txt;
+}
+function paintReport(data, sourceLabel){
+  paintReportStats(data);
+  paintReportArtists(data);
+  paintReportSongs(data);
+  // 「全部」视图展示听歌风格标签，其余视图展示 24 小时时段分布
+  var isAll = (reportCurrentRange === 'all');
+  var titleEl = document.getElementById('report-time-title');
+  var hoursEl = document.getElementById('report-hours');
+  var stylesEl = document.getElementById('report-styles');
+  if (titleEl) titleEl.textContent = isAll ? '听歌风格' : '24 小时时段分布';
+  if (hoursEl) hoursEl.style.display = isAll ? 'none' : '';
+  if (stylesEl) stylesEl.style.display = isAll ? '' : 'none';
+  if (isAll) { paintReportStyles(); }
+  else { paintReportHours(data); }
+  paintReportSummary(data);
+  var srcEl = document.getElementById('report-source-text');
+  if (srcEl) srcEl.textContent = sourceLabel || '本地累计';
+  // 诚实标注：真实记录下，时长/播放仅覆盖网易云播放最多的前 100 首
+  var noteEl = document.getElementById('report-note');
+  if (noteEl) {
+    if (sourceLabel && sourceLabel.indexOf('真实记录') >= 0) {
+      noteEl.textContent = '不同歌曲与注册时长为账号真实数据；听歌时长、总播放基于网易云播放最多的前 100 首统计。';
+      noteEl.style.display = '';
+    } else {
+      noteEl.style.display = 'none';
+    }
+  }
+}
+// 用本地 Mineradio 播放记录(每次播放+1)覆盖今日/本周/本月歌曲次数; 时长/列表仍来自网易云足迹
+function reportWindowStart(range){
+  var now = new Date();
+  var y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  if (range === 'today') return new Date(y, m, d, 0, 0, 0, 0).getTime();
+  if (range === 'month') return new Date(y, m, 1, 0, 0, 0, 0).getTime();
+  if (range === 'week') {
+    var day = now.getDay();
+    var diffToMon = (day === 0) ? 6 : (day - 1);
+    return new Date(y, m, d - diffToMon, 0, 0, 0, 0).getTime();
+  }
+  return 0;
+}
+function applyLocalPlays(range, sd){
+  var start = reportWindowStart(range);
+  var hist = getListenHistory();
+  var localPlays = {};
+  hist.forEach(function(h){
+    var ts = h.startedAt || h.playedAt;
+    if (!ts || ts < start) return;
+    var k = reportNormKey(h.name || h.title, h.artist);
+    localPlays[k] = (localPlays[k] || 0) + 1;
+  });
+  var songs = (sd.songs || []).map(function(s){
+    var k = reportNormKey(s.title || s.songName, s.artist);
+    var lp = localPlays[k] || 0;
+    var plays = lp > 0 ? lp : (s.plays || 1); // 本地有则优先用本地次数, 否则保留足迹(出现过=1)
+    return Object.assign({}, s, { plays: plays });
+  });
+  var amap = {};
+  songs.forEach(function(s){
+    (s.artist || '').split('/').forEach(function(a){
+      a = (a || '').trim(); if (!a) return;
+      amap[a] = (amap[a] || 0) + s.plays;
+    });
+  });
+  var topArtists = Object.keys(amap).map(function(k){
+    var orig = (sd.topArtists || []).filter(function(x){ return x.name === k; })[0] || {};
+    return { name: k, score: amap[k], artistId: orig.artistId || null, coverUrl: orig.coverUrl || '' };
+  }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
+  var totalPlays = songs.reduce(function(a, s){ return a + (s.plays || 0); }, 0);
+  return Object.assign({}, sd, { songs: songs, topArtists: topArtists, totalPlays: totalPlays });
+}
+function renderReport(range, force){
+  reportCurrentRange = range;
+  fetchServerReport(force).then(function(server){
+    if (!server || !server.loggedIn) {
+      paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '未登录');
+      return;
+    }
+    if (server.createTime) reportAccountCreateTime = server.createTime;
+    if (server.listenSongs) reportAccountListenSongs = server.listenSongs;
+    var sd = server[range];
+    if (range !== 'all') sd = applyLocalPlays(range, sd); // 次数改用本地 Mineradio 播放计数(每次播放+1); 时长/列表仍来自足迹
+    if (!sd || !sd.songs || sd.songs.length === 0) {
+      paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '网易云真实记录');
+      return;
+    }
+    // 全部用网易云足迹/官方数据，不混合本机记录
+    var topSongs = (sd.songs || []).slice().sort(function(a, b){ return (b.plays || 0) - (a.plays || 0); }).slice(0, 10)
+      .map(function(s){ return { title: s.title || s.songName || '未知歌曲', artist: s.artist || '', coverUrl: s.coverUrl || s.picUrl || '', count: s.plays || 0, songId: s.id || s.songId || '' }; });
+    var topArtists = (sd.topArtists || []).slice(0, 10)
+      .map(function(a){ return { name: a.name || a.artistName || '未知艺人', count: a.score || a.playCount || a.count || 0, coverUrl: a.coverUrl || a.avatarUrl || a.picUrl || '', artistId: a.artistId || null }; });
+    // 不同艺人从歌曲列表去重计算（足迹报告未直接给出总艺人计数）
+    var artistSet = {};
+    (sd.songs || []).forEach(function(s){
+      (s.artist || '').split('/').forEach(function(a){ a = a.trim(); if (a) artistSet[a] = 1; });
+    });
+    var data = {
+      durationSec: sd.durationSec || 0,
+      totalPlays: sd.totalPlays || 0,
+      distinctSongs: sd.distinctSongs || 0,
+      uniqueArtists: Object.keys(artistSet).length || topArtists.length,
+      topArtists: topArtists,
+      topSongs: topSongs,
+      hourMap: (sd.hourMap && sd.hourMap.length === 24) ? sd.hourMap : new Array(24).fill(0),
+      peakHour: sd.peakHour || 0,
+      hasData: true
+    };
+    if (range === 'all' && reportAccountListenSongs > 0) data.distinctSongs = reportAccountListenSongs;
+    if (range === 'all' && server.totalDuration && server.totalDuration > 0) data.durationSec = server.totalDuration;
+    paintReport(data, '网易云真实记录');
+  }).catch(function(e){
+    console.warn('[report]', e);
+    paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '加载失败');
+  });
+}
+
+function openReportModal(){
+  var modal = document.getElementById('report-modal');
+  if (!modal) return;
+  modal.setAttribute('data-open', 'true');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+  // tab 状态
+  Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-range') === reportCurrentRange);
+  });
+  renderReport(reportCurrentRange, true); // 打开弹窗即强制刷新(绕过前端60s缓存); 后端5min缓存仍作接口保护
+}
+function closeReportModal(){
+  var modal = document.getElementById('report-modal');
+  if (!modal) return;
+  modal.setAttribute('data-open', 'false');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+// tab 切换（一次性绑定）
+document.addEventListener('click', function(e){
+  var tab = e.target.closest && e.target.closest('.report-tab');
+  if (!tab) return;
+  Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){ t.classList.remove('active'); });
+  tab.classList.add('active');
+  renderReport(tab.getAttribute('data-range'));
+});
+// ESC 关闭
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var modal = document.getElementById('report-modal');
+    if (modal && modal.getAttribute('data-open') === 'true') closeReportModal();
+  }
+});
 
 function homeListenSummary() {
   var history = listenStatsState.history || [];
@@ -16902,12 +17508,22 @@ function renderHomePortrait() {
       daySet[dk] = true;
     }
   }
+  /* 今日/本周时长叠加网易云跨设备数据: 网易云侧为跨设备全量, 本地 history 只含本客户端播放.
+     取两者较大值, 避免刚在本机播放、10 分钟自动同步尚未运行导致数字回跳。 */
+  if (provider === 'netease' && syncedReport && syncedReport.loggedIn) {
+    if (syncedReport.today && typeof syncedReport.today.durationSec === 'number') {
+      todayMs = Math.max(todayMs, syncedReport.today.durationSec * 1000);
+    }
+    if (syncedReport.week && typeof syncedReport.week.durationSec === 'number') {
+      weekMs = Math.max(weekMs, syncedReport.week.durationSec * 1000);
+    }
+  }
   function fmtTime(ms) {
-    var totalMin = Math.round(ms / 60000);
-    if (totalMin < 60) return totalMin + '分钟';
+    var totalMin = Math.max(0, Math.round(ms / 60000));
+    if (totalMin < 60) return totalMin + 'm';
     var h = Math.floor(totalMin / 60);
     var m = totalMin % 60;
-    return h + '小时' + (m > 0 ? m + '分钟' : '');
+    return h + 'h' + (m > 0 ? m + 'm' : '');
   }
   var streak = 0;
   var checkDate = new Date(today);
@@ -17743,7 +18359,6 @@ function isHomeBlankDismissClick(e) {
     '.track-detail-modal',
     '.cover-color-pop',
     '.color-lab-pop',
-    '.home-hero-visual',
     '.home-now-card',
     '.home-weather-meta'
   ].join(',');
@@ -25120,11 +25735,13 @@ async function refreshLoginStatus(force) {
       loadHomeDiscover(true);
       syncLikeStatusForSongs(playQueue.concat(playlist || []));
       if (loginStatus.loggedIn && activeAccountProvider === 'netease') {
+        syncNeteaseHistory(false, true); // 登录后静默同步跨设备听歌记录
         apiJson('/api/user/level').then(function(lv) {
           if (lv && lv.loggedIn) {
             loginStatus.userLevel = lv.level || 0;
             loginStatus.userListenSongs = lv.listenSongs || 0;
             renderHomePortrait();
+            renderHomeReport(); /* 官方累计听歌数就绪后刷新「全部」数字，避免与静默同步竞态 */
           }
         }).catch(function(){});
       }
@@ -27958,6 +28575,8 @@ document.addEventListener('DOMContentLoaded', function(){
   armSplashSoundFallback();
   prewarmHomeWallpaperPreview();
   bindHomeReportTabs();
+  // 应用运行期间每 10 分钟静默同步一次网易云跨设备听歌记录
+  setInterval(function(){ syncNeteaseHistory(false, true); }, 600000);
   // 每次打开应用自动重新定位
   setTimeout(function(){ relocateWeatherRadio(); }, 600);
   function requestSplashEnter() {
@@ -28989,322 +29608,6 @@ animate();
     }
   } catch(e) {}
 })();
-
-/* Hero Visual - user custom image/video with crop & trim */
-(function(){
-  var heroVisual = document.getElementById('home-hero-visual');
-  var heroInput = document.getElementById('hero-visual-input');
-  var heroImg = document.getElementById('home-hero-visual-img');
-  var heroVideo = document.getElementById('home-hero-visual-video');
-  var heroPlaceholder = document.getElementById('home-hero-visual-placeholder');
-  if (!heroVisual || !heroInput || !heroImg) return;
-  var STORAGE_KEY = 'mineradio-hero-visual-img';
-  var DB_NAME = 'mineradio-hero-db';
-  var DB_STORE = 'media';
-  var DB_KEY = 'hero-video';
-  var MAX_SIZE = 50 * 1024 * 1024;
-
-  function openDB(cb) {
-    var req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
-    };
-    req.onsuccess = function(e) { cb(e.target.result); };
-    req.onerror = function() { cb(null); };
-  }
-  function saveVideoToDB(blob, cb) {
-    openDB(function(db) {
-      if (!db) { cb(); return; }
-      var tx = db.transaction(DB_STORE, 'readwrite');
-      tx.objectStore(DB_STORE).put(blob, DB_KEY);
-      tx.oncomplete = function() { cb(); };
-      tx.onerror = function() { cb(); };
-    });
-  }
-  function loadVideoFromDB(cb) {
-    openDB(function(db) {
-      if (!db) { cb(null); return; }
-      var tx = db.transaction(DB_STORE, 'readonly');
-      var req = tx.objectStore(DB_STORE).get(DB_KEY);
-      req.onsuccess = function() { cb(req.result || null); };
-      req.onerror = function() { cb(null); };
-    });
-  }
-  function clearVideoDB() {
-    openDB(function(db) {
-      if (!db) return;
-      var tx = db.transaction(DB_STORE, 'readwrite');
-      tx.objectStore(DB_STORE).delete(DB_KEY);
-    });
-  }
-  function showImage(dataUrl) {
-    heroImg.src = dataUrl;
-    heroImg.style.display = 'block';
-    if (heroVideo) { heroVideo.style.display = 'none'; heroVideo.src = ''; }
-    heroPlaceholder.style.display = 'none';
-  }
-  function showVideo(blob) {
-    var url = URL.createObjectURL(blob);
-    if (heroVideo) {
-      heroVideo.src = url;
-      heroVideo.style.display = 'block';
-    }
-    heroImg.style.display = 'none';
-    heroImg.src = '';
-    heroPlaceholder.style.display = 'none';
-    if (heroVideo) heroVideo.play().catch(function(){});
-  }
-
-  /* Restore on load – 优先恢复视频 */
-  loadVideoFromDB(function(blob) {
-    if (blob) { showVideo(blob); return; }
-    try {
-      var saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) showImage(saved);
-    } catch(e) {}
-  });
-
-  heroInput.addEventListener('change', function() {
-    var file = heroInput.files && heroInput.files[0];
-    if (!file) return;
-    heroInput.value = '';
-    if (file.size > MAX_SIZE) { alert('文件不能超过50MB'); return; }
-    var isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(file.name);
-    if (isVideo) {
-      var url = URL.createObjectURL(file);
-      var rect = heroVisual.getBoundingClientRect();
-      var outW = Math.round(rect.width), outH = Math.round(rect.height);
-      openCropModal(url, function(resultBlob) {
-        if (!resultBlob) { alert('视频处理失败，请重试'); return; }
-        saveVideoToDB(resultBlob, function() {
-          try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
-          showVideo(resultBlob);
-        });
-      }, true, outW, outH);
-    } else {
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        openCropModal(ev.target.result, function(croppedDataUrl) {
-          showImage(croppedDataUrl);
-          clearVideoDB();
-          try { localStorage.setItem(STORAGE_KEY, croppedDataUrl); } catch(e) {}
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-})();
-
-/* Crop Modal Logic – 图片裁剪 + 视频画面裁剪 */
-var _cropData = { imgSrc: '', callback: null, panX: 0, panY: 0, dragging: false, imgW: 0, imgH: 0, scale: 1, isVideo: false, videoSrc: '', videoPaused: true, animFrame: 0, outputW: 0, outputH: 0, vpW: 0, vpH: 0 };
-
-function openCropModal(src, callback, isVideo, outputW, outputH) {
-  var mask = document.getElementById('crop-modal-mask');
-  var cropImg = document.getElementById('crop-img');
-  var cropVideo = document.getElementById('crop-video');
-  var playBtn = document.getElementById('crop-play-btn');
-  var videoCtrls = document.getElementById('crop-video-controls');
-  var imageCtrls = document.getElementById('crop-image-controls');
-  if (!mask || !cropImg) return;
-  _cropData = { imgSrc: '', callback: callback, panX: 0, panY: 0, dragging: false, imgW: 0, imgH: 0, scale: 1, isVideo: !!isVideo, videoSrc: isVideo ? src : '', videoPaused: true, animFrame: 0, outputW: outputW || 0, outputH: outputH || 0 };
-  mask.style.display = 'flex';
-  document.body.classList.add('modal-open');
-  /* 设置裁剪视口比例与展示区域一致 */
-  var vp = document.getElementById('crop-viewport');
-  if (vp && outputW && outputH) {
-    var maxW = Math.min(window.innerWidth * 0.82, 310);
-    var maxH = window.innerHeight * 0.42;
-    var aspect = outputW / outputH;
-    var vpW = maxW, vpH = maxW / aspect;
-    if (vpH > maxH) { vpH = maxH; vpW = maxH * aspect; }
-    vp.style.width = Math.round(vpW) + 'px';
-    vp.style.height = Math.round(vpH) + 'px';
-    _cropData.vpW = Math.round(vpW);
-    _cropData.vpH = Math.round(vpH);
-  } else {
-    _cropData.vpW = 0; _cropData.vpH = 0;
-  }
-  if (isVideo && cropVideo && playBtn) {
-    cropImg.style.display = 'none';
-    cropVideo.style.display = 'block';
-    playBtn.style.display = 'flex';
-    if (videoCtrls) videoCtrls.style.display = '';
-    if (imageCtrls) imageCtrls.style.display = 'none';
-    cropVideo.src = src;
-    cropVideo.currentTime = 0;
-    cropVideo.onloadedmetadata = function() {
-      _cropData.imgW = cropVideo.videoWidth;
-      _cropData.imgH = cropVideo.videoHeight;
-      fitCropImage();
-    };
-  } else {
-    cropImg.style.display = 'block';
-    if (cropVideo) { cropVideo.style.display = 'none'; cropVideo.src = ''; }
-    if (playBtn) playBtn.style.display = 'none';
-    if (videoCtrls) videoCtrls.style.display = 'none';
-    if (imageCtrls) imageCtrls.style.display = '';
-    _cropData.imgSrc = src;
-    cropImg.src = src;
-    function onReady() {
-      _cropData.imgW = cropImg.naturalWidth;
-      _cropData.imgH = cropImg.naturalHeight;
-      fitCropImage();
-    }
-    cropImg.onload = onReady;
-    if (cropImg.complete && cropImg.naturalWidth) onReady();
-  }
-}
-function fitCropImage() {
-  var viewport = document.getElementById('crop-viewport');
-  if (!viewport) return;
-  var vw = viewport.clientWidth, vh = viewport.clientHeight;
-  var scale = Math.max(vw / _cropData.imgW, vh / _cropData.imgH);
-  _cropData.scale = scale;
-  _cropData.panX = (vw - _cropData.imgW * scale) / 2;
-  _cropData.panY = (vh - _cropData.imgH * scale) / 2;
-  applyCropTransform();
-}
-function applyCropTransform() {
-  var el = _cropData.isVideo ? document.getElementById('crop-video') : document.getElementById('crop-img');
-  if (!el) return;
-  el.style.transform = 'translate(' + _cropData.panX + 'px,' + _cropData.panY + 'px) scale(' + _cropData.scale + ')';
-}
-function closeCropModal() {
-  var mask = document.getElementById('crop-modal-mask');
-  if (mask) mask.style.display = 'none';
-  document.body.classList.remove('modal-open');
-  stopVideoPreview();
-  _cropData.callback = null;
-  _cropData.isVideo = false;
-}
-function confirmCrop() {
-  var cb = _cropData.callback;
-  if (_cropData.isVideo) {
-    var px = _cropData.panX, py = _cropData.panY, sc = _cropData.scale;
-    var vw = _cropData.imgW, vh = _cropData.imgH;
-    var src = _cropData.videoSrc;
-    var outW = _cropData.outputW, outH = _cropData.outputH;
-    var cvpW = _cropData.vpW, cvpH = _cropData.vpH;
-    stopVideoPreview();
-    closeCropModal();
-    cropVideoSpatial(src, px, py, sc, vw, vh, outW, outH, cvpW, cvpH, cb);
-  } else {
-    var src = _cropData.imgSrc;
-    closeCropModal();
-    if (cb) cb(src);
-  }
-}
-
-/* ── 视频预览播放 ── */
-function toggleVideoPreview() {
-  var cropVideo = document.getElementById('crop-video');
-  var playBtn = document.getElementById('crop-play-btn');
-  if (!cropVideo) return;
-  if (cropVideo.paused) {
-    cropVideo.play();
-    _cropData.videoPaused = false;
-    if (playBtn) playBtn.innerHTML = '&#10074;&#10074;';
-  } else {
-    cropVideo.pause();
-    _cropData.videoPaused = true;
-    if (playBtn) playBtn.innerHTML = '&#9654;';
-  }
-}
-function stopVideoPreview() {
-  var cropVideo = document.getElementById('crop-video');
-  var playBtn = document.getElementById('crop-play-btn');
-  if (cropVideo) { cropVideo.pause(); cropVideo.src = ''; }
-  _cropData.videoPaused = true;
-  if (playBtn) playBtn.innerHTML = '&#9654;';
-}
-
-/* ── 视频画面裁剪 ── */
-function cropVideoSpatial(src, panX, panY, scale, srcW, srcH, outW, outH, vpW, vpH, callback) {
-  if (!callback) return;
-  try { showToast('正在处理视频…'); } catch(e) {}
-  var done = false;
-  function finish(blob) {
-    if (done) return; done = true;
-    try { if (blob) showToast('视频处理完成'); else showToast('视频处理失败'); } catch(e) {}
-    if (callback) callback(blob);
-  }
-  var timeout = setTimeout(function() { finish(null); }, 60000);
-  function clear() { clearTimeout(timeout); }
-  var tmpVideo = document.createElement('video');
-  tmpVideo.muted = true; tmpVideo.playsInline = true; tmpVideo.preload = 'auto';
-  tmpVideo.onloadedmetadata = function() {
-    var canvasW = outW || 440, canvasH = outH || 330;
-    if (canvasW < 10 || canvasH < 10) { canvasW = 440; canvasH = 330; }
-    /* 计算从裁剪视口坐标到输出尺寸的缩放比例 */
-    var coordScale = (vpW && vpH && outW && outH) ? (outW / vpW) : 1;
-    var canvas = document.createElement('canvas');
-    canvas.width = canvasW; canvas.height = canvasH;
-    var ctx = canvas.getContext('2d');
-    var stream;
-    try { stream = canvas.captureStream(30); } catch(e) { clear(); tmpVideo.src = ''; finish(null); return; }
-    if (typeof MediaRecorder === 'undefined') { clear(); tmpVideo.src = ''; finish(null); return; }
-    var mimeType = 'video/webm;codecs=vp9';
-    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp8';
-    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-    if (!MediaRecorder.isTypeSupported(mimeType)) { clear(); tmpVideo.src = ''; finish(null); return; }
-    var recorder;
-    try { recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 }); }
-    catch(e) { clear(); tmpVideo.src = ''; finish(null); return; }
-    var chunks = [];
-    recorder.ondataavailable = function(e) { if (e.data && e.data.size > 0) chunks.push(e.data); };
-    recorder.onstop = function() {
-      clear();
-      var blob = chunks.length > 0 ? new Blob(chunks, { type: mimeType.split(';')[0] }) : null;
-      tmpVideo.src = '';
-      finish(blob);
-    };
-    recorder.onerror = function() { clear(); try { recorder.stop(); } catch(e) {} tmpVideo.src = ''; finish(null); };
-    tmpVideo.currentTime = 0;
-    tmpVideo.onseeked = function() {
-      try { recorder.start(100); } catch(e) { clear(); tmpVideo.src = ''; finish(null); return; }
-      tmpVideo.play().catch(function() {});
-      function drawFrame() {
-        if (done) return;
-        if (tmpVideo.paused || tmpVideo.ended) { try { recorder.stop(); } catch(e) { finish(null); } return; }
-        try { ctx.drawImage(tmpVideo, panX * coordScale, panY * coordScale, srcW * scale * coordScale, srcH * scale * coordScale); } catch(e) {}
-        requestAnimationFrame(drawFrame);
-      }
-      drawFrame();
-    };
-  };
-  tmpVideo.onerror = function() { clear(); tmpVideo.src = ''; finish(null); };
-  tmpVideo.src = src;
-}
-
-/* ── 视口拖拽 + 播放按钮 ── */
-document.addEventListener('DOMContentLoaded', function() {
-  var viewport = document.getElementById('crop-viewport');
-  if (!viewport) return;
-  var startX, startY, startPanX, startPanY;
-  viewport.addEventListener('pointerdown', function(e) {
-    if (e.button !== 0) return;
-    if (e.target.closest('.crop-play-btn')) return;
-    _cropData.dragging = true;
-    viewport.classList.add('dragging');
-    startX = e.clientX; startY = e.clientY;
-    startPanX = _cropData.panX; startPanY = _cropData.panY;
-    viewport.setPointerCapture(e.pointerId);
-  });
-  viewport.addEventListener('pointermove', function(e) {
-    if (!_cropData.dragging) return;
-    _cropData.panX = startPanX + (e.clientX - startX);
-    _cropData.panY = startPanY + (e.clientY - startY);
-    applyCropTransform();
-  });
-  viewport.addEventListener('pointerup', function() { _cropData.dragging = false; viewport.classList.remove('dragging'); });
-  viewport.addEventListener('pointercancel', function() { _cropData.dragging = false; viewport.classList.remove('dragging'); });
-  viewport.addEventListener('click', function(e) {
-    if (!_cropData.isVideo || _cropData.dragging) return;
-    if (e.target.closest('.crop-play-btn')) { toggleVideoPreview(); return; }
-  });
-});
-
 /* ═══════════════════════════════════════════
    评论卡片系统
    ═══════════════════════════════════════════ */
@@ -29988,5 +30291,66 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 <div id="comment-card-container"><div id="comment-card-drag-wrapper"></div></div>
+
+<!-- 听歌报告 dashboard modal（复刻自 iPad） -->
+<div class="report-modal" id="report-modal" aria-hidden="true" data-open="false">
+  <div class="report-modal-bg" onclick="closeReportModal()"></div>
+  <div class="report-modal-card">
+    <div class="report-modal-head">
+      <div class="report-modal-title">
+        <div class="report-modal-eyebrow">Mineradio</div>
+        <div class="report-modal-h1">听歌报告</div>
+      </div>
+      <button class="report-modal-close" type="button" onclick="closeReportModal()" aria-label="关闭">×</button>
+    </div>
+    <div class="report-modal-tabs" id="report-tabs">
+      <button class="report-tab" data-range="today" type="button">今日</button>
+      <button class="report-tab active" data-range="week" type="button">本周</button>
+      <button class="report-tab" data-range="month" type="button">本月</button>
+      <button class="report-tab" data-range="all" type="button">全部</button>
+    </div>
+    <div class="report-modal-body" id="report-body">
+      <div class="report-source" id="report-source"><span class="report-source-dot"></span><span id="report-source-text">本地累计</span></div>
+      <div class="report-stats" id="report-stats">
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="duration" id="report-stat-duration">0m</div>
+          <div class="report-stat-label">听歌时长</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="int" id="report-stat-songs">0</div>
+          <div class="report-stat-label">总播放</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="int" id="report-stat-streak">0</div>
+          <div class="report-stat-label">不同歌曲</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" data-target="0" data-format="int" id="report-stat-topday">0</div>
+          <div class="report-stat-label" id="report-stat-topday-label">不同艺人</div>
+          <div class="report-stat-sub" id="report-stat-topday-sub"></div>
+        </div>
+      </div>
+      <div class="report-note" id="report-note"></div>
+
+      <div class="report-section">
+        <div class="report-section-h">最爱艺人 <span class="report-section-meta">TOP 10</span></div>
+        <div class="report-artists" id="report-artists"></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-h">最爱歌曲 <span class="report-section-meta">TOP 10</span></div>
+        <div class="report-songs" id="report-songs"></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-h" id="report-time-title">24 小时时段分布</div>
+        <div class="report-hours" id="report-hours"></div>
+        <div class="report-styles" id="report-styles" style="display:none"></div>
+      </div>
+
+      <div class="report-summary" id="report-summary">—</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

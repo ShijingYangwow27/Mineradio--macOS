@@ -44,6 +44,12 @@ const {
   lyric,
   lyric_new,
   user_level,
+  user_record,
+  listen_data_total,
+  listen_data_realtime_report,
+  record_recent_song,
+  style_preference,
+  artists,
 } = require('NeteaseCloudMusicApi');
 const http = require('http');
 const https = require('https');
@@ -202,12 +208,22 @@ function saveQQCookie(c) {
   try { fs.writeFileSync(QQ_COOKIE_FILE, qqCookie); } catch (e) {}
 }
 
+// ---------- 听歌报告 / 听歌风格 / 艺人信息缓存 ----------
+let listenReportCache = null;   // { ts, uid, data }
+let listenStyleCache  = null;   // { ts, uid, data }
+const artistInfoCache = {};      // { [id]: { ts, data } }
+
 // ---------- 工具 ----------
 function serveStatic(res, filePath) {
   const ext = path.extname(filePath);
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end('Not Found'); return; }
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
+    res.writeHead(200, {
+      'Content-Type': MIME[ext] || 'text/plain',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    });
     res.end(data);
   });
 }
@@ -3485,11 +3501,15 @@ function normalizeLoginInfo(profile, account, extra) {
   const userId = profile.userId || profile.user_id || profile.id || account.userId || account.id || '';
   if (!(userId || userId === 0)) return { loggedIn: false };
   const vip = normalizeNeteaseVip(profile, account, extra);
+  // 网易云 login_status / user_account 不直接返回 createTime，但 profile.createTime 偶有带回
+  // 注册时长若拿不到，由 /api/listen-report 内 listenSongs 补齐（无需在此强制获取）
+  const createTime = Number(profile.createTime || (extra && extra.createTime) || 0) || 0;
   return {
     loggedIn: true,
     userId,
     nickname: profile.nickname || profile.userName || '网易云用户',
     avatar: profile.avatarUrl || profile.avatar || '',
+    createTime,
     ...vip,
   };
 }
@@ -4260,6 +4280,248 @@ const server = http.createServer(async (req, res) => {
       sendJSON(res, { loggedIn: true, id: String(id), time: safeTime, code, body: r.body || r });
     } catch (err) {
       console.error('[Scrobble]', err);
+      sendJSON(res, { error: err.message }, 500);
+    }
+    return;
+  }
+
+  // ============================================================
+  //  听歌报告 / 听歌风格 / 艺人信息（复刻自 IPad 适配）
+  // ============================================================
+  if (pn === '/api/listen-report') {
+    // 5 分钟内存缓存，避免反复打网易云；?force=1 跳过缓存（打开报告即拉最新）
+    const _now = Date.now();
+    const _force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true';
+    if (!_force && listenReportCache && listenReportCache.ts && (_now - listenReportCache.ts) < 5 * 60 * 1000
+        && listenReportCache.uid === (await getLoginInfo().then(i => i.userId))) {
+      sendJSON(res, listenReportCache.data);
+      return;
+    }
+    try {
+      const info = await getLoginInfo();
+      if (!info.loggedIn || !info.userId) { sendJSON(res, { loggedIn: false, hasData: false }); return; }
+      const r = await user_record({ uid: info.userId, type: 0, cookie: userCookie, timestamp: Date.now() });
+      const body = (r && r.body) || {};
+      const allData = body.allData || [];
+      const rWeek = await user_record({ uid: info.userId, type: 1, cookie: userCookie, timestamp: Date.now() });
+      const weekData = (rWeek && rWeek.body && rWeek.body.weekData) || [];
+      function normalize(list) {
+        return (list || []).map(function (it) {
+          const song = it.song || {};
+          const ar = (song.ar || []);
+          return {
+            id: song.id,
+            title: song.name || '未知歌曲',
+            artist: ar.map(function (a) { return a.name; }).join('/'),
+            artistIds: ar.map(function (a) { return a.id; }).filter(Boolean),
+            coverUrl: (song.al && song.al.picUrl) || '',
+            playCount: it.playCount || 0,
+            durationMs: song.dt || 0
+          };
+        });
+      }
+      function aggregate(list) {
+        const songs = normalize(list);
+        const N = songs.length;
+        const artistMap = {};
+        const artistIdMap = {};
+        let totalPlays = 0;
+        songs.forEach(function (s, i) {
+          const w = N - i;
+          const plays = s.playCount > 0 ? s.playCount : w;
+          s.plays = plays;
+          s.durationSec = (s.durationMs / 1000) * plays;
+          totalPlays += plays;
+          s.artist.split('/').forEach(function (a, idx) {
+            a = (a || '').trim();
+            if (!a) return;
+            artistMap[a] = (artistMap[a] || 0) + plays;
+            if (!artistIdMap[a] && s.artistIds && s.artistIds[idx]) artistIdMap[a] = s.artistIds[idx];
+          });
+        });
+        const topArtists = Object.keys(artistMap)
+          .map(function (k) { return { name: k, score: artistMap[k], artistId: artistIdMap[k] || null }; })
+          .sort(function (a, b) { return b.score - a.score; })
+          .slice(0, 10);
+        return {
+          songs: songs.map(function (s) {
+            return { id: s.id, title: s.title, artist: s.artist, artistIds: s.artistIds, coverUrl: s.coverUrl, plays: s.plays, durationSec: s.durationSec };
+          }),
+          topArtists: topArtists,
+          totalPlays: totalPlays,
+          distinctSongs: N
+        };
+      }
+      // 累计听歌数 listenSongs / 累计时长 totalDuration
+      const lvRes = await user_level({ cookie: userCookie, timestamp: Date.now() }).catch(function(){ return null; });
+      const lvBody = (lvRes && lvRes.body) || {};
+      const lvData = lvBody.data || lvBody;
+      const listenSongs = lvData.nowPlayCount || lvData.listenSongs || 0;
+      const totalRes = await listen_data_total({ cookie: userCookie, timestamp: Date.now() }).catch(function(){ return null; });
+      const totalDuration = (totalRes && totalRes.body && totalRes.body.data && totalRes.body.data.totalDuration) || 0;
+      // 时长按「自然窗口」聚合：今天/本周一-周日/本月
+      function beijingDateStr(d) {
+        var bj = new Date(d.getTime() + 8 * 3600 * 1000);
+        return bj.toISOString().slice(0, 10);
+      }
+      async function fetchNaturalDurations(cookie) {
+        try {
+          const rt = await listen_data_realtime_report({ cookie: cookie, type: 'month', timestamp: Date.now() });
+          const dd = (rt && rt.body && rt.body.data && rt.body.data.listenTimeDistributionBlock && rt.body.data.listenTimeDistributionBlock.durationDetails) || [];
+          const bj = new Date(Date.now() + 8 * 3600 * 1000);
+          const monthPrefix = bj.getUTCFullYear() + '-' + String(bj.getUTCMonth() + 1).padStart(2, '0');
+          const day = bj.getUTCDay();
+          const diffToMon = (day === 0) ? 6 : (day - 1);
+          const monday = new Date(bj.getTime() - diffToMon * 86400000);
+          const sunday = new Date(monday.getTime() + 6 * 86400000);
+          const weekStart = monday.toISOString().slice(0, 10);
+          const weekEnd = sunday.toISOString().slice(0, 10);
+          const todayStr = beijingDateStr(new Date());
+          let weekMin = 0, monthMin = 0, todayMin = 0;
+          dd.forEach(function (x) {
+            if (!x.period) return;
+            if (x.period === todayStr) todayMin += (x.duration || 0);
+            if (x.period >= weekStart && x.period <= weekEnd) weekMin += (x.duration || 0);
+            if (x.period.indexOf(monthPrefix) === 0) monthMin += (x.duration || 0);
+          });
+          return { todayMinutes: todayMin, weekMinutes: weekMin, monthMinutes: monthMin };
+        } catch (e) { return { todayMinutes: 0, weekMinutes: weekMin || 0, monthMinutes: 0 }; }
+      }
+      // 按「自然窗口」过滤 record_recent_song 拿到今日/本周/本月歌曲列表
+      async function fetchRecentPlays(cookie) {
+        const events = [];
+        try {
+          for (let off = 0; off < 4000; off += 500) {
+            const r = await record_recent_song({ cookie: cookie, limit: 500, offset: off, timestamp: Date.now() });
+            const list = (r && r.body && r.body.data && r.body.data.list) || [];
+            if (!list.length) break;
+            list.forEach(function (x) {
+              const d = x.data || {};
+              const playTime = x.playTime;
+              if (!playTime || !d.id) return;
+              const bj = new Date(playTime + 8 * 3600 * 1000);
+              events.push({
+                id: d.id,
+                title: d.name || '未知歌曲',
+                artist: (d.ar || []).map(function (a) { return a.name; }).join('/'),
+                artistIds: (d.ar || []).map(function (a) { return a.id; }).filter(Boolean),
+                coverUrl: (d.al && d.al.picUrl) || '',
+                durationMs: d.dt || 0,
+                bjDate: bj.toISOString().slice(0, 10),
+                hour: bj.getUTCHours()
+              });
+            });
+            if (list.length < 500) break;
+          }
+        } catch (e) {}
+        return events;
+      }
+      function buildRange(events, startStr) {
+        const inWin = events.filter(function (e) { return e.bjDate >= startStr; });
+        const songMap = {};
+        inWin.forEach(function (e) {
+          if (!songMap[e.id]) songMap[e.id] = { id: e.id, title: e.title, artist: e.artist, artistIds: e.artistIds, coverUrl: e.coverUrl, durationMs: e.durationMs, plays: 0 };
+          songMap[e.id].plays++;
+        });
+        const songs = Object.keys(songMap).map(function (k) { return songMap[k]; });
+        songs.sort(function (a, b) { return (b.plays - a.plays) || a.title.localeCompare(b.title); });
+        const amap = {}; const aidmap = {};
+        songs.forEach(function (s) {
+          s.artist.split('/').forEach(function (a, i) {
+            a = (a || '').trim(); if (!a) return;
+            amap[a] = (amap[a] || 0) + s.plays;
+            if (!aidmap[a] && s.artistIds && s.artistIds[i]) aidmap[a] = s.artistIds[i];
+          });
+        });
+        const topArtists = Object.keys(amap)
+          .map(function (k) { return { name: k, score: amap[k], artistId: aidmap[k] || null, coverUrl: '' }; })
+          .sort(function (a, b) { return b.score - a.score; }).slice(0, 10);
+        const hourMap = new Array(24).fill(0);
+        let peakHour = 0, maxHour = 0;
+        inWin.forEach(function (e) { if (e.hour >= 0 && e.hour < 24) { hourMap[e.hour]++; if (hourMap[e.hour] > maxHour) { maxHour = hourMap[e.hour]; peakHour = e.hour; } } });
+        return { songs: songs, topArtists: topArtists, totalPlays: inWin.length, distinctSongs: songs.length, uniqueArtists: Object.keys(amap).length, hourMap: hourMap, peakHour: peakHour };
+      }
+      const nat = await fetchNaturalDurations(userCookie);
+      const events = await fetchRecentPlays(userCookie);
+      const _nowBJ = new Date(Date.now() + 8 * 3600 * 1000);
+      const _todayStr = _nowBJ.toISOString().slice(0, 10);
+      const _day = _nowBJ.getUTCDay();
+      const _diffToMon = (_day === 0) ? 6 : (_day - 1);
+      const _monday = new Date(_nowBJ.getTime() - _diffToMon * 86400000);
+      const _monStr = _monday.toISOString().slice(0, 10);
+      const _monthStr = _nowBJ.getUTCFullYear() + '-' + String(_nowBJ.getUTCMonth() + 1).padStart(2, '0') + '-01';
+      const today = buildRange(events, _todayStr); today.durationSec = nat.todayMinutes * 60;
+      const week = buildRange(events, _monStr); week.durationSec = nat.weekMinutes * 60;
+      const month = buildRange(events, _monthStr); month.durationSec = nat.monthMinutes * 60;
+      const data = {
+        loggedIn: true,
+        provider: 'netease',
+        hasData: (allData.length + weekData.length) > 0,
+        createTime: info.createTime || 0,
+        listenSongs: listenSongs,
+        totalDuration: totalDuration,
+        all: aggregate(allData),
+        today: today,
+        week: week,
+        month: month
+      };
+      listenReportCache = { ts: _now, uid: info.userId, data: data };
+      sendJSON(res, data);
+    } catch (err) {
+      console.error('[ListenReport]', err);
+      sendJSON(res, { error: err.message, loggedIn: false, hasData: false }, 500);
+    }
+    return;
+  }
+
+  // ---------- 听歌风格标签（网易云「曲风偏好」） ----------
+  if (pn === '/api/listen-style') {
+    if (listenStyleCache && listenStyleCache.ts && (Date.now() - listenStyleCache.ts) < 5 * 60 * 1000
+        && listenStyleCache.uid === (await getLoginInfo().then(i => i.userId))) {
+      sendJSON(res, listenStyleCache.data);
+      return;
+    }
+    try {
+      const info = await getLoginInfo();
+      if (!info.loggedIn || !info.userId) { sendJSON(res, { loggedIn: false, hasData: false }); return; }
+      const r = await style_preference({ cookie: userCookie, timestamp: Date.now() });
+      const body = (r && r.body) || {};
+      const data = (body.data) || {};
+      const tags = (data.tagPreferenceVos || []).map(function(t){
+        return { tagId: t.tagId, tagName: t.tagName || '', ratio: Number(t.ratio) || 0, picUrl: t.picUrl || '' };
+      });
+      const out = { loggedIn: true, hasData: tags.length > 0, tags: tags };
+      listenStyleCache = { ts: Date.now(), uid: info.userId, data: out };
+      sendJSON(res, out);
+    } catch (err) {
+      console.error('[ListenStyle]', err);
+      sendJSON(res, { error: err.message, loggedIn: false, hasData: false }, 500);
+    }
+    return;
+  }
+
+  // ---------- 艺人头像信息（用于听歌报告 TOP 艺人） ----------
+  if (pn === '/api/artist-info') {
+    try {
+      const id = url.searchParams.get('id');
+      if (!id) { sendJSON(res, { error: 'Missing artist id' }, 400); return; }
+      const _now = Date.now();
+      if (artistInfoCache[id] && (_now - artistInfoCache[id].ts) < 5 * 60 * 1000) {
+        sendJSON(res, artistInfoCache[id].data);
+        return;
+      }
+      const r = await artists({ id: Number(id), cookie: userCookie, timestamp: Date.now() });
+      const body = (r && r.body) || {};
+      const artist = body.artist || body.data || {};
+      const data = {
+        id: Number(id),
+        name: artist.name || '',
+        picUrl: artist.picUrl || artist.picUrlStr || artist.coverUrl || ''
+      };
+      artistInfoCache[id] = { ts: _now, data };
+      sendJSON(res, data);
+    } catch (err) {
+      console.error('[ArtistInfo]', err);
       sendJSON(res, { error: err.message }, 500);
     }
     return;
