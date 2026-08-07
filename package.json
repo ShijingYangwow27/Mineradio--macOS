@@ -1,7 +1,7 @@
 {
   "name": "mineradio",
   "productName": "Mineradio",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "description": "沉浸式音乐播放器，融合天气电台、歌词舞台、粒子视觉和 3D 歌单架。",
   "author": "Mineradio",
   "main": "desktop/main.js",
@@ -26,15 +26,14 @@
       "desktop/**/*",
       "public/**/*",
       "build/**/*",
+      "tools/meting/**/*",
       "server.js",
       "dj-analyzer.js",
-      "package.json",
-      "public/index.html",
-      "public/index.apple-test.html"
+      "package.json"
     ],
     "asar": false,
     "mac": {
-      "icon": "build/icon.icns",
+      "icon": "build/app-icon.icns",
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "target": [

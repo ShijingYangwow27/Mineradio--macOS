@@ -117,12 +117,18 @@ body.idle-guide-dragging #canvas-container{cursor:grabbing}
 /* ---------- 启动页 ---------- */
 #splash{position:fixed;inset:0;z-index:300;background:#010304;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:1;overflow:hidden;transition:opacity 1180ms cubic-bezier(.16,1,.3,1),transform 1180ms cubic-bezier(.16,1,.3,1);box-shadow:inset 0 0 180px rgba(0,0,0,.88)}
 #splash::before{content:'';position:absolute;inset:-8%;z-index:0;background:linear-gradient(115deg,transparent 0%,rgba(255,83,103,.055) 24%,transparent 42%,rgba(244,210,138,.052) 62%,transparent 82%),repeating-linear-gradient(90deg,rgba(255,255,255,.030) 0 1px,transparent 1px 54px),repeating-linear-gradient(0deg,rgba(255,255,255,.020) 0 1px,transparent 1px 46px),linear-gradient(180deg,#020606 0%,#050607 42%,#000 100%);filter:blur(.4px);opacity:.90;animation:splash-field-breathe 7s ease-in-out infinite alternate;pointer-events:none}
-#splash::after{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,rgba(0,0,0,.82),transparent 21%,transparent 79%,rgba(0,0,0,.82)),linear-gradient(180deg,rgba(0,0,0,.68),transparent 32%,transparent 64%,rgba(0,0,0,.74));pointer-events:none}
+#splash::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(130% 100% at 50% 45%, rgba(0,0,0,.55) 0%, rgba(0,0,0,.32) 42%, rgba(0,0,0,.10) 100%)}
 #splash.hide{pointer-events:none}
 #splash.ready{cursor:pointer}
 #splash.exiting{pointer-events:none;opacity:0;transform:scale(1.018)}
-#splash-canvas{position:absolute;inset:0;z-index:1;opacity:1;transition:opacity 1100ms cubic-bezier(.22,1,.36,1),transform 1100ms cubic-bezier(.22,1,.36,1)}
-#splash.exiting #splash-canvas{opacity:.30;transform:scale(1.012)}
+/* 景深漂浮封面墙：本周听歌封面网格 + 克制模糊 + 呼吸感（卡片留缝、避免生硬重叠），取代原 #splash-canvas WebGL 背景 */
+#float-wrap{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}
+.splash-cover{position:absolute;overflow:hidden;border-radius:6px;background:#0a0c0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 8px 26px rgba(0,0,0,.30);will-change:transform,opacity;animation:splashCoverIn 1.4s cubic-bezier(.22,1,.36,1) both, splashCoverFloat 9s ease-in-out 1.4s infinite}
+.splash-cover .g{position:absolute;inset:0}
+.splash-cover .g::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,.10), transparent 28%, transparent 72%, rgba(0,0,0,.22))}
+@keyframes splashCoverIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes splashCoverFloat{0%{transform:translateY(0) scale(1);opacity:1}25%{transform:translateY(-8%) scale(1.05);opacity:.92}50%{transform:translateY(0) scale(1.07);opacity:.86}75%{transform:translateY(8%) scale(1.05);opacity:.92}100%{transform:translateY(0) scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.splash-cover{animation:splashCoverIn 1s ease both!important;filter:blur(4px) brightness(.92)!important}}
 .splash-bg-noise{position:absolute;inset:0;z-index:3;opacity:.038;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");background-size:180px 180px;mix-blend-mode:screen;pointer-events:none}
 .splash-content{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:16px;pointer-events:none;transform:translateY(4px);transition:opacity 680ms cubic-bezier(.22,1,.36,1),transform 860ms cubic-bezier(.22,1,.36,1)}
 .splash-wordmark{position:relative;display:flex;align-items:baseline;justify-content:center;height:clamp(70px,12vw,136px);min-width:min(74vw,760px);font-size:clamp(52px,8.8vw,112px);line-height:.92;font-weight:720;letter-spacing:-.055em;color:#f8f8f2;text-shadow:0 20px 82px rgba(0,0,0,.68),-2px 0 18px rgba(255,83,103,.16),2px 0 18px rgba(122,215,194,.12);isolation:isolate;filter:drop-shadow(0 0 22px rgba(244,210,138,.075))}
@@ -2204,7 +2210,7 @@ body.immersive-mode #comment-card-container{opacity:0!important}
 
 <!-- 启动页 -->
 <div id="splash">
-  <canvas id="splash-canvas"></canvas>
+  <div id="float-wrap"></div>
   <div class="splash-bg-noise"></div>
 
   <!-- 主内容 -->
@@ -2218,6 +2224,9 @@ body.immersive-mode #comment-card-container{opacity:0!important}
     <div class="splash-enter" aria-hidden="true">点击进入</div>
   </div>
 </div>
+
+<!-- 开屏音乐：Chrome Heart 前 27s（开屏自动播放，无手动按钮） -->
+<audio id="splashMusic" src="chrome-heart.mp3" preload="auto"></audio>
 
 <div id="hint" aria-hidden="true"></div>
 
@@ -28342,6 +28351,164 @@ var splashTimer = null;
 var reduceSplashMotion = false;
 var splashReadyToEnter = false;
 
+// —— 开屏音乐：Chrome Heart 前 27s 自动播放（无手动按钮，取代原合成 intro）——
+var splashMusic = null;
+var splashMusicStarted = false;
+var splashMusicAutoStarted = false; // 仅"开屏自动播放成功"才允许进主页时停掉；手势兜底启动的让它播完
+var splashMusicStopHandler = null;
+var SPLASH_MUSIC_SEC = 27;
+function startSplashMusic(fromGesture) {
+  if (splashMusicStarted) return;
+  splashMusic = document.getElementById('splashMusic');
+  if (!splashMusic) { console.warn('[splash music] #splashMusic element missing'); return; }
+  if (typeof console !== 'undefined' && console.log) console.log('[splash music] init fromGesture=' + !!fromGesture);
+  try {
+    splashMusic.currentTime = 0;
+    var p = splashMusic.play();
+    splashMusicStarted = true;
+    splashMusicAutoStarted = !fromGesture; // 自动播放成功→标记；手势兜底→不自动停
+    if (splashMusicStopHandler) splashMusic.removeEventListener('timeupdate', splashMusicStopHandler);
+    splashMusicStopHandler = function () {
+      if (splashMusic.currentTime >= SPLASH_MUSIC_SEC) {
+        splashMusic.pause();
+        splashMusic.removeEventListener('timeupdate', splashMusicStopHandler);
+      }
+    };
+    splashMusic.addEventListener('timeupdate', splashMusicStopHandler);
+    if (p && p.catch) p.catch(function (err) {
+      // 自动播放被浏览器/Electron 策略拦截：等待首次用户交互（多半就是"点击进入"那一下）再启动
+      splashMusicStarted = false;
+      splashMusicAutoStarted = false;
+      var kick = function () {
+        window.removeEventListener('pointerdown', kick);
+        window.removeEventListener('keydown', kick);
+        if (!document.body.classList.contains('splash-active')) return;
+        startSplashMusic(true); // 手势启动：进主页也不打断
+      };
+      window.addEventListener('pointerdown', kick, { once: true });
+      window.addEventListener('keydown', kick, { once: true });
+      console.warn('开屏音乐被自动播放策略拦截，将在首次交互后启动', err);
+    });
+  } catch (e) { console.warn(e); }
+}
+function stopSplashMusic() {
+  // 仅当开屏已自动播放成功时才在进主页时停；手势兜底的让其播完前 27s
+  try { if (splashMusicAutoStarted && splashMusic && !splashMusic.paused) splashMusic.pause(); } catch (e) {}
+}
+
+// —— 景深漂浮封面：优先「全部」累计听歌数据（与听歌报告·全部 tab 同源：网易云跨设备官方累计榜），
+//    本机累计 songs 兜底，最后渐变 pad ——
+function collectSplashCovers(n) {
+  var seen = {}, out = [];
+  function pushItem(item) {
+    if (!item) return;
+    var cover = item.coverUrl || item.cover || '';
+    var key = (item.id ? ('s:' + item.id) : (item.key || cover || ('_' + out.length)));
+    if (seen[key]) return;
+    seen[key] = true;
+    out.push({ cover: cover, key: key });
+  }
+  // 1) 网易云跨设备官方累计榜（听歌报告「全部」tab 同源，同步完成后填充）
+  if (syncedReport && syncedReport.all && syncedReport.all.songs) {
+    for (var i = 0; i < syncedReport.all.songs.length && out.length < n; i++) pushItem(syncedReport.all.songs[i]);
+  }
+  // 2) 本机累计（启动时已从 localStorage 载入，未登录网易云时的主要来源）
+  if (listenStatsState && listenStatsState.songs) {
+    for (var k in listenStatsState.songs) { if (out.length >= n) break; pushItem(listenStatsState.songs[k]); }
+  }
+  // 3) 本机播放流水兜底（songs 维度偶尔漏掉的封面也在 history 里）
+  if (listenStatsState && listenStatsState.history) {
+    for (var h = 0; h < listenStatsState.history.length && out.length < n; h++) pushItem(listenStatsState.history[h]);
+  }
+  while (out.length < n) out.push({ cover: '', key: 'pad' + out.length });
+  return out.slice(0, n);
+}
+function renderSplashCovers() {
+  var wrap = document.getElementById('float-wrap');
+  if (!wrap) return;
+  var TOTAL = 28;
+  var covers = collectSplashCovers(TOTAL);
+  if (typeof console !== 'undefined' && console.log) {
+    var serverAll = (syncedReport && syncedReport.all && syncedReport.all.songs) ? syncedReport.all.songs.length : 0;
+    console.log('[splash covers] total=' + covers.length + ', real=' + covers.filter(function(c){ return !!c.cover; }).length +
+                ', serverAll=' + serverAll +
+                ', songs=' + Object.keys(listenStatsState && listenStatsState.songs || {}).length +
+                ', history=' + ((listenStatsState && listenStatsState.history) || []).length);
+  }
+  function hueFromKey(k) { var h = 0; k = k || ''; for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) % 360; return h; }
+  var vw = window.innerWidth || 1280, vh = window.innerHeight || 720;
+  // 选列数：以"瓦片尽量正方形"为第一优先级（专辑封面不被裁切），空位/列数偏离作为次要惩罚
+  var baseCols = Math.max(3, Math.min(8, Math.round(vw / 260)));
+  var bestCols = baseCols, bestScore = Infinity;
+  for (var c = 3; c <= 8; c++) {
+    var rr = Math.max(2, Math.round(c * (vh / vw)));
+    rr = Math.max(rr, Math.ceil(covers.length / c));
+    var empty = c * rr - covers.length;
+    var aspect = (vw * rr) / (vh * c);                // 瓦片宽/高，1.0 为完美方形
+    var squareness = Math.abs(Math.log(Math.max(0.001, aspect))) * 16; // 越不方惩罚越大，权重16
+    var score = squareness + empty * 0.4 + Math.abs(c - baseCols) * 0.25;
+    if (score < bestScore) { bestScore = score; bestCols = c; }
+  }
+  var cols = bestCols;
+  var rows = Math.max(2, Math.round(cols * (vh / vw)));
+  rows = Math.max(rows, Math.ceil(covers.length / cols));
+  var cw = 100 / cols, ch = 100 / rows;
+  // 卡片留缝：用 calc 均匀缩进，避免之前 scale(1.14) 造成的生硬重叠，呼吸时缝被轻微吃掉而非互相覆盖
+  var gut = Math.max(4, Math.min(9, Math.round(vw / 170)));
+  var half = (gut / 2).toFixed(1);
+  for (var i = 0; i < covers.length; i++) {
+    var c = covers[i];
+    var col = i % cols, row = Math.floor(i / cols);
+    var el = document.createElement('div');
+    el.className = 'splash-cover';
+    var h = (c.key && c.key.indexOf('pad') !== 0) ? hueFromKey(c.key) : (i * 47) % 360;
+    var h2 = (h + 46) % 360;
+    el.style.background = 'linear-gradient(135deg,hsl(' + h + ',62%,52%),hsl(' + h2 + ',55%,38%))';
+    el.style.left = 'calc(' + (col * cw).toFixed(3) + '% + ' + half + 'px)';
+    el.style.top = 'calc(' + (row * ch).toFixed(3) + '% + ' + half + 'px)';
+    el.style.width = 'calc(' + cw.toFixed(3) + '% - ' + gut + 'px)';
+    el.style.height = 'calc(' + ch.toFixed(3) + '% - ' + gut + 'px)';
+    if (c.cover) {
+      var g = document.createElement('div');
+      g.className = 'g';
+      g.style.backgroundImage = 'url(' + JSON.stringify(c.cover) + ')';
+      // 正方形专辑封面不能被裁切：contain 确保完整显示，周围露出瓦片底色作为画框
+      g.style.backgroundSize = 'contain';
+      g.style.backgroundPosition = 'center';
+      g.style.backgroundRepeat = 'no-repeat';
+      el.appendChild(g);
+    }
+    // 深度聚焦：每张不同模糊（3~7.4px），整体克制、能认出专辑
+    var blur = 3 + (i % 4) * 1.6;
+    var bright = 0.86 + ((i * 7) % 10) / 100;
+    el.style.filter = 'blur(' + blur.toFixed(1) + 'px) brightness(' + bright.toFixed(2) + ') saturate(1.08)';
+    // 入场(0s) + 呼吸(1.4s 起步，错峰时长/相位，形成有机的"呼吸感"而非整齐缩放)
+    el.style.animationDuration = '1.4s, ' + (9 + (i % 5) * 1.5).toFixed(1) + 's';
+    el.style.animationDelay = '0s, ' + (1.4 + ((col * 0.35) + (row * 0.28)) % 3.2).toFixed(2) + 's';
+    wrap.appendChild(el);
+  }
+}
+function initSplashFloatingCovers() {
+  var wrap = document.getElementById('float-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  renderSplashCovers();
+  // 网易云同步可能在开屏期间完成：同步后刷新一次真实封面（「全部」累计榜就绪即重渲染；splash 仍在且无服务端封面时轮询）
+  var hasServer = function(){ return !!(syncedReport && syncedReport.all && syncedReport.all.songs && syncedReport.all.songs.length); };
+  if (!hasServer()) {
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (tries > 30 || !document.body.classList.contains('splash-active')) { clearInterval(iv); return; }
+      if (hasServer()) {
+        wrap.innerHTML = '';
+        renderSplashCovers();
+        clearInterval(iv);
+      }
+    }, 350);
+  }
+}
+
 function splashClamp01(v) { return Math.max(0, Math.min(1, v)); }
 function splashSmoothstep(edge0, edge1, x) {
   var t = splashClamp01((x - edge0) / Math.max(0.0001, edge1 - edge0));
@@ -28865,6 +29032,7 @@ function dismissSplash() {
   markAppPerf('splash-dismiss');
   if (splashTimer) { clearTimeout(splashTimer); splashTimer = null; }
   splashReadyToEnter = false;
+  stopSplashMusic();
   s.classList.remove('ready');
   if (typeof shouldUseIdleWallpaperPreview === 'function'
     ? shouldUseIdleWallpaperPreview(true)
@@ -28922,15 +29090,18 @@ document.addEventListener('DOMContentLoaded', function(){
   var s = document.getElementById('splash');
   if (!s) return;
   markAppPerf('dom-content-loaded');
-  armSplashSoundFallback();
-  prewarmHomeWallpaperPreview();
-  bindHomeReportTabs();
+  /* 开屏封面与音乐优先、独立初始化：避免下游 home/wallpaper 初始化异常中断开屏效果（关键修复） */
+  try { initSplashFloatingCovers(); } catch (e) { console.warn('[splash] covers init failed', e); }
+  try { startSplashMusic(); } catch (e) { console.warn('[splash] music init failed', e); }
+  try { prewarmHomeWallpaperPreview(); } catch (e) { console.warn(e); }
+  try { bindHomeReportTabs(); } catch (e) { console.warn(e); }
   // 应用运行期间每 10 分钟静默同步一次网易云跨设备听歌记录
   setInterval(function(){ syncNeteaseHistory(false, true); }, 600000);
   // 每次打开应用自动重新定位
   setTimeout(function(){ relocateWeatherRadio(); }, 600);
   function requestSplashEnter() {
-    playMineradioIntroSound();
+    /* 若开屏音乐尚未启动（自动播放被拦截），借"进入"这一确定的用户手势启动它 */
+    if (!splashMusicStarted) { try { startSplashMusic(true); } catch (e) {} }
     if (splashReadyToEnter) dismissSplash();
   }
   s.addEventListener('click', requestSplashEnter);
@@ -28946,8 +29117,7 @@ document.addEventListener('DOMContentLoaded', function(){
     splashTimer = setTimeout(markSplashReadyToEnter, 900);
     return;
   }
-  playMineradioIntroSound();
-  splashTimer = setTimeout(markSplashReadyToEnter, 5000);
+  splashTimer = setTimeout(markSplashReadyToEnter, 4000);
 });
 
 var desktopOverlayPushState = {

@@ -143,6 +143,14 @@ const MIME = {
   '.jpg':  'image/jpeg',
   '.ico':  'image/x-icon',
   '.svg':  'image/svg+xml',
+  '.mp3':  'audio/mpeg',
+  '.m4a':  'audio/mp4',
+  '.aac':  'audio/aac',
+  '.wav':  'audio/wav',
+  '.ogg':  'audio/ogg',
+  '.flac': 'audio/flac',
+  '.webp': 'image/webp',
+  '.woff2': 'font/woff2',
 };
 
 // ---------- Cookie 持久化 ----------

@@ -1665,9 +1665,11 @@ app.setName(APP_NAME);
 if (process.platform === 'win32') app.setAppUserModelId(APP_USER_MODEL_ID);
 
 if (!gotSingleInstanceLock) {
-  app.quit();
-} else {
-  app.on('second-instance', () => {
+  // [FIX] macOS 从 Finder/launchd 启动（非终端）时 requestSingleInstanceLock 常误报 false，
+  // 若在此硬退出会导致主窗口永远不显示。改为继续启动，依靠 second-instance 事件聚焦已有窗口。
+  console.warn('[single-instance] lock not acquired; continuing without quit');
+}
+app.on('second-instance', () => {
     if (!focusMainWindow()) {
       app.whenReady().then(() => createWindow()).catch((e) => console.error('Second instance window restore failed:', e));
     }
@@ -1691,7 +1693,8 @@ if (!gotSingleInstanceLock) {
       }
       // resize 到 18pt @2x（36x36px）适配 macOS 菜单栏
       trayIcon = trayIcon.resize({ width: 36, height: 36 });
-      trayIcon.setTemplateImage(true);
+      // [彩色 Tray] 设为 false 让菜单栏显示彩色图标（原 true 为单色模板）
+      trayIcon.setTemplateImage(false);
       appTray = new Tray(trayIcon);
       appTray.setToolTip('Mineradio');
       const contextMenu = Menu.buildFromTemplate([
@@ -1751,4 +1754,3 @@ if (!gotSingleInstanceLock) {
     if (appTray) { appTray.destroy(); appTray = null; }
     if (localServer && localServer.close) localServer.close();
   });
-}
