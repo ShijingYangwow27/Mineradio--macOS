@@ -2,7 +2,7 @@
 
 沉浸式桌面音乐播放器，融合天气电台、歌词舞台、粒子视觉和 3D 歌单架，打造属于你的私人音乐空间。
 
-> 当前版本：v1.1.2 |  平台：**macOS（Apple Silicon / Intel）**  |  许可证：**GPL-3.0**
+> 当前版本：v1.1.4 |  平台：**macOS（Apple Silicon / Intel）**  |  许可证：**GPL-3.0**
 
 ***
 
@@ -11,13 +11,11 @@
 ### 应用截图
 
 <p align="center">
-  <img src="docs/assets/showcase/六翼天使千刃雪.png" alt="六翼天使千刃雪 - 粒子视觉预设" width="45%">
-  &nbsp;&nbsp;
-  <img src="docs/assets/showcase/甜心宝贝格温.png" alt="甜心宝贝格温 - 粒子视觉预设" width="45%">
+  <img src="docs/assets/showcase/image.png" alt="主页UI改版" width="80%">
 </p>
 
 <p align="center">
-  <img src="docs/assets/showcase/image.png" alt="主页UI改版" width="80%">
+  <img src="docs/assets/showcase/fce4f152-2afa-419c-83c5-ead41bae32bd.png" alt="歌词舞台与粒子视觉播放界面" width="80%">
 </p>
 
 ***
