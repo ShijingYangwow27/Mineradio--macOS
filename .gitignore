@@ -60,3 +60,6 @@ tmp/
 *.png.tmp
 verification/
 screenshots/
+
+# IDE/Agent local documents (仓库根内的 Trae 工作区)
+.trae/

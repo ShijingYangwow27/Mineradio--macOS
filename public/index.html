@@ -300,8 +300,8 @@ body.home-wallpaper-preview #canvas-container{filter:none}
 .home-report-tab:hover{background:color-mix(in srgb,var(--home-accent) 10%,transparent);border-color:color-mix(in srgb,var(--home-accent) 32%,rgba(255,255,255,.10));color:#fff}
 .home-report-tab.active{background:color-mix(in srgb,var(--home-accent) 36%,transparent);border-color:color-mix(in srgb,var(--home-accent) 55%,rgba(255,255,255,.10));color:#fff;box-shadow:0 4px 16px color-mix(in srgb,var(--home-accent) 32%,transparent)}
 .home-report-body{flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:0;margin-top:clamp(2px,.5vw,8px)}
-.home-report-label{font-size:clamp(9px,1vw,11px);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--home-accent) 84%,#fff);line-height:1.2}
-.home-report-period{font-size:clamp(9px,.95vw,11px);font-weight:500;color:rgba(255,255,255,.42);letter-spacing:.06em;line-height:1.2}
+.home-report-label{font-size:clamp(10px,1.12vw,13px);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--home-accent) 84%,#fff);line-height:1.2}
+.home-report-period{font-size:clamp(10px,1.05vw,12px);font-weight:500;color:rgba(255,255,255,.42);letter-spacing:.06em;line-height:1.2}
 .home-report-number{font:700 clamp(34px,5.4vw,68px)/1 var(--font-sans);background:linear-gradient(135deg,color-mix(in srgb,var(--home-accent) 92%,#fff) 0%,var(--home-accent) 60%,color-mix(in srgb,var(--home-accent) 70%,#000) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-shadow:0 4px 18px color-mix(in srgb,var(--home-accent) 20%,transparent);line-height:1}
 .home-report-unit{font-size:clamp(11px,1.2vw,14px);font-weight:600;color:rgba(255,255,255,.74);letter-spacing:.04em;margin-top:-4px}
 .home-report-detail-btn{align-self:flex-start;margin-top:clamp(4px,.8vw,8px);height:clamp(26px,3vw,32px);padding:0 clamp(14px,1.6vw,18px);border-radius:999px;border:1px solid color-mix(in srgb,var(--home-accent) 45%,rgba(255,255,255,.10));background:color-mix(in srgb,var(--home-accent) 18%,rgba(255,255,255,.04));color:#fff;font-family:inherit;font-size:clamp(10px,1.05vw,12px);font-weight:600;letter-spacing:.06em;cursor:pointer;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -368,6 +368,8 @@ body.modal-open{overflow:hidden}
 .report-song-title{color:rgba(255,255,255,.95);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
 .report-song-artist{color:rgba(235,235,245,.5);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .report-song-count{font-size:12px;color:rgba(255,140,170,.85);font-weight:600;flex-shrink:0;font-feature-settings:"tnum"}
+.report-song-bar{height:4px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:7px;overflow:hidden}
+.report-song-bar span{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#FF8FB1,#FF2D6F);box-shadow:0 0 8px rgba(255,45,111,.5);transition:width .7s cubic-bezier(.22,1,.4,1)}
 
 .report-hours{display:flex;align-items:flex-end;gap:3px;height:84px;padding:0 2px 18px}
 .report-hour{flex:1;background:linear-gradient(180deg,rgba(255,143,177,.85),rgba(255,45,111,.6));border-radius:5px 5px 0 0;min-height:3px;position:relative;transition:all .2s;cursor:default}
@@ -375,18 +377,46 @@ body.modal-open{overflow:hidden}
 .report-hour::after{content:attr(data-h);position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:8.5px;color:rgba(235,235,245,.4);font-feature-settings:"tnum"}
 .report-hour.peak{background:linear-gradient(180deg,#FFD0E0,#FF2D6F);box-shadow:0 0 14px rgba(255,45,111,.7)}
 
+/* 上月每日日历热力图（替代无小时数据的 24h 区） */
+.report-calendar{display:none;grid-template-columns:repeat(7,1fr);gap:8px;margin:10px auto 0;width:100%;padding:14px 16px;background:linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02));border-radius:18px;box-shadow:0 14px 44px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);animation:calIn .35s cubic-bezier(.22,1,.36,1) both}
+.report-calendar.show{display:grid}
+@keyframes calIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.report-cal-header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.report-cal-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:.02em}
+.report-cal-stats{font-size:12px;color:rgba(255,255,255,.55);font-weight:600}
+.report-cal-stats b{color:rgba(255,255,255,.9);font-weight:700;font-feature-settings:"tnum";margin:0 2px}
+.report-cal-dow{font-size:11px;color:rgba(255,255,255,.58);text-align:center;font-weight:700;letter-spacing:.04em;padding-bottom:4px;animation:cellIn .45s cubic-bezier(.22,1.5,.36,1) both;animation-delay:var(--cell-delay,0s)}
+@keyframes cellIn{from{opacity:0;transform:scale(.7) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.report-cal-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:rgba(255,255,255,.9);background:#251a22;position:relative;overflow:hidden;transition:transform .15s, box-shadow .15s;animation:cellIn .45s cubic-bezier(.22,1.5,.36,1) both;animation-delay:var(--cell-delay,0s)}
+.report-cal-cell.empty{background:transparent;pointer-events:none;animation:none}
+.report-cal-cell:not(.empty):hover{transform:scale(1.1);box-shadow:0 6px 18px rgba(255,45,111,.55);z-index:1}
+.report-cal-cell-zero{color:rgba(255,255,255,.25);background:#201820}
+.report-cal-l1{background:#522635;color:rgba(255,255,255,.75)}
+.report-cal-l2{background:#7a3a4c;color:#fff}
+.report-cal-l3{background:#a64163;color:#fff}
+.report-cal-l4{background:#d64c76;color:#fff}
+.report-cal-l5{background:#FF2D6F;color:#fff;box-shadow:0 0 10px rgba(255,45,111,.5),inset 0 0 0 1px rgba(255,255,255,.14);animation:cellIn .45s cubic-bezier(.22,1.5,.36,1) both, peakPulse 2.2s ease-in-out infinite;animation-delay:var(--cell-delay,0s),.6s}
+@keyframes peakPulse{0%,100%{box-shadow:0 0 10px rgba(255,45,111,.5),inset 0 0 0 1px rgba(255,255,255,.14)}50%{box-shadow:0 0 24px rgba(255,45,111,.85),inset 0 0 0 1px rgba(255,255,255,.22)}}
+.report-cal-cell .d{position:relative;z-index:1;font-feature-settings:"tnum"}
+.report-cal-legend{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:rgba(255,255,255,.55);animation:cellIn .45s cubic-bezier(.22,1.5,.36,1) both;animation-delay:var(--cell-delay,0s)}
+.report-cal-legend .lab{opacity:.75}
+.report-cal-legend i{width:40px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3d232e,#FF2D6F)}
+
 .report-styles{display:flex;flex-direction:column;padding:4px 2px 6px;position:relative;overflow:hidden;border-radius:16px}
 .report-styles-bg{position:absolute;inset:0;background-color:#1a1426;background-size:cover;background-position:center;filter:blur(36px) brightness(.5) saturate(1.15);transform:scale(1.25);z-index:0;pointer-events:none}
 .report-styles-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,6,16,.30),rgba(8,6,16,.62));z-index:0;pointer-events:none}
 .report-styles-legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:11px;color:rgba(255,255,255,.85);position:relative;z-index:1}
 .report-legend-item{display:flex;align-items:center;gap:5px}
 .report-legend-item i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
-.report-bubbles-canvas{position:relative;height:220px;margin-top:6px;z-index:1}
-.report-bubble{position:absolute;transform:translate(-50%,-50%) scale(0);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;transition:transform .6s cubic-bezier(.22,1.5,.4,1);will-change:transform;overflow:hidden}
+.report-bubbles-canvas{position:relative;height:240px;margin-top:8px;z-index:1}
+.report-bubble{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer;will-change:transform;overflow:hidden;z-index:1;transition:transform .6s cubic-bezier(.22,1.5,.4,1)}
 .report-bubble.in{transform:translate(-50%,-50%) scale(1)}
 .report-bubble.in.float{animation:bubbleFloat 7s ease-in-out infinite}
-.report-bubble::after{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),rgba(255,255,255,0) 55%);pointer-events:none}
+.report-bubble-main{z-index:2}
+.report-bubble-main::before{content:'';position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(255,255,255,.18);animation:bubblePulse 2.4s cubic-bezier(.22,1,.36,1) infinite;pointer-events:none}
+@keyframes bubblePulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.35);opacity:0}}
 @keyframes bubbleFloat{0%,100%{transform:translate(-50%,-50%) scale(1) translateY(0)}50%{transform:translate(-50%,-50%) scale(1) translateY(-5px)}}
+.report-bubble::after{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.45),rgba(255,255,255,0) 55%);pointer-events:none}
 .report-bubble-pct{font-size:14px;font-weight:700;font-feature-settings:"tnum";text-shadow:0 1px 4px rgba(0,0,0,.35);line-height:1;position:relative;z-index:1}
 .report-bubble-name{font-size:10.5px;font-weight:600;opacity:.95;margin-top:3px;text-shadow:0 1px 4px rgba(0,0,0,.35);max-width:92%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
 .report-styles-note{font-size:10.5px;color:rgba(255,255,255,.6);text-align:center;margin-top:6px;position:relative;z-index:1}
@@ -744,7 +774,7 @@ body.home-controls-locked #bottom-bar{opacity:0!important;pointer-events:none!im
 #volume-slider{width:92px;accent-color:var(--fc-accent);cursor:pointer}
 #volume-value{width:34px;text-align:right;font-size:10px;color:rgba(255,255,255,.52);font-variant-numeric:tabular-nums}
 /* mini-queue-popover 移出 bottom-bar 后改为 fixed 定位，由 JS syncMiniQueuePosition() 同步到 bottom-bar 上方 14px。
-   z-index:90 高于评论卡片容器（z-index:80），确保评论卡片在屏幕中部时不会拦截 popover 的 click 事件。 */
+   z-index:90 远高于评论卡片容器（z-index:1，已置于主页外壳 z-index:2 之下），评论卡片不再拦截 popover 的 click 事件，也不会遮挡主页卡片。 */
 #mini-queue-popover{position:fixed;left:50%;width:min(420px,calc(100vw - 32px));max-height:min(420px,calc(100vh - 170px));padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.075);background:linear-gradient(145deg,rgba(18,18,23,.82),rgba(8,8,12,.88));backdrop-filter:blur(30px) saturate(1.08);-webkit-backdrop-filter:blur(30px) saturate(1.08);box-shadow:0 22px 70px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.065);opacity:0;pointer-events:none;transform:translateX(-50%) translateY(12px) scale(.98);transition:opacity .22s,transform .22s;z-index:90;overflow:hidden;visibility:hidden}
 #mini-queue-popover.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1);visibility:visible}
 .mini-queue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -2047,11 +2077,11 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
 #comment-card-btn svg{transition:color .18s}
 
 /* 卡片容器：固定位置 + 3D 透视上下文（不参与拖拽 transform） */
-#comment-card-container{position:fixed;z-index:80;left:50%;top:50%;width:400px;height:240px;margin-left:-200px;margin-top:-120px;perspective:1400px;perspective-origin:50% 50%;pointer-events:none;display:block;visibility:hidden;transition:visibility 0s linear .35s}
+#comment-card-container{position:fixed;z-index:3;left:50%;top:50%;width:400px;height:240px;margin-left:-200px;margin-top:-120px;perspective:1400px;perspective-origin:50% 50%;pointer-events:none;display:block;visibility:hidden;transition:visibility 0s linear .35s}
 #comment-card-container.cc-ready{visibility:visible;transition:none}
 /* 激活（已有卡片在屏）时才接受指针事件，避免开屏动画期间误触
    注意：cursor:grab 已下移到 .comment-card.cc-position-current，光标只在主展示位卡片上显示 */
-#comment-card-container.cc-active{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+#comment-card-container.cc-active{pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none}
 #comment-card-container.cc-active.dragging{cursor:grabbing}
 
 /* 拖拽包装层：所有拖拽位移作用于它，与卡片旋转 transform 隔离
@@ -2299,6 +2329,11 @@ body.immersive-mode #comment-card-container{opacity:0!important}
     </div>
   </div>
 </section>
+
+<!-- 评论卡片容器：移入 #desktop-window-shell 内部、#empty-home 之后，使其与主页卡片同处一层叠上下文；
+     z-index:3 低于 #empty-home(z-index:4)，主页卡片自然盖住评论卡片而不被遮挡；
+     容器自身仍独立接收 .cc-active 的拖拽事件，不受外壳 pointer-events 影响。 -->
+<div id="comment-card-container"><div id="comment-card-drag-wrapper"></div></div>
 
 <!-- 顶部右侧 (只保留用户) -->
 <div id="top-right">
@@ -16850,15 +16885,35 @@ function reportCoversForRange(range, n) {
   var history = listenStatsState.history || [];
   var seen = {};
   var out = [];
+
+  /* 「全部(累计收听)」优先采用网易云官方账号累计榜(syncedReport.all.songs)封面——
+     这是跨设备全量数据，与「累计收听」数字(loginStatus.userListenSongs)、标签、报告弹窗全部 tab 的 top10 同源；
+     本机 history 仅在官方封面不足 n 张时补充。其他 range(今日/本周/本月)无官方封面源，维持原逻辑。 */
+  var preferServer = (range === 'all' && syncedReport && syncedReport.all && syncedReport.all.songs && syncedReport.all.songs.length);
+
+  if (preferServer) {
+    var _srv = syncedReport.all.songs;
+    for (var _s = 0; _s < _srv.length && out.length < n; _s++) {
+      var _sid = _srv[_s] && _srv[_s].id;
+      if (!_sid) continue;
+      var _ssk = 'song:' + _sid;
+      if (seen[_ssk]) continue;
+      seen[_ssk] = true;
+      out.push({ cover: (_srv[_s].coverUrl || ''), key: _ssk });
+    }
+  }
+
+  /* 本机历史封面：全部=仅作补充(不过 since 过滤)；其他 range=主源(按时间窗口过滤) */
   for (var i = 0; i < history.length && out.length < n; i++) {
     var h = history[i];
-    if ((h.playedAt || 0) < since) continue;
+    if (range !== 'all' && (h.playedAt || 0) < since) continue;
     if (seen[h.key]) continue;
     seen[h.key] = true;
     out.push({ cover: h.cover, key: h.key });
   }
-  /* 网易云同步封面补充（本地不足 n 张时），按 song:<id> 去重 */
-  if (syncedReport && syncedReport[range] && syncedReport[range].songs) {
+
+  /* 网易云同步封面补充（本机不足 n 张时），按 song:<id> 去重；全部已优先用官方源，此处跳过避免重复 */
+  if (!preferServer && syncedReport && syncedReport[range] && syncedReport[range].songs) {
     var _sg2 = syncedReport[range].songs;
     for (var _k = 0; _k < _sg2.length && out.length < n; _k++) {
       var _id = _sg2[_k] && _sg2[_k].id;
@@ -16869,6 +16924,7 @@ function reportCoversForRange(range, n) {
       out.push({ cover: _sg2[_k].coverUrl || '', key: _sk });
     }
   }
+
   /* 不够时用占位（empty 状态由 CSS 处理） */
   while (out.length < n) out.push({ cover: '', key: '' });
   return out;
@@ -16876,26 +16932,33 @@ function reportCoversForRange(range, n) {
 function renderHomeMarquee(range) {
   var wrap = document.getElementById('home-report-marquee');
   if (!wrap) return;
-  var covers = reportCoversForRange(range, 20);
-  /* 双倍拼接实现无缝循环（保留空 cover 时显示占位） */
-  var html = '<div class="home-report-track" id="home-report-track-1">';
-  for (var i = 0; i < covers.length; i++) {
-    var bg = covers[i].cover ? cssImageUrl(covers[i].cover) : '';
-    html += '<div class="home-report-card' + (bg ? '" style="background-image:url(&quot;' + escHtmlAttr(bg) + '&quot;)' : ' empty') + '"></div>';
+  var covers = reportCoversForRange(range, 30);
+  /* 数据充足（>=30 张）：三条轨道各取 10 张、互不重复（0-9 / 10-19 / 20-29），避免视觉重复；
+     数据不足（<30 张）：沿用原方案——track1/track2 用全量原序、track3 偏移一半，保证三排填满。
+     每条轨道内容双倍拼接 + 动画时长翻倍，实现真正无缝循环且滚动速度不变 */
+  var row1, row2, row3;
+  if (covers.length >= 30) {
+    row1 = covers.slice(0, 10);
+    row2 = covers.slice(10, 20);
+    row3 = covers.slice(20, 30);
+  } else {
+    row1 = covers;
+    row2 = covers;
+    row3 = covers.map(function (c, k) { return covers[(k + Math.floor(covers.length / 2)) % covers.length]; });
   }
-  html += '</div><div class="home-report-track r2" id="home-report-track-2">';
-  for (var j = 0; j < covers.length; j++) {
-    var bg2 = covers[j].cover ? cssImageUrl(covers[j].cover) : '';
-    html += '<div class="home-report-card' + (bg2 ? '" style="background-image:url(&quot;' + escHtmlAttr(bg2) + '&quot;)' : ' empty') + '"></div>';
+  function _card(c) {
+    var bg = c.cover ? cssImageUrl(c.cover) : '';
+    return '<div class="home-report-card' + (bg ? '" style="background-image:url(&quot;' + escHtmlAttr(bg) + '&quot;)' : ' empty') + '"></div>';
   }
-  html += '</div><div class="home-report-track r3" id="home-report-track-3">';
-  for (var k = 0; k < covers.length; k++) {
-    var idx = (k + Math.floor(covers.length / 2)) % covers.length;
-    var bg3 = covers[idx].cover ? cssImageUrl(covers[idx].cover) : '';
-    html += '<div class="home-report-card' + (bg3 ? '" style="background-image:url(&quot;' + escHtmlAttr(bg3) + '&quot;)' : ' empty') + '"></div>';
+  function _track(items, extraCls, idSuffix, durSec) {
+    var seq = items.concat(items); // 双倍拼接实现无缝循环
+    var h = '<div class="home-report-track ' + extraCls + '" id="home-report-track-' + idSuffix + '" style="animation-duration:' + durSec + 's">';
+    for (var i = 0; i < seq.length; i++) h += _card(seq[i]);
+    h += '</div>';
+    return h;
   }
-  html += '</div>';
-  wrap.innerHTML = html;
+  // 三排速度各异（120/160/220s），方向与延迟由 CSS（.r2 reverse / .r3 delay）控制
+  wrap.innerHTML = _track(row1, '', '1', 120) + _track(row2, 'r2', '2', 160) + _track(row3, 'r3', '3', 220);
 }
 function escHtmlAttr(s) { return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 function renderHomeReport() {
@@ -17002,21 +17065,11 @@ function countUpNumber(el, target, format){
   requestAnimationFrame(step);
 }
 
-// 报告弹窗用：归一化歌曲主键
-function reportNormKey(title, artist){
-  return ((title || '') + '|' + (artist || '')).toLowerCase().replace(/\s+/g, '');
-}
-// 报告弹窗用：从 listenStatsState 获取历史（兼容旧版无 history 的场景）
-function getListenHistory(){
-  if (listenStatsState && Array.isArray(listenStatsState.history)) return listenStatsState.history;
-  return [];
-}
-
 /* ============================================================
  * 听歌报告 dashboard modal（复刻自 iPad）
  * 关键点：
  *  - 服务端 /api/listen-report 命中即视为「网易云真实记录」，否则显示「未登录」
- *  - 「今日/本周/本月」次数改用本地 Mineradio 播放计数覆盖
+ *  - 「今日/本月」次数 = 本机真实播放次数 + 网易云同步(其他设备每首计 1)；「本周/全部」用网易云官方累计
  *  - 弹窗打开强制刷新（force=1 绕过前端 60s 缓存），后端 5min 缓存仍兜底
  * ============================================================ */
 var reportCurrentRange = 'week';
@@ -17121,6 +17174,9 @@ function mergeReport(localAgg, serverSongs){
   };
 }
 function paintReportStats(data){
+  // 复位 card3 标签（上月视图会改为「听歌天数」，切回标准区间需恢复为「不同歌曲」）
+  var _streakNum = document.getElementById('report-stat-streak');
+  if (_streakNum && _streakNum.parentElement) { var _sl = _streakNum.parentElement.querySelector('.report-stat-label'); if (_sl) _sl.textContent = '不同歌曲'; }
   countUpNumber(document.getElementById('report-stat-duration'), data.durationSec, 'duration');
   countUpNumber(document.getElementById('report-stat-songs'), data.totalPlays, 'int');
   countUpNumber(document.getElementById('report-stat-streak'), data.distinctSongs, 'int');
@@ -17214,6 +17270,7 @@ function paintReportArtists(data){
 function paintReportSongs(data){
   var el = document.getElementById('report-songs');
   if (!data.topSongs || data.topSongs.length === 0) { el.innerHTML = '<div class="report-empty">暂无数据</div>'; return; }
+  var max = Math.max.apply(null, data.topSongs.map(function(s){ return s.count || 0; })) || 1;
   el.innerHTML = data.topSongs.map(function(s, i){
     var coverStyle = '';
     if (s.coverUrl) {
@@ -17224,12 +17281,14 @@ function paintReportSongs(data){
       var c = artistColorHash(s.title || s.artist || 'song');
       coverStyle = 'background:linear-gradient(135deg,' + c[0] + ',' + c[1] + ')';
     }
+    var pct = Math.max(6, Math.round((s.count || 0) / max * 100));
     return '<div class="report-song">' +
       '<div class="report-song-rank' + (i < 3 ? ' top' : '') + '">' + (i + 1) + '</div>' +
       '<div class="report-song-cover" style="' + coverStyle + '"></div>' +
       '<div class="report-song-info">' +
         '<div class="report-song-title">' + escHtml(s.title) + '</div>' +
         '<div class="report-song-artist">' + escHtml(s.artist || '') + '</div>' +
+        '<div class="report-song-bar"><span style="width:' + pct + '%"></span></div>' +
       '</div>' +
       (s.count ? '<div class="report-song-count">' + s.count + ' 次</div>' : '') +
     '</div>';
@@ -17275,7 +17334,8 @@ function renderReportStyles(el, tags){
     var r = minR + Math.sqrt(ratio) / Math.sqrt(maxRatio) * (maxR - minR);
     var a = anchors[i] || [50, 50];
     var showName = r >= 26;
-    return '<div class="report-bubble" style="left:' + a[0] + '%;top:' + a[1] + '%;width:' + (2 * r) + 'px;height:' + (2 * r) + 'px;' +
+    var cls = 'report-bubble' + (i === 0 ? ' report-bubble-main' : '');
+    return '<div class="' + cls + '" style="left:' + a[0] + '%;top:' + a[1] + '%;width:' + (2 * r) + 'px;height:' + (2 * r) + 'px;' +
       'background:radial-gradient(circle at 35% 30%,' + c[0] + ',' + c[1] + ');' +
       'box-shadow:0 0 26px ' + hexA(c[1], 0.45) + '" data-i="' + i + '">' +
       '<span class="report-bubble-pct">' + Math.round(ratio) + '%</span>' +
@@ -17290,12 +17350,53 @@ function renderReportStyles(el, tags){
   var bgTag = sorted[0];
   var bgUrl = (bgTag && bgTag.picUrl) ? coverProxySrc(bgTag.picUrl) : '';
   el.innerHTML = '<div class="report-styles-bg"' + (bgUrl ? ' style="background-image:url(\'' + bgUrl + '\')"' : '') + '></div><div class="report-styles-scrim"></div>' + legend + '<div class="report-bubbles-canvas">' + bubbles + '</div>' + '<div class="report-styles-note">基于网易云曲风偏好 · 全站累计</div>';
-  // 入场弹入，随后轻微漂浮
-  Array.from(el.querySelectorAll('.report-bubble')).forEach(function(b, i){
-    b.style.transitionDelay = (i * 70) + 'ms';
-    requestAnimationFrame(function(){ b.classList.add('in'); });
-    setTimeout(function(){ b.classList.add('float'); }, 750 + i * 70);
-  });
+  // GSAP 高级动画：stagger 弹性入场 + 有机漂浮 + hover 焦点
+  var bubbleEls = Array.from(el.querySelectorAll('.report-bubble'));
+  if (typeof gsap !== 'undefined' && bubbleEls.length) {
+    gsap.set(bubbleEls, { xPercent: -50, yPercent: -50, scale: 0, opacity: 0, y: 40 });
+    var tl = gsap.timeline({
+      onComplete: function() {
+        bubbleEls.forEach(function(b, i) {
+          gsap.to(b, {
+            y: '-=' + (8 + Math.random() * 10),
+            duration: 2.4 + Math.random() * 1.8,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            delay: i * 0.1
+          });
+        });
+      }
+    });
+    tl.to(bubbleEls, {
+      scale: 1,
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: 'back.out(1.6)'
+    });
+    bubbleEls.forEach(function(b) {
+      b.addEventListener('mouseenter', function() {
+        gsap.to(b, { scale: 1.13, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+        bubbleEls.forEach(function(b2) {
+          if (b2 !== b) gsap.to(b2, { scale: 0.9, opacity: 0.5, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+        });
+      });
+      b.addEventListener('mouseleave', function() {
+        bubbleEls.forEach(function(b2) {
+          gsap.to(b2, { scale: 1, opacity: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+        });
+      });
+    });
+  } else {
+    // fallback：纯 CSS 入场 + 漂浮
+    bubbleEls.forEach(function(b, i){
+      b.style.transitionDelay = (i * 70) + 'ms';
+      requestAnimationFrame(function(){ b.classList.add('in'); });
+      setTimeout(function(){ b.classList.add('float'); }, 750 + i * 70);
+    });
+  }
 }
 function paintReportSummary(data){
   var el = document.getElementById('report-summary');
@@ -17316,7 +17417,21 @@ function paintReportSummary(data){
   if (topSong) txt += ' · 循环最多《' + topSong.title + '》';
   el.textContent = txt;
 }
-function paintReport(data, sourceLabel){
+function paintReport(data, sourceLabel, noteText){
+  // 上月视图专属渲染见 paintLastMonthReport；此处负责标准区间，并复位上月改动的标题/区块
+  var _artMeta = document.getElementById('report-artists');
+  if (_artMeta) { var _am = _artMeta.closest('.report-section'); if (_am) { var _amEl = _am.querySelector('.report-section-meta'); if (_amEl) _amEl.textContent = 'TOP 10'; } }
+  var _songMeta = document.getElementById('report-songs');
+  if (_songMeta) { var _sm = _songMeta.closest('.report-section'); if (_sm) { var _smEl = _sm.querySelector('.report-section-meta'); if (_smEl) _smEl.textContent = 'TOP 10'; } }
+  // 恢复被上月视图隐藏的「时段分布」区块（全部视图显示风格，其余显示时段）
+  var _hoursSection = document.getElementById('report-hours');
+  if (_hoursSection) { var _hs = _hoursSection.closest('.report-section'); if (_hs) _hs.style.display = ''; }
+  // 本月「总播放」卡改为「累计播放」(本月单曲次数网易云不提供，用账号累计填充)；今日改为「播放次数」(混合统计)
+  var _songsLabelEl = document.getElementById('report-stat-songs');
+  if (_songsLabelEl && _songsLabelEl.parentElement) {
+    var _lbl = _songsLabelEl.parentElement.querySelector('.report-stat-label');
+    if (_lbl) _lbl.textContent = (reportCurrentRange === 'today') ? '播放次数' : '总播放';
+  }
   paintReportStats(data);
   paintReportArtists(data);
   paintReportSongs(data);
@@ -17325,67 +17440,74 @@ function paintReport(data, sourceLabel){
   var titleEl = document.getElementById('report-time-title');
   var hoursEl = document.getElementById('report-hours');
   var stylesEl = document.getElementById('report-styles');
+  var calEl = document.getElementById('report-calendar');
   if (titleEl) titleEl.textContent = isAll ? '听歌风格' : '24 小时时段分布';
   if (hoursEl) hoursEl.style.display = isAll ? 'none' : '';
   if (stylesEl) stylesEl.style.display = isAll ? '' : 'none';
+  if (calEl) { calEl.classList.remove('show'); calEl.innerHTML = ''; } // 复位上月日历热力图
   if (isAll) { paintReportStyles(); }
   else { paintReportHours(data); }
   paintReportSummary(data);
   var srcEl = document.getElementById('report-source-text');
   if (srcEl) srcEl.textContent = sourceLabel || '本地累计';
-  // 诚实标注：真实记录下，时长/播放仅覆盖网易云播放最多的前 100 首
+  // 按视图诚实标注数据语义（区间播放次数 vs 官方累计）
   var noteEl = document.getElementById('report-note');
   if (noteEl) {
-    if (sourceLabel && sourceLabel.indexOf('真实记录') >= 0) {
-      noteEl.textContent = '不同歌曲与注册时长为账号真实数据；听歌时长、总播放基于网易云播放最多的前 100 首统计。';
-      noteEl.style.display = '';
-    } else {
-      noteEl.style.display = 'none';
-    }
+    if (noteText) { noteEl.textContent = noteText; noteEl.style.display = ''; }
+    else { noteEl.style.display = 'none'; }
   }
 }
-// 用本地 Mineradio 播放记录(每次播放+1)覆盖今日/本周/本月歌曲次数; 时长/列表仍来自网易云足迹
-function reportWindowStart(range){
-  var now = new Date();
-  var y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
-  if (range === 'today') return new Date(y, m, d, 0, 0, 0, 0).getTime();
-  if (range === 'month') return new Date(y, m, 1, 0, 0, 0, 0).getTime();
-  if (range === 'week') {
-    var day = now.getDay();
-    var diffToMon = (day === 0) ? 6 : (day - 1);
-    return new Date(y, m, d - diffToMon, 0, 0, 0, 0).getTime();
-  }
-  return 0;
+// 北京时间日期串（与 server 端一致：时间戳 +8h 取 YYYY-MM-DD）
+function bjDateStr(ts){
+  try { return new Date(Number(ts) + 8 * 3600 * 1000).toISOString().slice(0, 10); } catch(e){ return ''; }
 }
-function applyLocalPlays(range, sd){
-  var start = reportWindowStart(range);
-  var hist = getListenHistory();
-  var localPlays = {};
-  hist.forEach(function(h){
-    var ts = h.startedAt || h.playedAt;
-    if (!ts || ts < start) return;
-    var k = reportNormKey(h.name || h.title, h.artist);
-    localPlays[k] = (localPlays[k] || 0) + 1;
+// 今日数据混合：复用 Mineradio 内置本机播放统计 listenStatsState（history 为每次本机播放的流水，含 playedAt 时间戳与网易云 id）
+// 作为「次数」主源（精确计数电脑播放，含重复），网易云跨设备今日歌单作为补充（补手机等其它设备歌，每首计 1 次）。
+//  - 本机播过且网易云今日也有该 id 的歌：本地今日次数覆盖（网易云那条即同一播放，不重复 +1）
+//  - 本机播过但无网易云 id（本地文件）：仍以本机次数计入今日
+//  - 仅其它设备播的歌：网易云今日歌单里有即证明听过，计 1 次（重复次数无法统计，如实标注）
+//  - 时长/时段仍用网易云跨设备真实值，合并只改「次数」与「歌单」
+function mergeLocalToday(sd){
+  var todayStr = bjDateStr(Date.now());
+  var hist = (listenStatsState && listenStatsState.history) || [];
+  var localCounts = {}, localMeta = {};
+  hist.forEach(function(rec){
+    if (!rec || bjDateStr(rec.playedAt) !== todayStr) return;
+    var id = String(rec.id || '');
+    var key = id ? id : ('L:' + (rec.key || ((rec.name || '') + '|' + (rec.artist || ''))));
+    localCounts[key] = (localCounts[key] || 0) + 1;
+    if (!localMeta[key]) localMeta[key] = { title: rec.name || '未知歌曲', artist: rec.artist || '', coverUrl: rec.cover || '', artistId: id || null };
   });
-  var songs = (sd.songs || []).map(function(s){
-    var k = reportNormKey(s.title || s.songName, s.artist);
-    var lp = localPlays[k] || 0;
-    var plays = lp > 0 ? lp : (s.plays || 1); // 本地有则优先用本地次数, 否则保留足迹(出现过=1)
-    return Object.assign({}, s, { plays: plays });
+  var merged = {};
+  (sd.songs || []).forEach(function(s){
+    var id = String(s.id || s.songId || '');
+    if (!id) return;
+    merged[id] = { id: id, title: s.title || s.songName || '未知歌曲', artist: s.artist || '', coverUrl: s.coverUrl || s.picUrl || '', artistId: s.artistId || null, plays: 1 };
   });
-  var amap = {};
+  Object.keys(localCounts).forEach(function(key){
+    if (merged[key]) merged[key].plays = localCounts[key];           // 本机精确次数覆盖（网易云存在即同一播放，不重复 +1）
+    else merged[key] = { id: key, title: localMeta[key].title || '未知歌曲', artist: localMeta[key].artist || '', coverUrl: localMeta[key].coverUrl || '', artistId: localMeta[key].artistId || null, plays: localCounts[key] };
+  });
+  var songs = Object.keys(merged).map(function(k){ return merged[k]; });
+  var amap = {}, aidmap = {};
   songs.forEach(function(s){
-    (s.artist || '').split('/').forEach(function(a){
-      a = (a || '').trim(); if (!a) return;
-      amap[a] = (amap[a] || 0) + s.plays;
+    (s.artist || '').split('/').forEach(function(a){ a = a.trim(); if (!a) return;
+      amap[a] = (amap[a] || 0) + (s.plays || 0);
+      if (!aidmap[a] && s.artistId) aidmap[a] = s.artistId;
     });
   });
-  var topArtists = Object.keys(amap).map(function(k){
-    var orig = (sd.topArtists || []).filter(function(x){ return x.name === k; })[0] || {};
-    return { name: k, score: amap[k], artistId: orig.artistId || null, coverUrl: orig.coverUrl || '' };
-  }).sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
+  var topArtists = Object.keys(amap).map(function(k){ return { name: k, score: amap[k], artistId: aidmap[k] || null, coverUrl: '' }; })
+    .sort(function(a, b){ return b.score - a.score; }).slice(0, 10);
   var totalPlays = songs.reduce(function(a, s){ return a + (s.plays || 0); }, 0);
-  return Object.assign({}, sd, { songs: songs, topArtists: topArtists, totalPlays: totalPlays });
+  return {
+    songs: songs,
+    topArtists: topArtists,
+    totalPlays: totalPlays,
+    distinctSongs: songs.length,
+    durationSec: sd.durationSec || 0,
+    hourMap: sd.hourMap || new Array(24).fill(0),
+    peakHour: sd.peakHour || 0
+  };
 }
 function renderReport(range, force){
   reportCurrentRange = range;
@@ -17397,12 +17519,12 @@ function renderReport(range, force){
     if (server.createTime) reportAccountCreateTime = server.createTime;
     if (server.listenSongs) reportAccountListenSongs = server.listenSongs;
     var sd = server[range];
-    if (range !== 'all') sd = applyLocalPlays(range, sd); // 次数改用本地 Mineradio 播放计数(每次播放+1); 时长/列表仍来自足迹
     if (!sd || !sd.songs || sd.songs.length === 0) {
       paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '网易云真实记录');
       return;
     }
-    // 全部用网易云足迹/官方数据，不混合本机记录
+    // 今日：用本机 listenStatsState 精确计数电脑播放，再与网易云跨设备今日歌单混合（手机等其它设备歌计 1 次）
+    if (range === 'today') sd = mergeLocalToday(sd);
     var topSongs = (sd.songs || []).slice().sort(function(a, b){ return (b.plays || 0) - (a.plays || 0); }).slice(0, 10)
       .map(function(s){ return { title: s.title || s.songName || '未知歌曲', artist: s.artist || '', coverUrl: s.coverUrl || s.picUrl || '', count: s.plays || 0, songId: s.id || s.songId || '' }; });
     var topArtists = (sd.topArtists || []).slice(0, 10)
@@ -17425,10 +17547,235 @@ function renderReport(range, force){
     };
     if (range === 'all' && reportAccountListenSongs > 0) data.distinctSongs = reportAccountListenSongs;
     if (range === 'all' && server.totalDuration && server.totalDuration > 0) data.durationSec = server.totalDuration;
-    paintReport(data, '网易云真实记录');
+    var noteText = '';
+    if (range === 'today') noteText = '今日数据 = 本机播放日志(精确计数电脑播放) + 网易云跨设备播放流水(补手机等其它设备播放，每首计 1 次)。其它设备的重复播放次数无法统计，已如实标注；时长/时段为跨设备真实值。';
+    else if (range === 'month') noteText = '本月 Top 歌曲按本月真实播放次数排序（网易云跨设备播放流水）；时长来自实时收听报告，非单曲累计';
+    else if (range === 'week' || range === 'all') noteText = '数据来自网易云官方听歌记录，显示歌曲累计播放次数';
+    paintReport(data, (range === 'today') ? '本机 + 网易云混合' : '网易云真实记录', noteText);
   }).catch(function(e){
     console.warn('[report]', e);
     paintReport({ durationSec: 0, totalPlays: 0, distinctSongs: 0, uniqueArtists: 0, topArtists: [], topSongs: [], hourMap: new Array(24).fill(0), peakHour: 0, hasData: false }, '加载失败');
+  });
+}
+
+/* ============================================================
+ * 上月听歌报告（官方听歌足迹，真实月度数据）
+ *  - 数据源 /api/listen-report-month：网易云官方月度报告(时长/天数/Top3艺人) + 月度歌曲 Top20 真实播放次数
+ *  - 每月 1 号刷新上月数据（网易侧定死），故单独成卡，避免与「本月」实时数据混淆
+ * ============================================================ */
+var reportMonthCache = null;
+var reportMonthCacheTs = 0;
+function fetchMonthReport(force){
+  var now = Date.now();
+  if (force && reportMonthCache && (now - reportMonthCacheTs) < 15000) return Promise.resolve(reportMonthCache);
+  if (!force && reportMonthCache && (now - reportMonthCacheTs) < 60000) return Promise.resolve(reportMonthCache);
+  return apiJson('/api/listen-report-month' + (force ? '?force=1' : ''), { cache: 'no-store' }).then(function(j){
+    reportMonthCache = j; reportMonthCacheTs = now; return j;
+  }).catch(function(e){ console.warn('[report-month] fetch failed', e); return null; });
+}
+function setReportStatLabel(numId, text){
+  var numEl = document.getElementById(numId);
+  if (!numEl || !numEl.parentElement) return;
+  var lbl = numEl.parentElement.querySelector('.report-stat-label');
+  if (lbl) lbl.textContent = text;
+}
+function paintLastMonthStats(d){
+  countUpNumber(document.getElementById('report-stat-duration'), d.durationSec, 'duration');
+  countUpNumber(document.getElementById('report-stat-songs'), d.songCount, 'int');
+  countUpNumber(document.getElementById('report-stat-streak'), d.listenDays, 'int');
+  // 第4张卡：日均收听时长（真实数据 = 总时长 ÷ 听歌天数），替代来源不可靠的「不同艺人」
+  var avgSec = d.listenDays > 0 ? (d.durationSec / d.listenDays) : 0;
+  countUpNumber(document.getElementById('report-stat-topday'), avgSec, 'duration');
+  setReportStatLabel('report-stat-songs', '收听歌曲');
+  setReportStatLabel('report-stat-streak', '听歌天数');
+  setReportStatLabel('report-stat-topday', '日均收听');
+  var sub4 = document.getElementById('report-stat-topday-sub');
+  if (sub4) sub4.textContent = '总时长 ÷ 听歌天数';
+}
+function paintLastMonthSongs(songs){
+  paintReportSongs({ topSongs: songs });
+}
+function paintLastMonthReport(d, noteText){
+  paintLastMonthStats(d);
+  // 艺人区：复用通用渲染（含按艺人名搜索真实头像），并更新区块标题为 TOP N
+  var artSection = document.getElementById('report-artists');
+  if (artSection) {
+    var artMeta = artSection.closest('.report-section') && artSection.closest('.report-section').querySelector('.report-section-meta');
+    if (artMeta) artMeta.textContent = 'TOP ' + (d.topArtists.length || 3);
+  }
+  paintReportArtists({ topArtists: d.topArtists });
+  // 歌曲区：自定义带进度条，更新区块标题为 TOP N
+  var songSection = document.getElementById('report-songs');
+  if (songSection) {
+    var songMeta = songSection.closest('.report-section') && songSection.closest('.report-section').querySelector('.report-section-meta');
+    if (songMeta) songMeta.textContent = 'TOP ' + (d.topSongs.length || 20);
+  }
+  paintLastMonthSongs(d.topSongs);
+  // 时段分布区：上月无逐小时数据，改用「每日日历热力图」（恢复时由 paintReport 重置）
+  paintLastMonthCalendar(d);
+  // 来源 / 备注 / 总结
+  var srcEl = document.getElementById('report-source-text');
+  if (srcEl) srcEl.textContent = '网易云官方听歌报告 · 上月';
+  var noteEl = document.getElementById('report-note');
+  if (noteEl) { if (noteText) { noteEl.textContent = noteText; noteEl.style.display = ''; } else { noteEl.style.display = 'none'; } }
+  var sumEl = document.getElementById('report-summary');
+  if (sumEl) sumEl.textContent = d.summaryText;
+}
+function formatListenDuration(min){
+  min = Number(min) || 0;
+  if (min >= 60) return (min / 60).toFixed(1) + ' 小时';
+  return Math.round(min) + ' 分钟';
+}
+// 把各种日期字符串(2026-07-05 / 2026-7-5 / 2026-07-05T00:00:00 / 2026/07/05) 统一成 "2026-7-5"
+function normDateKey(s){
+  var p = String(s).split(/[T ]/)[0].replace(/\//g, '-').split('-');
+  if (p.length < 3) return '';
+  return parseInt(p[0], 10) + '-' + parseInt(p[1], 10) + '-' + parseInt(p[2], 10);
+}
+// 上月「每日日历热力图」：用官方 durationDetails（31 天）渲染，替代无数据的 24 小时分布
+function paintLastMonthCalendar(d){
+  var cal = document.getElementById('report-calendar');
+  if (!cal) return;
+  var section = cal.closest('.report-section');
+  if (section) section.style.display = ''; // 确保时段分布区可见（被 paintReport/empty 复位后）
+  var details = (d && d.dailyDetails) || [];
+  var period = (d && d.period) || null;
+  // 外层区块标题简化为「每日听歌分布」，年月+统计放到日历卡片头部
+  var titleEl = document.getElementById('report-time-title');
+  if (titleEl) titleEl.textContent = '每日听歌分布';
+  // 隐藏 24 小时分布与风格区
+  var hoursEl = document.getElementById('report-hours');
+  if (hoursEl) hoursEl.style.display = 'none';
+  var stylesEl = document.getElementById('report-styles');
+  if (stylesEl) stylesEl.style.display = 'none';
+  // 每日 map + 最大值（用于强度着色）
+  var map = {};
+  var maxDur = 0;
+  details.forEach(function(x){
+    var v = Number(x.duration) || 0;
+    map[normDateKey(x.period)] = v;
+    if (v > maxDur) maxDur = v;
+  });
+  var year = period ? period.year : 1970;
+  var month = period ? period.month : 1;
+  var firstDow = new Date(year, month - 1, 1).getDay(); // 0=周日
+  var daysInMonth = new Date(year, month, 0).getDate();
+  var dowLabels = ['日', '一', '二', '三', '四', '五', '六'];
+  var pad2 = function(n){ return (n < 10 ? '0' + n : '' + n); };
+  var mStr = pad2(month);
+  // 卡片头部：年月 + 本月听歌天数/总时长
+  var listenDays = Number(d && d.listenDays) || 0;
+  var durationSec = Number(d && d.durationSec) || 0;
+  var headerTitle = period ? (period.year + ' 年 ' + period.month + ' 月') : '上月';
+  var headerStatText = durationSec >= 3600 ? ('<b>' + (durationSec / 3600).toFixed(1) + '</b> 小时') : (durationSec > 0 ? ('<b>' + Math.round(durationSec / 60) + '</b> 分钟') : '');
+  var html = '<div class="report-cal-header"><span class="report-cal-title">' + headerTitle + '</span><span class="report-cal-stats"><b>' + listenDays + '</b> 天' + (headerStatText ? ' · ' + headerStatText : '') + '</span></div>';
+  var cellIdx = 0;
+  var step = 0.018;
+  for (var i = 0; i < 7; i++) {
+    html += '<div class="report-cal-dow" style="--cell-delay:' + (cellIdx * step).toFixed(3) + 's">' + dowLabels[i] + '</div>';
+    cellIdx++;
+  }
+  for (var k = 0; k < firstDow; k++) {
+    html += '<div class="report-cal-cell empty" style="--cell-delay:' + (cellIdx * step).toFixed(3) + 's"></div>';
+    cellIdx++;
+  }
+  for (var day = 1; day <= daysInMonth; day++) {
+    var pad = pad2(day);
+    var key = normDateKey(year + '-' + mStr + '-' + pad);
+    var dur = map[key] || 0;
+    var cls = 'report-cal-cell';
+    var tip = year + ' 年 ' + month + ' 月 ' + day + ' 日';
+    if (dur > 0) {
+      var ratio = maxDur > 0 ? (dur / maxDur) : 0;
+      var lvl = 1;
+      if (ratio > 0.85) lvl = 5;
+      else if (ratio > 0.65) lvl = 4;
+      else if (ratio > 0.45) lvl = 3;
+      else if (ratio > 0.25) lvl = 2;
+      cls += ' report-cal-l' + lvl;
+      tip += ' · 收听 ' + formatListenDuration(dur);
+    } else {
+      cls += ' report-cal-cell-zero';
+      tip += ' · 未收听';
+    }
+    html += '<div class="' + cls + '" title="' + tip + '" style="--cell-delay:' + (cellIdx * step).toFixed(3) + 's"><span class="d">' + day + '</span></div>';
+    cellIdx++;
+  }
+  html += '<div class="report-cal-legend" style="--cell-delay:' + (cellIdx * step).toFixed(3) + 's"><span class="lab">少</span><i></i><span class="lab">多</span></div>';
+  cal.innerHTML = html;
+  cal.classList.add('show');
+}
+function paintLastMonthEmpty(reason){
+  paintLastMonthStats({ durationSec: 0, songCount: 0, listenDays: 0, uniqueArtists: 0 });
+  var artSection = document.getElementById('report-artists');
+  if (artSection) {
+    var artMeta = artSection.closest('.report-section') && artSection.closest('.report-section').querySelector('.report-section-meta');
+    if (artMeta) artMeta.textContent = 'TOP 10';
+  }
+  paintReportArtists({ topArtists: [] });
+  var songSection = document.getElementById('report-songs');
+  if (songSection) {
+    var songMeta = songSection.closest('.report-section') && songSection.closest('.report-section').querySelector('.report-section-meta');
+    if (songMeta) songMeta.textContent = 'TOP 20';
+  }
+  paintLastMonthSongs([]);
+  var hoursSection = document.getElementById('report-hours') && document.getElementById('report-hours').closest('.report-section');
+  if (hoursSection) hoursSection.style.display = 'none';
+  var srcEl = document.getElementById('report-source-text');
+  if (srcEl) srcEl.textContent = '网易云官方听歌报告 · 上月';
+  var noteEl = document.getElementById('report-note');
+  if (noteEl) noteEl.style.display = 'none';
+  var sumEl = document.getElementById('report-summary');
+  if (sumEl) sumEl.textContent = (reason === '未登录') ? '登录网易云后查看上月听歌报告' : '暂无上月听歌记录';
+}
+function renderMonthReport(force){
+  reportCurrentRange = 'lastmonth';
+  fetchMonthReport(force).then(function(sd){
+    if (!sd || !sd.loggedIn) { paintLastMonthEmpty('未登录'); return; }
+    if (!sd.hasData || !sd.topSongs || sd.topSongs.length === 0) { paintLastMonthEmpty('无数据'); return; }
+    var topSongs = (sd.topSongs || []).map(function(s){
+      return { title: s.songName || s.title || '未知歌曲', artist: s.artist || '', coverUrl: s.coverUrl || '', count: s.playCount || 0, songId: s.songId || '' };
+    });
+    // 官方月度报告只给 Top3 艺人，从 Top20 歌曲聚合统计出更完整的 Top10
+    var officialArtistMap = {};
+    (sd.topArtists || []).forEach(function(a){
+      var n = (a.artistName || a.name || '').trim();
+      if (n) officialArtistMap[n] = { artistId: a.artistId || null, coverUrl: a.coverUrl || '' };
+    });
+    var artistMap = {};
+    topSongs.forEach(function(s){
+      (s.artist || '').split('/').forEach(function(a){
+        a = (a || '').trim(); if (!a) return;
+        artistMap[a] = (artistMap[a] || 0) + (s.count || 0);
+      });
+    });
+    var topArtists = Object.keys(artistMap).map(function(k){
+      var extra = officialArtistMap[k] || {};
+      return { name: k, count: artistMap[k], coverUrl: extra.coverUrl || '', artistId: extra.artistId || null };
+    }).sort(function(a, b){ return b.count - a.count; }).slice(0, 10);
+    var artistSet = {};
+    Object.keys(artistMap).forEach(function(k){ artistSet[k] = 1; });
+    var periodText = sd.period ? (sd.period.year + ' 年 ' + sd.period.month + ' 月') : '上月';
+    var topA = topArtists[0];
+    var topS = topSongs[0];
+    var summaryText = periodText + ' 你共收听 ' + (sd.songCount || topSongs.length) + ' 首歌';
+    if (topA) summaryText += ' · 最爱 ' + topA.name;
+    if (topS) summaryText += ' · 单曲循环最多《' + topS.title + '》(' + (topS.count || 0) + ' 次)';
+    var noteText = '数据来自网易云官方听歌足迹，展示上月真实收听次数（每月 1 号刷新上月数据）';
+    paintLastMonthReport({
+      durationSec: sd.durationSec || 0,
+      songCount: sd.songCount || 0,
+      listenDays: sd.listenDays || 0,
+      uniqueArtists: Object.keys(artistSet).length || topArtists.length,
+      topArtists: topArtists,
+      topSongs: topSongs,
+      summaryText: summaryText,
+      period: sd.period || null,
+      dailyDetails: sd.dailyDetails || []
+    }, noteText);
+  }).catch(function(e){
+    console.warn('[report-month]', e);
+    paintLastMonthEmpty('加载失败');
   });
 }
 
@@ -17442,7 +17789,8 @@ function openReportModal(){
   Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){
     t.classList.toggle('active', t.getAttribute('data-range') === reportCurrentRange);
   });
-  renderReport(reportCurrentRange, true); // 打开弹窗即强制刷新(绕过前端60s缓存); 后端5min缓存仍作接口保护
+  if (reportCurrentRange === 'lastmonth') renderMonthReport(true);
+  else renderReport(reportCurrentRange, true); // 打开弹窗即强制刷新(绕过前端60s缓存); 后端5min缓存仍作接口保护
 }
 function closeReportModal(){
   var modal = document.getElementById('report-modal');
@@ -17458,7 +17806,9 @@ document.addEventListener('click', function(e){
   if (!tab) return;
   Array.from(document.querySelectorAll('.report-tab')).forEach(function(t){ t.classList.remove('active'); });
   tab.classList.add('active');
-  renderReport(tab.getAttribute('data-range'));
+  var range = tab.getAttribute('data-range');
+  if (range === 'lastmonth') renderMonthReport();
+  else renderReport(range);
 });
 // ESC 关闭
 document.addEventListener('keydown', function(e){
@@ -30290,7 +30640,6 @@ animate();
 
 })();
 </script>
-<div id="comment-card-container"><div id="comment-card-drag-wrapper"></div></div>
 
 <!-- 听歌报告 dashboard modal（复刻自 iPad） -->
 <div class="report-modal" id="report-modal" aria-hidden="true" data-open="false">
@@ -30306,7 +30655,7 @@ animate();
     <div class="report-modal-tabs" id="report-tabs">
       <button class="report-tab" data-range="today" type="button">今日</button>
       <button class="report-tab active" data-range="week" type="button">本周</button>
-      <button class="report-tab" data-range="month" type="button">本月</button>
+      <button class="report-tab" data-range="lastmonth" type="button">上月</button>
       <button class="report-tab" data-range="all" type="button">全部</button>
     </div>
     <div class="report-modal-body" id="report-body">
@@ -30346,6 +30695,7 @@ animate();
         <div class="report-section-h" id="report-time-title">24 小时时段分布</div>
         <div class="report-hours" id="report-hours"></div>
         <div class="report-styles" id="report-styles" style="display:none"></div>
+        <div class="report-calendar" id="report-calendar"></div>
       </div>
 
       <div class="report-summary" id="report-summary">—</div>

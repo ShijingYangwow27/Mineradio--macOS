@@ -47,10 +47,14 @@ const {
   user_record,
   listen_data_total,
   listen_data_realtime_report,
+  listen_data_report,
   record_recent_song,
   style_preference,
   artists,
 } = require('NeteaseCloudMusicApi');
+// 库未封装月度歌曲排行接口，直接用其内部请求函数调用 song/play/rank
+const createRequest = require('NeteaseCloudMusicApi/util/request.js');
+const createOption = require('NeteaseCloudMusicApi/util/option.js');
 const http = require('http');
 const https = require('https');
 const fs   = require('fs');
@@ -210,8 +214,16 @@ function saveQQCookie(c) {
 
 // ---------- 听歌报告 / 听歌风格 / 艺人信息缓存 ----------
 let listenReportCache = null;   // { ts, uid, data }
+let listenReportMonthCache = null;   // { ts, uid, data }  上月官方听歌报告(听歌足迹)
 let listenStyleCache  = null;   // { ts, uid, data }
 const artistInfoCache = {};      // { [id]: { ts, data } }
+
+// 从 "87次收听" / "累计播放104次" 这类文案中提取数字
+function parseCountText(t) {
+  if (!t) return 0;
+  const m = String(t).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
 
 // ---------- 工具 ----------
 function serveStatic(res, filePath) {
@@ -4288,6 +4300,136 @@ const server = http.createServer(async (req, res) => {
   // ============================================================
   //  听歌报告 / 听歌风格 / 艺人信息（复刻自 IPad 适配）
   // ============================================================
+  // ---------- 上月官方听歌报告（听歌足迹：聚合 + Top20 歌曲真实月度次数 + Top3 艺人） ----------
+  if (pn === '/api/listen-report-month') {
+    const _now = Date.now();
+    const _force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true';
+    const info = await getLoginInfo();
+    if (!info.loggedIn || !info.userId) { sendJSON(res, { loggedIn: false, hasData: false }); return; }
+    const uid = info.userId;
+    if (!_force && listenReportMonthCache && listenReportMonthCache.ts && (_now - listenReportMonthCache.ts) < 5 * 60 * 1000 && listenReportMonthCache.uid === uid) {
+      sendJSON(res, listenReportMonthCache.data); return;
+    }
+    try {
+      // 上月最后一天 00:00 (北京) 时间戳
+      const _bj = new Date(Date.now() + 8 * 3600 * 1000);
+      const _y = _bj.getUTCFullYear(), _m = _bj.getUTCMonth();
+      const _firstThisMonthBJ = Date.UTC(_y, _m, 1, 0, 0, 0) - 8 * 3600 * 1000;
+      const _endTime = Math.floor(_firstThisMonthBJ - 86400000);
+      const _ts = Date.now();
+      // 1) 官方月度报告聚合（时长/天数/歌曲数 + Top3 艺人 + 31 天每日时长）
+      let durationMin = 0, listenDays = 0, topArtists = [], dailyDetails = [];
+      try {
+        const rep = await listen_data_report({ cookie: userCookie, type: 'month', endTime: _endTime, timestamp: _ts });
+        const rb = (rep && rep.body && rep.body.data) || {};
+        const lt = rb.listenTimeDistributionBlock || rb.listenTimeBlock || {};
+        durationMin = lt.playDuration || 0;
+        listenDays = lt.listenDays || 0;
+        dailyDetails = (lt.durationDetails || []).map(function (d) { return { period: d.period, duration: d.duration || 0 }; });
+        const sec = (rb.topArtistBlock && rb.topArtistBlock.sections) || [];
+        topArtists = sec.slice(0, 3).map(function (s, i) {
+          return { rank: i + 1, artistId: s.artistId || null, artistName: s.artistName || '', coverUrl: s.picUrl || '', playCount: parseCountText(s.text) };
+        });
+      } catch (e) { console.warn('[ListenReportMonth:report]', e.message); }
+      // 2) 月度歌曲 Top20（真实月度播放次数；库未封装，直接调内部接口）
+      let songCount = 0, topSongs = [];
+      try {
+        const rank = await createRequest('/api/content/activity/listen/data/song/play/rank', { type: 'month', endTime: _endTime }, createOption({ cookie: userCookie, timestamp: _ts }));
+        const rk = (rank && rank.body && rank.body.data) || {};
+        songCount = rk.songCount || 0;
+        const items = rk.songItems || [];
+        topSongs = items.slice(0, 20).map(function (s, i) {
+          const ar = (s.artists || []).map(function (a) { return a.artistName || a.name || ''; }).join('/');
+          return { rank: i + 1, songId: s.songId, songName: s.songName || '未知歌曲', albumName: s.albumName || '', artist: ar, coverUrl: s.picUrl || '', playCount: s.playCount || 0 };
+        });
+      } catch (e) { console.warn('[ListenReportMonth:rank]', e.message); }
+      // 周期标签（endTime 是上月最后一天 00:00 北京，对应上月）
+      const _pd = new Date(_endTime + 8 * 3600 * 1000);
+      const data = {
+        loggedIn: true,
+        hasData: topSongs.length > 0 || songCount > 0,
+        period: { year: _pd.getUTCFullYear(), month: _pd.getUTCMonth() + 1 },
+        durationSec: durationMin * 60,
+        listenDays: listenDays,
+        songCount: songCount,
+        dailyDetails: dailyDetails,
+        topSongs: topSongs,
+        topArtists: topArtists,
+      };
+      listenReportMonthCache = { ts: _now, uid, data };
+      sendJSON(res, data);
+    } catch (err) {
+      console.error('[ListenReportMonth]', err);
+      sendJSON(res, { error: err.message, loggedIn: false, hasData: false }, 500);
+    }
+    return;
+  }
+
+  // ============================================================
+  //  最近播放流水取数（record_recent_song）→ 供 听歌报告 复用
+  // ============================================================
+  // 按「自然窗口」过滤 record_recent_song 拿到今日/本周/本月歌曲列表
+  // 重要: record_recent_song 接口【忽略 offset】——多页请求返回的是同一批最新记录。
+  // 因此只拉【一页 limit=500】(该接口能返回的上限)，不循环、不去重:
+  //  - 不循环 => 不会把同一批记录复制 8 份造成「8 倍放大」
+  //  - 不去重 => 若 playTime 精度只到小时，同歌同小时内多次播放不会被误判为重复而少算
+  // 每条记录 = 一次真实播放，count = 记录数，播放次数真实可靠。
+  async function fetchRecentPlays(cookie) {
+    const events = [];
+    try {
+      const r = await record_recent_song({ cookie: cookie, limit: 500, timestamp: Date.now() });
+      const list = (r && r.body && r.body.data && r.body.data.list) || [];
+      list.forEach(function (x) {
+        const d = x.data || {};
+        const playTime = x.playTime;
+        if (!playTime || !d.id) return;
+        // 兼容 秒级/毫秒级 时间戳：<1e12 视为秒，补成千毫秒
+        let pt = Number(playTime);
+        if (pt && pt < 1e12) pt = pt * 1000;
+        const bj = new Date(pt + 8 * 3600 * 1000);
+        events.push({
+          id: d.id,
+          playTime: playTime,          // 网易云返回的原始值（秒/毫秒都有可能）
+          playTimeMs: pt,              // 统一换算成毫秒后的北京时间锚点
+          title: d.name || '未知歌曲',
+          artist: (d.ar || []).map(function (a) { return a.name; }).join('/'),
+          artistIds: (d.ar || []).map(function (a) { return a.id; }).filter(Boolean),
+          coverUrl: (d.al && d.al.picUrl) || '',
+          durationMs: d.dt || 0,
+          bjDate: bj.toISOString().slice(0, 10),
+          bjDateTime: bj.toISOString().replace('T', ' ').slice(0, 19), // 完整时间，精确到秒
+          hour: bj.getUTCHours()
+        });
+      });
+    } catch (e) {}
+    return events;
+  }
+  function buildRange(events, startStr) {
+    const inWin = events.filter(function (e) { return e.bjDate >= startStr; });
+    const songMap = {};
+    inWin.forEach(function (e) {
+      if (!songMap[e.id]) songMap[e.id] = { id: e.id, title: e.title, artist: e.artist, artistIds: e.artistIds, coverUrl: e.coverUrl, durationMs: e.durationMs, plays: 0 };
+      songMap[e.id].plays++;
+    });
+    const songs = Object.keys(songMap).map(function (k) { return songMap[k]; });
+    songs.sort(function (a, b) { return (b.plays - a.plays) || a.title.localeCompare(b.title); });
+    const amap = {}; const aidmap = {};
+    songs.forEach(function (s) {
+      s.artist.split('/').forEach(function (a, i) {
+        a = (a || '').trim(); if (!a) return;
+        amap[a] = (amap[a] || 0) + s.plays;
+        if (!aidmap[a] && s.artistIds && s.artistIds[i]) aidmap[a] = s.artistIds[i];
+      });
+    });
+    const topArtists = Object.keys(amap)
+      .map(function (k) { return { name: k, score: amap[k], artistId: aidmap[k] || null, coverUrl: '' }; })
+      .sort(function (a, b) { return b.score - a.score; }).slice(0, 10);
+    const hourMap = new Array(24).fill(0);
+    let peakHour = 0, maxHour = 0;
+    inWin.forEach(function (e) { if (e.hour >= 0 && e.hour < 24) { hourMap[e.hour]++; if (hourMap[e.hour] > maxHour) { maxHour = hourMap[e.hour]; peakHour = e.hour; } } });
+    return { songs: songs, topArtists: topArtists, totalPlays: inWin.length, distinctSongs: songs.length, uniqueArtists: Object.keys(amap).length, hourMap: hourMap, peakHour: peakHour };
+  }
+
   if (pn === '/api/listen-report') {
     // 5 分钟内存缓存，避免反复打网易云；?force=1 跳过缓存（打开报告即拉最新）
     const _now = Date.now();
@@ -4387,60 +4529,6 @@ const server = http.createServer(async (req, res) => {
           return { todayMinutes: todayMin, weekMinutes: weekMin, monthMinutes: monthMin };
         } catch (e) { return { todayMinutes: 0, weekMinutes: weekMin || 0, monthMinutes: 0 }; }
       }
-      // 按「自然窗口」过滤 record_recent_song 拿到今日/本周/本月歌曲列表
-      async function fetchRecentPlays(cookie) {
-        const events = [];
-        try {
-          for (let off = 0; off < 4000; off += 500) {
-            const r = await record_recent_song({ cookie: cookie, limit: 500, offset: off, timestamp: Date.now() });
-            const list = (r && r.body && r.body.data && r.body.data.list) || [];
-            if (!list.length) break;
-            list.forEach(function (x) {
-              const d = x.data || {};
-              const playTime = x.playTime;
-              if (!playTime || !d.id) return;
-              const bj = new Date(playTime + 8 * 3600 * 1000);
-              events.push({
-                id: d.id,
-                title: d.name || '未知歌曲',
-                artist: (d.ar || []).map(function (a) { return a.name; }).join('/'),
-                artistIds: (d.ar || []).map(function (a) { return a.id; }).filter(Boolean),
-                coverUrl: (d.al && d.al.picUrl) || '',
-                durationMs: d.dt || 0,
-                bjDate: bj.toISOString().slice(0, 10),
-                hour: bj.getUTCHours()
-              });
-            });
-            if (list.length < 500) break;
-          }
-        } catch (e) {}
-        return events;
-      }
-      function buildRange(events, startStr) {
-        const inWin = events.filter(function (e) { return e.bjDate >= startStr; });
-        const songMap = {};
-        inWin.forEach(function (e) {
-          if (!songMap[e.id]) songMap[e.id] = { id: e.id, title: e.title, artist: e.artist, artistIds: e.artistIds, coverUrl: e.coverUrl, durationMs: e.durationMs, plays: 0 };
-          songMap[e.id].plays++;
-        });
-        const songs = Object.keys(songMap).map(function (k) { return songMap[k]; });
-        songs.sort(function (a, b) { return (b.plays - a.plays) || a.title.localeCompare(b.title); });
-        const amap = {}; const aidmap = {};
-        songs.forEach(function (s) {
-          s.artist.split('/').forEach(function (a, i) {
-            a = (a || '').trim(); if (!a) return;
-            amap[a] = (amap[a] || 0) + s.plays;
-            if (!aidmap[a] && s.artistIds && s.artistIds[i]) aidmap[a] = s.artistIds[i];
-          });
-        });
-        const topArtists = Object.keys(amap)
-          .map(function (k) { return { name: k, score: amap[k], artistId: aidmap[k] || null, coverUrl: '' }; })
-          .sort(function (a, b) { return b.score - a.score; }).slice(0, 10);
-        const hourMap = new Array(24).fill(0);
-        let peakHour = 0, maxHour = 0;
-        inWin.forEach(function (e) { if (e.hour >= 0 && e.hour < 24) { hourMap[e.hour]++; if (hourMap[e.hour] > maxHour) { maxHour = hourMap[e.hour]; peakHour = e.hour; } } });
-        return { songs: songs, topArtists: topArtists, totalPlays: inWin.length, distinctSongs: songs.length, uniqueArtists: Object.keys(amap).length, hourMap: hourMap, peakHour: peakHour };
-      }
       const nat = await fetchNaturalDurations(userCookie);
       const events = await fetchRecentPlays(userCookie);
       const _nowBJ = new Date(Date.now() + 8 * 3600 * 1000);
@@ -4451,7 +4539,19 @@ const server = http.createServer(async (req, res) => {
       const _monStr = _monday.toISOString().slice(0, 10);
       const _monthStr = _nowBJ.getUTCFullYear() + '-' + String(_nowBJ.getUTCMonth() + 1).padStart(2, '0') + '-01';
       const today = buildRange(events, _todayStr); today.durationSec = nat.todayMinutes * 60;
-      const week = buildRange(events, _monStr); week.durationSec = nat.weekMinutes * 60;
+      // 本周改用官方周榜(user_record type=1)的累计 playCount，复刻网易云「最近一周」榜；
+      // 小时分布/高峰时段仍从跨设备流水(record_recent_song)重建，时长用 realtime_report 周时长
+      const weekAgg = aggregate(weekData);
+      const weekFlow = buildRange(events, _monStr);
+      const week = {
+        songs: weekAgg.songs,
+        topArtists: weekAgg.topArtists,
+        totalPlays: weekAgg.totalPlays,
+        distinctSongs: weekAgg.distinctSongs,
+        durationSec: nat.weekMinutes * 60,
+        hourMap: weekFlow.hourMap,
+        peakHour: weekFlow.peakHour
+      };
       const month = buildRange(events, _monthStr); month.durationSec = nat.monthMinutes * 60;
       const data = {
         loggedIn: true,
