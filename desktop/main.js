@@ -257,6 +257,7 @@ function getWindowState(win) {
     isMinimized: win.isMinimized(),
     isVisible: win.isVisible(),
     isFocused: win.isFocused(),
+    isOccluded: (typeof win.isOccluded === 'function') ? win.isOccluded() : false,
     ...getDisplayState(win),
   };
 }
@@ -1612,6 +1613,8 @@ async function createWindow() {
   mainWindow.on('hide', () => sendWindowState(mainWindow));
   mainWindow.on('focus', () => sendWindowState(mainWindow));
   mainWindow.on('blur', () => sendWindowState(mainWindow));
+  mainWindow.on('occluded', () => sendWindowState(mainWindow));
+  mainWindow.on('unoccluded', () => sendWindowState(mainWindow));
   mainWindow.on('move', () => scheduleWindowStateSend(mainWindow));
   mainWindow.on('resize', () => scheduleWindowStateSend(mainWindow));
   mainWindow.on('close', (e) => {

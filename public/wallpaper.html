@@ -937,13 +937,31 @@ void main(){
       return out;
     }
 
+    // —— 纹理释放追踪：封面/边缘纹理是动态加载的，切歌时必须 dispose 旧纹理，避免 WebGL 显存/主存累积
+    var _activeCoverTexture = null; // 当前绑定的真实封面纹理（非 dummy）
+    var _activeEdgeTexture = null;  // 当前绑定的真实边缘纹理（非 dummy）
+
+    function disposeActiveCoverTextures() {
+      if (_activeCoverTexture && _activeCoverTexture !== coverTex && _activeCoverTexture !== prevCoverTex) {
+        try { _activeCoverTexture.dispose(); } catch (e) {}
+      }
+      _activeCoverTexture = null;
+      if (_activeEdgeTexture && _activeEdgeTexture !== edgeTex) {
+        try { _activeEdgeTexture.dispose(); } catch (e) {}
+      }
+      _activeEdgeTexture = null;
+    }
+
     function loadCoverTexture(src) {
       src = String(src || '');
       if (src === currentCoverSrc) return;
       currentCoverSrc = src;
       if (!src) {
+        // 清空封面时释放旧纹理，回退到 dummy
+        disposeActiveCoverTextures();
         uniforms.uCoverTex.value = coverTex;
         uniforms.uPrevCoverTex.value = prevCoverTex;
+        uniforms.uEdgeTex.value = edgeTex;
         uniforms.uHasCover.value = 0;
         return;
       }
@@ -952,9 +970,13 @@ void main(){
         texture.magFilter = THREE.LinearFilter;
         texture.wrapS = THREE.ClampToEdgeWrapping;
         texture.wrapT = THREE.ClampToEdgeWrapping;
+        // 先记录旧纹理，绑定新纹理后再释放，避免一帧空窗
+        var oldCover = _activeCoverTexture;
+        var oldEdge = _activeEdgeTexture;
         uniforms.uCoverTex.value = texture;
         uniforms.uPrevCoverTex.value = texture;
         uniforms.uHasCover.value = 1;
+        _activeCoverTexture = texture;
         // 构建真实 edge/depth 纹理 (与主应用 buildEdgeAndDepth 一致)
         // uHasDepth / uAiBoost 由主应用音频帧驱动, 这里只负责把纹理备好
         try {
@@ -968,10 +990,18 @@ void main(){
             edgeTexture.wrapS = THREE.ClampToEdgeWrapping;
             edgeTexture.wrapT = THREE.ClampToEdgeWrapping;
             uniforms.uEdgeTex.value = edgeTexture;
+            _activeEdgeTexture = edgeTexture;
           }
         } catch (e) {
           // 跨域或解码失败时回退到 dummy 纹理
           uniforms.uEdgeTex.value = edgeTex;
+        }
+        // 绑定完成后释放上一张封面 + 边缘纹理，防止 WebGL 资源累积
+        if (oldCover && oldCover !== coverTex && oldCover !== prevCoverTex) {
+          try { oldCover.dispose(); } catch (e) {}
+        }
+        if (oldEdge && oldEdge !== edgeTex) {
+          try { oldEdge.dispose(); } catch (e) {}
         }
       }, undefined, function() {
         uniforms.uCoverTex.value = coverTex;
@@ -1677,6 +1707,7 @@ void main(){
 
       renderer.render(scene, camera);
     }
+
     animate();
   </script>
 </body>

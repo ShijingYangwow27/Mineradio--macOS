@@ -103,6 +103,8 @@ body.custom-background-override #album-bg{opacity:0!important}
 #canvas-container:focus,#canvas-container:focus-visible,#canvas-container canvas:focus,#canvas-container canvas:focus-visible,html:focus,html:focus-visible,body:focus,body:focus-visible{outline:none!important;box-shadow:none!important}
 #canvas-container canvas{outline:none!important;border:0!important}
 body.render-deep-sleep #canvas-container,body.render-deep-sleep #idle-guide-canvas,body.render-deep-sleep #splash-canvas,body.render-deep-sleep #hand-canvas{opacity:0!important;visibility:hidden!important}
+/* 深度后台：彻底停掉评论卡片轮播 + 听歌报告跑马灯 + 底部控制栏（持续 CSS 动画 / SVG 玻璃滤镜 / backdrop-filter，失焦时 Chromium 不会自动暂停，持续吃 GPU） */
+body.render-deep-sleep #comment-card-container,body.render-deep-sleep #home-report-marquee,body.render-deep-sleep #bottom-bar{display:none!important}
 body.splash-active:not(.splash-revealing) #canvas-container{opacity:.16;transform:scale(1)}
 body.splash-active.splash-revealing #canvas-container{opacity:1;transform:scale(1)}
 #idle-guide-canvas{position:fixed;inset:0;z-index:2;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .7s cubic-bezier(.22,1,.36,1)}
@@ -4168,6 +4170,7 @@ var desktopRuntimeState = {
   minimized: false,
   visible: true,
   focused: true,
+  occluded: false,
   fullscreen: false
 };
 var renderPowerState = { mode: '', width: 0, height: 0, pixelRatio: 0 };
@@ -4182,7 +4185,7 @@ var runtimePerfState = {
 };
 function isDeepBackgroundMode() {
   if (isLiveBackgroundKeepMode()) return false;
-  return !!(document.hidden || desktopRuntimeState.minimized || desktopRuntimeState.visible === false);
+  return !!(document.hidden || desktopRuntimeState.minimized || desktopRuntimeState.visible === false || !desktopRuntimeState.focused || desktopRuntimeState.occluded);
 }
 function currentPerformanceBackgroundMode() {
   return normalizePerformanceBackgroundMode(fx && fx.performanceBackground, fx && fx.liveBackgroundKeep === true);
@@ -4420,6 +4423,7 @@ function updateDesktopRuntimeState(state) {
   desktopRuntimeState.minimized = !!state.isMinimized;
   desktopRuntimeState.visible = state.isVisible !== false;
   desktopRuntimeState.focused = state.isFocused !== false;
+  desktopRuntimeState.occluded = !!state.isOccluded;
   desktopRuntimeState.fullscreen = !!(state.isFullScreen || state.isNativeFullScreen || state.isHtmlFullScreen || state.isWindowFullScreen);
   updateRenderPowerClasses();
   applyRendererPowerMode();
@@ -30097,7 +30101,12 @@ function animate() {
     if (cw2 > 0 && ch2 > 0) edgeWaveCtx.clearRect(0, 0, cw2, ch2);
   }
 
-  renderer.render(scene, camera);
+  // 深度后台：主窗口可视化停止渲染以降 GPU 占用。
+  // 例外：开启壁纸模式时仍渲染（4×4@1fps，由 applyRendererPowerMode 控制），
+  // 以保证桌面级壁纸窗口持续随音乐律动，独立于主窗口。
+  if (!isDeepBackgroundMode() || (fx && fx.wallpaperMode)) {
+    renderer.render(scene, camera);
+  }
 }
 var _lastWallpaperAudioAt = 0;
 animate();
