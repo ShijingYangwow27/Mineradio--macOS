@@ -89,6 +89,7 @@ body.desktop-shell.desktop-fullscreen #top-right{top:24px}
 
 /* ---------- 背景 ---------- */
 #custom-bg{position:fixed;inset:0;z-index:0;background:var(--custom-bg-color,#000);overflow:hidden;transition:background .35s ease}
+body.custom-bg-suspended #custom-bg{display:none!important}
 #custom-bg-video{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);object-fit:cover;opacity:var(--custom-bg-video-opacity,0);filter:none;transform:scale(1.002);transition:opacity .35s ease;pointer-events:none;background:#000}
 #custom-bg::before{content:'';position:absolute;inset:-1px;background-image:var(--custom-bg-image,none);background-size:cover;background-position:center;opacity:var(--custom-bg-image-opacity,0);filter:none;transform:scale(1.002);transition:opacity .35s ease,background-image .35s ease;pointer-events:none}
 #custom-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.16));opacity:var(--custom-bg-overlay-opacity,0);pointer-events:none}
@@ -2477,11 +2478,19 @@ body.immersive-mode #comment-card-container{opacity:0!important}
           <button id="lyric-translation-on" type="button" onclick="setLyricTranslationMode('on')">开</button>
         </div>
       </div>
-      <div class="fx-section-label">歌词源</div>
+      <div class="fx-section-label">歌词行数</div>
       <div class="lyric-source-row">
-        <div class="fx-seg lyric-source-seg" id="lyric-source-seg">
-          <button id="lyric-source-original" type="button" class="active" onclick="setLyricSourceMode('original')">原词</button>
-          <button id="lyric-source-custom" type="button" onclick="setLyricSourceMode('custom')">自定义</button>
+        <div class="fx-seg lyric-display-mode-seg" id="lyric-display-mode-seg">
+          <button id="lyric-display-single" type="button" data-mode="single" onclick="setLyricDisplayMode('single')">单行</button>
+          <button id="lyric-display-triple" type="button" data-mode="triple" class="active" onclick="setLyricDisplayMode('triple')">三行</button>
+          <button id="lyric-display-cinema" type="button" data-mode="cinema" onclick="setLyricDisplayMode('cinema')">沉浸</button>
+        </div>
+      </div>
+      <div class="fx-section-label">歌词动画</div>
+      <div class="lyric-source-row">
+        <div class="fx-seg lyric-motion-style-seg" id="lyric-motion-style-seg">
+          <button id="lyric-motion-float" type="button" data-style="float" class="active" onclick="setLyricMotionStyle('float')">漂浮</button>
+          <button id="lyric-motion-glitch" type="button" data-style="glitch" onclick="setLyricMotionStyle('glitch')">故障</button>
         </div>
       </div>
       <div class="fx-section-label">歌词字体</div>
@@ -3095,6 +3104,8 @@ var PLAYBACK_QUALITY_STORE_KEY = 'mineradio-playback-quality-v1';
 var UPLOAD_TIP_STORE_KEY = 'mineradio-upload-tip-seen';
 var DIY_MODE_STORE_KEY = 'mineradio-diy-player-mode-v1';
 var PLAYLIST_PANEL_PIN_STORE_KEY = 'mineradio-playlist-panel-pinned-v1';
+var BG_MEDIA_STORE_KEY = 'mineradio-bg-media-v1';
+var SHELF_MODE_STORE_KEY = 'mineradio-shelf-mode-v1';
 var USER_CAPSULE_AUTO_HIDE_STORE_KEY = 'mineradio-user-capsule-auto-hide-v1';
 var FX_FAB_AUTO_HIDE_STORE_KEY = 'mineradio-fx-fab-auto-hide-v1';
 var CONTROLS_AUTO_HIDE_STORE_KEY = 'mineradio-controls-auto-hide-v1';
@@ -3954,6 +3965,8 @@ var fxDefaults = {
   lyricLineHeight: 1.0,
   lyricWeight: 900,
   lyricTranslationMode: 'auto',
+  lyricDisplayMode: 'triple',   // v10: 歌词行数显示模式 single / triple / cinema（单行 / 三行 / 沉浸）
+  lyricMotionStyle: 'float',    // v10: 歌词动画风格 glass / smooth / float / quick / shine / glitch
   visualTintMode: 'auto',
   visualTintColor: '#9db8cf',
   uiAccentColor: '#ffffff',
@@ -4427,6 +4440,7 @@ function updateDesktopRuntimeState(state) {
   desktopRuntimeState.fullscreen = !!(state.isFullScreen || state.isNativeFullScreen || state.isHtmlFullScreen || state.isWindowFullScreen);
   updateRenderPowerClasses();
   applyRendererPowerMode();
+  syncCustomBackgroundSuspendState();
   if (fx && (fx.desktopLyrics || fx.wallpaperMode)) setTimeout(syncDesktopOverlayState, 0);
   if (wasDeep && !isDeepBackgroundMode()) recoverVisualsAfterBackground('desktop-runtime-state');
   if (desktopRuntimeState.fullscreen !== wasFullscreen) scheduleMainRendererViewportRefresh('desktop-runtime-state');
@@ -4436,18 +4450,21 @@ function installRenderPowerHooks() {
   document.addEventListener('visibilitychange', function(){
     updateRenderPowerClasses();
     applyRendererPowerMode();
+    syncCustomBackgroundSuspendState();
     if (!isDeepBackgroundMode()) recoverVisualsAfterBackground('visibilitychange');
   });
   window.addEventListener('focus', function(){
     desktopRuntimeState.focused = true;
     updateRenderPowerClasses();
     applyRendererPowerMode();
+    syncCustomBackgroundSuspendState();
     if (!isDeepBackgroundMode()) recoverVisualsAfterBackground('focus');
   });
   window.addEventListener('blur', function(){
     desktopRuntimeState.focused = false;
     updateRenderPowerClasses();
     applyRendererPowerMode();
+    syncCustomBackgroundSuspendState();
   });
   if (window.desktopWindow && typeof window.desktopWindow.onStateChange === 'function') {
     window.desktopWindow.onStateChange(updateDesktopRuntimeState);
@@ -8471,11 +8488,236 @@ function resetFloatColorsToIdle() {
 }
 
 // ============================================================
+//  歌词显示模式（行数）与动画风格 —— v10 多行 + 风格化（借鉴 MR GitHub 三维度之一、二）
+// ============================================================
+var LYRIC_WINDOW_LINE_STEP = 0.62;   // 多行模式下相邻行的世界纵向间距（group 局部坐标）
+var STAGE_LYRIC_DISPLAY_MODES = { single: 1, triple: 1, cinema: 1 };
+var STAGE_LYRIC_MOTION_STYLES = { float: 1, glitch: 1 };
+function getLyricDisplayMode() {
+  var m = String((fx && fx.lyricDisplayMode) || 'single');
+  return STAGE_LYRIC_DISPLAY_MODES[m] ? m : 'single';
+}
+function lyricDisplayOffsetsForMode(mode) {
+  mode = getLyricDisplayMode();
+  if (mode === 'triple') return [-1, 0, 1];
+  if (mode === 'cinema') return [-2, -1, 0, 1, 2];
+  return [0];   // single
+}
+function lyricDisplayLineCountForMode(mode) {
+  mode = getLyricDisplayMode();
+  if (mode === 'triple') return 3;
+  if (mode === 'cinema') return 5;
+  return 1;
+}
+function getLyricMotionStyle() {
+  var s = String((fx && fx.lyricMotionStyle) || 'float');
+  return STAGE_LYRIC_MOTION_STYLES[s] ? s : 'float';
+}
+// 动画风格参数组：float 默认值与原硬编码（tickMesh 入场0.52/出场0.38、breathe 等）严格一致，保证默认无回归。
+// 其余风格在此基础上调整 enter/exit/slide/progressEase/contextDrift/edgeBoost/sweep/shimmer/floatAmp/glitch*。
+function getLyricMotionProfile(style) {
+  style = getLyricMotionStyle();
+  // 仅保留两种风格（用户反馈其余无法区分）：
+  // float = 原始硬编码值（零回归，bob/sway/bobRate 默认 1.0 即原常量幅度）；glitch = 切片位移 + 轻度抖动。
+  var p = {
+    enter: 0.52, exit: 0.38, slide: 0.34, progressEase: 0.18,
+    contextDrift: 0.060, edgeBoost: 1.0, sweep: 0.62, shimmer: 0.24,
+    floatAmp: 1.0, bob: 1.0, sway: 1.0, bobRate: 1.0, tilt: 0, sweepBar: 0,
+    glitch: 0, glitchSlice: 0, glitchChroma: 0, glitchRate: 1.0, glitchJitter: 0
+  };
+  if (style === 'glitch') {
+    // 故障：shader 级切片位移 + 轻度整块抖动（色散已去掉，避免红蓝重影刺眼），保留"撕裂/抖动"的故障感
+    p.enter = 0.34; p.exit = 0.30; p.slide = 0.30; p.progressEase = 0.22; p.contextDrift = 0.035;
+    p.edgeBoost = 1.10; p.sweep = 0.50; p.shimmer = 0.26; p.floatAmp = 0.70;
+    p.bob = 0.50; p.sway = 1.30; p.bobRate = 1.30;
+    p.glitch = 1.0; p.glitchSlice = 0.07; p.glitchChroma = 0; p.glitchRate = 1.0; p.glitchJitter = 0.20;
+  }
+  return p;
+}
+function setLyricDisplayMode(mode) {
+  mode = String(mode || 'single');
+  if (!STAGE_LYRIC_DISPLAY_MODES[mode]) mode = 'single';
+  if (fx.lyricDisplayMode === mode) return;
+  fx.lyricDisplayMode = mode;
+  // 切换模式：清理旧渲染状态，避免 single 的 current/outgoing 与多行 rows 残留交错
+  clearStageLyrics();
+  clearLyricWindow();
+  saveLyricLayout();
+  updateLyricModeControls();
+}
+function setLyricMotionStyle(style) {
+  style = String(style || 'float');
+  if (!STAGE_LYRIC_MOTION_STYLES[style]) style = 'float';
+  if (fx.lyricMotionStyle === style) return;
+  fx.lyricMotionStyle = style;
+  saveLyricLayout();
+  updateLyricModeControls();
+}
+
+// ---- v10 多行窗口渲染层（triple / cinema）----
+// rows 模型：lineIndex -> { mesh, lineIndex, text, tr, offset, age }
+// offset = 该行相对"当前激活行"的位置（0=居中激活行；±1/±2=上下文中行）。
+// 单行模式继续走 stageLyrics.current / outgoing 旧路径，零回归。
+function windowHasRows() {
+  for (var _k in stageLyrics.rows) if (stageLyrics.rows.hasOwnProperty(_k)) return true;
+  return false;
+}
+function clearLyricWindow() {
+  for (var _k in stageLyrics.rows) {
+    if (stageLyrics.rows.hasOwnProperty(_k)) disposeLyricMesh(stageLyrics.rows[_k].mesh);
+  }
+  stageLyrics.rows = {};
+  stageLyrics.windowActiveLine = -1;
+}
+// 构建/复用某一行的 mesh；仅当文本或翻译变化时才重建，避免每帧重建。
+function ensureWindowRow(li, text, tr) {
+  var existing = stageLyrics.rows[li];
+  if (existing && existing.text === text && existing.tr === tr) return;
+  if (existing) disposeLyricMesh(existing.mesh);
+  createLyricsParticles();
+  if (!stageLyrics.group) return;
+  var mesh = buildLyricMesh(text, tr);
+  stageLyrics.group.add(mesh);
+  stageLyrics.rows[li] = { mesh: mesh, lineIndex: li, text: text, tr: tr, offset: 0, age: 0 };
+}
+// 每帧维护窗口成员（构建新行 / 销毁离开窗口的行 / 标记 offset / 更新激活行进度）。
+function tickLyricsParticlesWindow(mode) {
+  if (!fx.particleLyrics) { if (windowHasRows()) clearLyricWindow(); return; }
+  if (!playing || !audio || !lyricsLines.length) { if (windowHasRows()) clearLyricWindow(); return; }
+  var t = audio.currentTime;
+  var newIdx = -1;
+  for (var i = 0; i < lyricsLines.length; i++) {
+    if (lyricsLines[i].t <= t + 0.05) newIdx = i; else break;
+  }
+  var anchor, introText = null;
+  if (newIdx < 0) {
+    anchor = -1;
+    introText = currentLyricFallbackText();
+    if (!introText) { if (windowHasRows()) clearLyricWindow(); return; }
+  } else {
+    anchor = newIdx;
+  }
+  var offsets = lyricDisplayOffsetsForMode(mode);
+  var wanted = {};
+  for (var k = 0; k < offsets.length; k++) {
+    var li = anchor + offsets[k];
+    wanted[li] = offsets[k];
+  }
+  if (anchor !== -1 && wanted.hasOwnProperty('-1')) delete wanted['-1'];
+  // 移除不再属于窗口的行
+  for (var key in stageLyrics.rows) {
+    if (stageLyrics.rows.hasOwnProperty(key) && !wanted.hasOwnProperty(key)) {
+      disposeLyricMesh(stageLyrics.rows[key].mesh);
+      delete stageLyrics.rows[key];
+    }
+  }
+  // 新增/更新窗口内行
+  for (var key2 in wanted) {
+    if (!wanted.hasOwnProperty(key2)) continue;
+    var li2 = parseInt(key2, 10);
+    var off = wanted[key2];
+    var text, tr = '';
+    if (li2 === -1) {
+      text = introText;
+    } else if (li2 < 0 || li2 >= lyricsLines.length) {
+      continue; // 越界行不渲染（无 phantom 占位）
+    } else {
+      var ln = lyricsLines[li2];
+      text = ln.text || '';
+      // 所有行都带翻译构建，便于成为激活行时直接显示；上下文中行在逐帧里隐藏翻译（仅当前行显示）
+      tr = (fx.lyricTranslationMode === 'off' ? '' : (ln.tr || ''));
+    }
+    if (!text) {
+      if (stageLyrics.rows[li2]) { disposeLyricMesh(stageLyrics.rows[li2].mesh); delete stageLyrics.rows[li2]; }
+      continue;
+    }
+    ensureWindowRow(li2, text, tr);
+    if (!stageLyrics.rows[li2]) continue; // 防御：若 group 未就绪导致 mesh 没建成，跳过本行
+    stageLyrics.rows[li2].offset = off;
+    if (off === 0) stageLyrics.windowActiveLine = li2;
+  }
+  // 激活行卡拉OK进度（intro 用占位行，正式行用真实时间轴）
+  if (anchor === -1) {
+    var _ir = stageLyrics.rows[-1];
+    if (_ir) {
+      var _fl = lyricsLines[0];
+      var _ie = _fl && _fl.t > 0 ? _fl.t : Math.min((audio && audio.duration) || 4.8, 4.8);
+      var _il = { t:0, text:introText, duration:Math.max(0.8, _ie), charCount:Math.max(1, introText.length), fallback:true };
+      updateLyricMeshProgress(_ir.mesh, getLyricLineProgress(_il, null, t));
+    }
+  } else if (stageLyrics.windowActiveLine >= 0) {
+    var _al = lyricsLines[stageLyrics.windowActiveLine];
+    var _arec = stageLyrics.rows[stageLyrics.windowActiveLine];
+    if (_al && _arec) {
+      var _an = lyricsLines[stageLyrics.windowActiveLine + 1];
+      updateLyricMeshProgress(_arec.mesh, getLyricLineProgress(_al, _an, t));
+    }
+  }
+  stageLyrics.currentIdx = anchor;
+}
+// 上下文中行逐帧：按 offset 做纵向位移 + 距离衰减（透明度/缩放/Z），不参与发光与粒子，并隐藏翻译。
+function tickLyricContextRow(rec, dt) {
+  var mesh = rec.mesh;
+  if (!mesh || !mesh.userData) return;
+  if (!mesh.userData.age) mesh.userData.age = 0;
+  mesh.userData.age += dt;
+  var off = rec.offset || 0;
+  var dist = Math.abs(off);
+  var a = Math.min(1, mesh.userData.age / 0.40);
+  a = a * a * (3 - 2 * a);
+  var data = mesh.userData.lyric || {};
+  var targetY = -off * LYRIC_WINDOW_LINE_STEP;
+  var targetZ = 1.48 - dist * 0.30;
+  var targetScale = (0.96 - dist * 0.090) * (0.80 + a * 0.20);
+  mesh.position.y += (targetY - mesh.position.y) * 0.14;
+  mesh.position.z += (targetZ - mesh.position.z) * 0.14;
+  mesh.scale.setScalar(targetScale);
+  mesh.rotation.z = 0;
+  var baseOpacity = dist === 1 ? 0.40 : 0.16;
+  baseOpacity *= (0.50 + 0.50 * a);
+  if (data.textMat) {
+    data.textMat.uniforms.uOpacity.value = baseOpacity;
+    data.textMat.uniforms.uProgress.value = 1;
+    data.textMat.uniforms.uSolar.value = 0;
+  }
+  if (data.trMat) data.trMat.uniforms.uOpacity.value += (0 - data.trMat.uniforms.uOpacity.value) * 0.30; // 仅当前行显示翻译 → 上下文中行淡出翻译
+  if (data.readabilityMat) data.readabilityMat.opacity = baseOpacity * 0.78;
+  if (data.glowMat) data.glowMat.opacity = 0;
+  if (data.sunMat) data.sunMat.opacity = 0;
+  if (data.sparkMat) setLyricSparkOpacity(data, 0);
+  if (data.sparks) data.sparks.visible = false;
+}
+// 同步歌词模式 UI 高亮（“active”类），覆盖显示模式段与（未来的）动画风格段。
+function updateLyricModeControls() {
+  var dm = getLyricDisplayMode();
+  var ms = getLyricMotionStyle();
+  var dseg = document.getElementById('lyric-display-mode-seg');
+  if (dseg) {
+    var btns = dseg.querySelectorAll('button');
+    for (var i = 0; i < btns.length; i++) {
+      var b = btns[i];
+      var m = b.getAttribute('data-mode') || (b.id ? b.id.replace('lyric-display-', '') : '');
+      if (m === dm) b.classList.add('active'); else b.classList.remove('active');
+    }
+  }
+  var mseg = document.getElementById('lyric-motion-style-seg');
+  if (mseg) {
+    var mb = mseg.querySelectorAll('button');
+    for (var j = 0; j < mb.length; j++) {
+      var bm = mb[j];
+      var sm = bm.getAttribute('data-style') || (bm.id ? bm.id.replace('lyric-motion-', '') : '');
+      if (sm === ms) bm.classList.add('active'); else bm.classList.remove('active');
+    }
+  }
+}
+
 //  舞台歌词系统 v9 — Three.js 文字平面, 跟随专辑粒子 3D 运动
 // ============================================================
 var stageLyrics = {
   group: null,
   current: null,
+  rows: {},            // v10: 多行窗口模式下的可见行 mesh map（lineIndex -> {mesh,lineIndex,state}）
+  windowActiveLine: -1,
   outgoing: [],
   currentIdx: -1,
   currentText: '',
@@ -8851,6 +9093,8 @@ function readSavedLyricLayout() {
       lyricLetterSpacing: clampRange(Number(raw.lyricLetterSpacing) || 0, -0.04, 0.18),
       lyricLineHeight: clampRange(Number(raw.lyricLineHeight) || 1, 0.86, 1.35),
       lyricWeight: clampRange(Number(raw.lyricWeight) || 900, 500, 900),
+      lyricDisplayMode: STAGE_LYRIC_DISPLAY_MODES[String(raw.lyricDisplayMode) || 'triple'] ? String(raw.lyricDisplayMode) : 'triple',
+      lyricMotionStyle: STAGE_LYRIC_MOTION_STYLES[String(raw.lyricMotionStyle) || 'float'] ? String(raw.lyricMotionStyle) : 'float',
       lyricGlow: raw.lyricGlow !== false,
       lyricGlowBeat: raw.lyricGlowBeat !== false,
       lyricGlowParticles: !!raw.lyricGlowParticles,
@@ -8943,6 +9187,8 @@ function saveLyricLayout() {
       lyricLetterSpacing: clampRange(Number(fx.lyricLetterSpacing) || 0, -0.04, 0.18),
       lyricLineHeight: clampRange(Number(fx.lyricLineHeight) || 1, 0.86, 1.35),
       lyricWeight: clampRange(Number(fx.lyricWeight) || 900, 500, 900),
+      lyricDisplayMode: STAGE_LYRIC_DISPLAY_MODES[String(fx.lyricDisplayMode) || 'triple'] ? String(fx.lyricDisplayMode) : 'triple',
+      lyricMotionStyle: STAGE_LYRIC_MOTION_STYLES[String(fx.lyricMotionStyle) || 'float'] ? String(fx.lyricMotionStyle) : 'float',
       lyricGlow: !!fx.lyricGlow,
       lyricGlowBeat: !!fx.lyricGlowBeat,
       lyricTranslationMode: (fx.lyricTranslationMode === 'off' || fx.lyricTranslationMode === 'on') ? fx.lyricTranslationMode : 'auto',
@@ -8997,6 +9243,7 @@ function saveLyricLayout() {
     }));
   } catch (e) {}
 }
+// [独立 key 持久化函数已移除 — 见决策终止记录 2026-08-09]
 function normalizeHexColor(value, fallback) {
   var hex = String(value || '').trim();
   if (/^#[0-9a-f]{3}$/i.test(hex)) {
@@ -9053,7 +9300,7 @@ function shelfSettings() {
   };
 }
 function shelfAlwaysVisible() {
-  return !!(fx && normalizeShelfPresence(fx.shelfPresence) === 'always');
+  return !!(fx && fx.shelf !== 'off' && normalizeShelfPresence(fx.shelfPresence) === 'always');
 }
 function shouldUseShelfDynamicCamera(type) {
   if (!/^shelf-/.test(String(type || ''))) return true;
@@ -9268,6 +9515,21 @@ function customBackgroundMediaLabel(media) {
   if (!media) return '未设置';
   return media.type === 'video' ? '视频已设置' : '图片已设置';
 }
+// 背景媒体（图片/视频）独立于大设置 blob 存储，避免被 blob 解析/写入异常整批吞掉。
+// 图片以 data URL 存于此 key；视频只存轻量引用 {type,id,...}，实际文件在 IndexedDB（CUSTOM_BG_DB_NAME）。
+function saveBgMedia() {
+  try {
+    var m = normalizeCustomBackgroundMedia(fx.backgroundMedia || fx.backgroundImage);
+    localStorage.setItem(BG_MEDIA_STORE_KEY, JSON.stringify(m || null));
+  } catch (e) {}
+}
+function loadBgMedia() {
+  try {
+    var raw = JSON.parse(localStorage.getItem(BG_MEDIA_STORE_KEY) || 'null');
+    return normalizeCustomBackgroundMedia(raw);
+  } catch (e) { return null; }
+}
+
 var CUSTOM_BG_DB_NAME = 'mineradio-custom-background-v1';
 var CUSTOM_BG_STORE = 'media';
 var customBgObjectUrl = '';
@@ -9634,6 +9896,9 @@ function setStageLyricPalette(pal) {
   lyricSunHotColor.copy(lyricThreeColor(stageLyrics.palette.highlight || stageLyrics.palette.primary, '#fff4cc', 0.54));
   applyLyricPaletteToMesh(stageLyrics.current);
   stageLyrics.outgoing.forEach(applyLyricPaletteToMesh);
+  for (var _pr in stageLyrics.rows) {
+    if (stageLyrics.rows.hasOwnProperty(_pr)) applyLyricPaletteToMesh(stageLyrics.rows[_pr].mesh);
+  }
   syncSkullParticleColors();
 }
 function lyricTextPaletteFromHsl(hsl, avgL, chroma) {
@@ -10064,6 +10329,12 @@ function makeLyricShaderMaterial(mask, pal) {
       uSolarColor: { value: lyricThreeColor(pal.highlight || pal.secondary || pal.primary, '#fff0b8', 0.50) },
       uFeather: { value: lyricsHasNativeKaraoke ? 0.030 : 0.055 },
       uSolar: { value: 0 },
+      uGlitch: { value: 0 },
+      uGlitchChroma: { value: 0 },
+      uGlitchSlice: { value: 0 },
+      uGlitchTime: { value: 0 },
+      uGlitchSeed: { value: 0 },
+      uSweep: { value: 0 },
     },
     vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
     fragmentShader: [
@@ -10071,15 +10342,30 @@ function makeLyricShaderMaterial(mask, pal) {
       'uniform sampler2D uMap;',
       'uniform float uProgress,uTextMin,uTextMax,uOpacity,uFeather,uSolar;',
       'uniform vec3 uBaseColor,uHiColor,uGlowColor,uSolarColor;',
+      'uniform float uGlitch,uGlitchChroma,uGlitchSlice,uGlitchTime,uGlitchSeed,uSweep;',
       'varying vec2 vUv;',
       'void main(){',
       '  vec2 uv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
-      '  float mask = texture2D(uMap, uv).a;',
-      '  if(mask < 0.01) discard;',
       '  float denom = max(0.001, uTextMax - uTextMin);',
       '  float p = clamp((uv.x - uTextMin) / denom, 0.0, 1.0);',
       '  float filled = 1.0 - smoothstep(uProgress, uProgress + uFeather, p);',
       '  float edge = 1.0 - smoothstep(0.0, uFeather * 2.8, abs(p - uProgress));',
+      '  float mG = texture2D(uMap, uv).a;',
+      '  if (mG < 0.01 && uGlitch < 0.001) discard;',
+      '  float mR = mG; float mB = mG;',
+      '  if (uGlitch > 0.001) {',
+      '    float ca = uGlitchChroma * uGlitch;',
+      '    float tb = floor(uGlitchTime * 11.0);',
+      '    float band = floor(uv.y * 14.0);',
+      '    float rnd = fract(sin(band * 91.17 + uGlitchSeed * 13.13 + tb * 5.7) * 43758.5453);',
+      '    float gate = step(0.55, fract(sin(tb * 2.3 + band) * 91.0));',
+      '    float slice = (rnd - 0.5) * uGlitchSlice * uGlitch * gate;',
+      '    vec2 guv = vec2(uv.x + slice, uv.y);',
+      '    mG = texture2D(uMap, guv).a;',
+      '    mR = texture2D(uMap, guv + vec2(ca, 0.0)).a;',
+      '    mB = texture2D(uMap, guv - vec2(ca, 0.0)).a;',
+      '    if (mG < 0.01 && mR < 0.01 && mB < 0.01) discard;',
+      '  }',
       '  vec3 color = mix(uBaseColor, uHiColor, filled * 0.88);',
       '  color += uGlowColor * edge * 0.14;',
       '  vec3 solar = uSolarColor;',
@@ -10087,7 +10373,20 @@ function makeLyricShaderMaterial(mask, pal) {
       '  color += solar * edge * uSolar * 0.22;',
       '  float lum = dot(color, vec3(0.299, 0.587, 0.114));',
       '  color += vec3(max(0.0, 0.30 - lum));',
-      '  gl_FragColor = vec4(color, mask * uOpacity);',
+      '  if (uSweep > 0.001) {',
+      '    float sweepPos = fract(uGlitchTime * 0.35);',
+      '    float sd = abs(p - sweepPos);',
+      '    float band = 1.0 - smoothstep(0.0, 0.20, sd);',
+      '    color += uSolarColor * band * 0.75 * uSweep;',
+      '    color += vec3(1.0) * (1.0 - smoothstep(0.0, 0.035, sd)) * 0.30 * uSweep;',
+      '  }',
+      '  if (uGlitch > 0.001) {',
+      '    vec3 channelMask = vec3(mR, mG, mB);',
+      '    float maskA = max(mG, max(mR, mB));',
+      '    gl_FragColor = vec4(color * channelMask, maskA * uOpacity);',
+      '  } else {',
+      '    gl_FragColor = vec4(color, mG * uOpacity);',
+      '  }',
       '}',
     ].join('\n'),
     transparent:true, depthWrite:false, depthTest:false, side:THREE.DoubleSide,
@@ -10288,7 +10587,9 @@ function clearStageLyrics() {
 
 function updateStageLyrics3D(dt) {
   if (!stageLyrics.group) return;
-  if (!fx.particleLyrics && !stageLyrics.current && (!stageLyrics.outgoing || !stageLyrics.outgoing.length)) return;
+  // 防御：单行模式下绝不允许残留多行窗口 rows，任何路径漏清都能在这里兜底
+  if (getLyricDisplayMode() === 'single' && windowHasRows()) clearLyricWindow();
+  if (!fx.particleLyrics && !stageLyrics.current && (!stageLyrics.outgoing || !stageLyrics.outgoing.length) && !windowHasRows()) return;
   if (!isFinite(stageLyrics.highBloom)) stageLyrics.highBloom = 0;
   if (!isFinite(stageLyrics.beatGlow)) stageLyrics.beatGlow = 0;
   if (!isFinite(stageLyrics.glowFollowX)) stageLyrics.glowFollowX = 0;
@@ -10445,16 +10746,39 @@ function updateStageLyrics3D(dt) {
   function tickMesh(mesh, isCurrent) {
     if (!mesh) return false;
     mesh.userData.age += dt;
-    var a = Math.min(1, mesh.userData.age / (isCurrent ? 0.52 : 0.38));
+    var mp = getLyricMotionProfile();   // v10 动画风格参数组（float 默认=原硬编码，保证零回归）
+    var slideK = mp.slide / 0.34;
+    var sweepK = mp.sweep / 0.62;
+    var shimmerK = mp.shimmer / 0.24;
+    var opEaseK = mp.progressEase / 0.18;
+    var a = Math.min(1, mesh.userData.age / (isCurrent ? mp.enter : mp.exit));
     a = a * a * (3 - 2 * a);
     var data = mesh.userData.lyric || {};
+    if (mesh.userData.baseX === undefined) mesh.userData.baseX = mesh.position.x;
+    if (data.textMat && data.textMat.uniforms.uGlitch) {
+      var gAmt = mp.glitch || 0;
+      data.textMat.uniforms.uGlitch.value = gAmt;
+      data.textMat.uniforms.uGlitchTime.value = t;
+      data.textMat.uniforms.uGlitchSeed.value = (mesh.userData.floatSeed || 0) * 0.137;
+      data.textMat.uniforms.uGlitchChroma.value = mp.glitchChroma * gAmt;
+      data.textMat.uniforms.uGlitchSlice.value = mp.glitchSlice;
+      data.textMat.uniforms.uSweep.value = mp.sweepBar || 0;
+      if (data.trMat && data.trMat.uniforms.uGlitch) {
+        data.trMat.uniforms.uGlitch.value = gAmt;
+        data.trMat.uniforms.uGlitchTime.value = t;
+        data.trMat.uniforms.uGlitchSeed.value = (mesh.userData.floatSeed || 0) * 0.137 + 0.5;
+        data.trMat.uniforms.uGlitchChroma.value = mp.glitchChroma * gAmt;
+        data.trMat.uniforms.uGlitchSlice.value = mp.glitchSlice;
+        data.trMat.uniforms.uSweep.value = mp.sweepBar || 0;
+      }
+    }
     var followMix = isCurrent ? 1.0 : 0.64;
     var glowX = stageLyrics.glowFollowX * followMix;
     var glowY = stageLyrics.glowFollowY * followMix;
     var glowRoll = stageLyrics.glowFollowRoll * followMix;
     if (data.glow) {
       data.glow.position.set(glowX * 0.14, glowY * 0.12, -0.006);
-      data.glow.rotation.z = glowRoll * 0.30;
+      data.glow.rotation.z = glowRoll * 0.30 * sweepK;
     }
     if (data.sun) {
       data.sun.position.set(glowX * 0.42, 0.02 + glowY * 0.34, -0.035);
@@ -10469,7 +10793,7 @@ function updateStageLyrics3D(dt) {
       var shelfDetailLyricDim = shelfDetailLyricProfile.bloom;
       var lyricOpacityTarget = shelfDetailLyricProfile.opacity;
       var currentOpacity = data.textMat ? data.textMat.uniforms.uOpacity.value : 0;
-      var opacityEase = shelfDetailOpen && currentOpacity > lyricOpacityTarget ? shelfDetailLyricProfile.easeDown : 0.16;
+      var opacityEase = shelfDetailOpen && currentOpacity > lyricOpacityTarget ? shelfDetailLyricProfile.easeDown : 0.16 * opEaseK;
       opacity = clampRange(currentOpacity + (lyricOpacityTarget - currentOpacity) * opacityEase, 0, 1);
       if (data.textMat) data.textMat.uniforms.uOpacity.value = opacity;
       if (data.trMat) data.trMat.uniforms.uOpacity.value = opacity * 0.80;
@@ -10486,12 +10810,12 @@ function updateStageLyrics3D(dt) {
       var solar = stageLyrics.highBloom * shelfDetailLyricDim;
       var warmth = Math.max(0, Math.min(1, solar * 1.10));
       if (data.glowMat) {
-        var glowTarget = lyricGlowStrength > 0 ? Math.min(shelfDetailLyricProfile.glowCap, (0.075 + solar * 0.34 + stageLyrics.beatGlow * 0.16 * shelfDetailLyricDim) * Math.min(3.0, glowDrive)) : 0;
+        var glowTarget = lyricGlowStrength > 0 ? Math.min(shelfDetailLyricProfile.glowCap, (0.075 + solar * 0.34 + stageLyrics.beatGlow * 0.16 * shelfDetailLyricDim) * Math.min(3.0, glowDrive)) * mp.edgeBoost : 0;
         data.glowMat.opacity += (glowTarget - data.glowMat.opacity) * (glowTarget > data.glowMat.opacity ? 0.095 : (shelfDetailOpen ? 0.20 : 0.055));
         data.glowMat.color.copy(lyricThreeColor(stageLyrics.palette.glowColor || stageLyrics.palette.secondary, '#9cffdf', 0.36)).lerp(lyricSunHotColor, warmth);
       }
       if (data.sparkMat) {
-        var sparkTarget = lyricGlowStrength > 0 && fx.lyricGlowParticles && !shelfDetailOpen ? Math.min(0.42, (0.10 + solar * 0.14 + stageLyrics.beatGlow * 0.10) * Math.min(1.6, glowDrive)) : 0;
+        var sparkTarget = lyricGlowStrength > 0 && fx.lyricGlowParticles && !shelfDetailOpen ? Math.min(0.42, (0.10 + solar * 0.14 + stageLyrics.beatGlow * 0.10) * Math.min(1.6, glowDrive)) * mp.edgeBoost : 0;
         var sparkOpacity = getLyricSparkOpacity(data);
         sparkOpacity += (sparkTarget - sparkOpacity) * (sparkTarget > sparkOpacity ? 0.13 : (shelfDetailOpen ? 0.22 : 0.075));
         setLyricSparkOpacity(data, sparkOpacity);
@@ -10502,7 +10826,7 @@ function updateStageLyrics3D(dt) {
       }
       var seed = mesh.userData.floatSeed || 0;
       if (data.sunMat) {
-        var sunTarget = lyricGlowStrength > 0 && !shelfDetailOpen ? Math.min(0.88, (Math.pow(Math.min(1.35, solar), 1.08) * 0.28 + stageLyrics.beatGlow * 0.20) * Math.min(2.4, glowDrive)) : 0;
+        var sunTarget = lyricGlowStrength > 0 && !shelfDetailOpen ? Math.min(0.88, (Math.pow(Math.min(1.35, solar), 1.08) * 0.28 + stageLyrics.beatGlow * 0.20) * Math.min(2.4, glowDrive)) * mp.edgeBoost : 0;
         data.sunMat.opacity += (sunTarget - data.sunMat.opacity) * (shelfDetailOpen ? 0.18 : 0.055);
         data.sunMat.color.copy(lyricSunColor).lerp(lyricSunHotColor, solar * 0.55);
       }
@@ -10512,7 +10836,7 @@ function updateStageLyrics3D(dt) {
         data.sun.scale.set(0.82 + sunPulse * 0.36 + beatScale + Math.sin(t * 1.6) * sunPulse * 0.018, 0.60 + sunPulse * 0.34 + beatScale * 0.72 + Math.cos(t * 1.25) * sunPulse * 0.020, 1);
         data.sun.rotation.z += Math.sin(t * 0.32 + seed) * 0.010 * sunPulse;
       }
-      var breathe = Math.sin(t * 0.92 + seed) * 0.050 + Math.sin(t * 0.41 + seed * 0.7) * 0.028;
+      var breathe = (Math.sin(t * 0.92 + seed) * 0.050 + Math.sin(t * 0.41 + seed * 0.7) * 0.028) * mp.floatAmp;
       if (skullMouthLyrics) {
         var mouthMeshY = -0.070 + Math.sin(t * 0.50 + seed) * 0.018 + Math.sin(t * 1.12 + seed) * 0.006;
         var mouthMeshZ = 0.018 + Math.cos(t * 0.46 + seed) * 0.007;
@@ -10529,17 +10853,19 @@ function updateStageLyrics3D(dt) {
         mesh.rotation.z = Math.sin(t * 0.30 + seed) * 0.010;
       } else {
         mesh.userData.skullMouthMeshLocked = false;
-        mesh.scale.setScalar(0.96 + a * 0.055 + breathe + bass * 0.038 + beatPulse * 0.014);
-        mesh.position.y += ((0.18 + Math.sin(t * 0.55 + seed) * 0.055 + Math.sin(t * 1.35 + seed) * 0.014) - mesh.position.y) * 0.075;
-        mesh.position.z += ((1.48 + Math.cos(t * 0.48 + seed) * 0.080) - mesh.position.z) * 0.080;
-        mesh.rotation.z = Math.sin(t * 0.34 + seed) * 0.018;
+        mesh.scale.setScalar(0.96 + a * 0.055 * mp.floatAmp + breathe + bass * 0.038 + beatPulse * 0.014);
+        mesh.position.y += ((0.18 + Math.sin(t * 0.55 * mp.bobRate + seed) * 0.055 * mp.bob + Math.sin(t * 1.35 * mp.bobRate + seed) * 0.014 * mp.bob) - mesh.position.y) * 0.075 * slideK;
+        mesh.position.z += ((1.48 + Math.cos(t * 0.48 * mp.bobRate + seed) * 0.080 * mp.bob) - mesh.position.z) * 0.080 * slideK;
+        mesh.rotation.z = Math.sin(t * 0.34 + seed) * 0.018 * mp.sway;
+        mesh.rotation.x = Math.sin(t * 0.27 + seed) * 0.16 * mp.tilt;
+        mesh.position.x += (mesh.userData.baseX - mesh.position.x) * 0.20;
       }
       if (data.sparks && data.sparkMat) data.sparks.visible = fx.lyricGlowParticles || getLyricSparkOpacity(data) > 0.015;
       if (data.sparks && data.basePositions) {
         var pos = data.sparks.geometry.attributes.position;
         var arr = pos.array, base = data.basePositions;
         data.sparks.rotation.z += ((fx.lyricGlowParticles ? 0.0009 : 0.00025) + stageLyrics.beatGlow * 0.0007) * (dt * 60);
-        data.sparks.rotation.x = Math.sin(t * 0.12 + seed) * 0.012;
+        data.sparks.rotation.x = Math.sin(t * 0.12 + seed) * 0.012 * shimmerK;
         for (var si = 0; si < arr.length / 3; si++) {
           var s = si * 12.989 + seed;
           var particleBeat = fx.lyricGlowParticles ? stageLyrics.beatGlow : 0;
@@ -10550,6 +10876,14 @@ function updateStageLyrics3D(dt) {
           arr[si*3+2] = base[si*3+2] + Math.sin(t * (0.24 + (si % 4) * 0.035) + s) * (0.036 + particleBeat * 0.028) * drift;
         }
         pos.needsUpdate = true;
+      }
+      if (mp.glitch > 0) {
+        // 故障风格：shader 级 RGB 色散 + 切片位移（见 makeLyricShaderMaterial），此处叠加轻度整块旋转/位置抖动与辉光闪烁（已收敛）
+        mesh.rotation.z += (Math.random() - 0.5) * mp.glitchJitter * 0.05;
+        mesh.position.x = mesh.userData.baseX + (Math.random() - 0.5) * mp.glitchJitter * 0.10;
+        if (data.glowMat) data.glowMat.opacity *= (0.65 + Math.random() * 0.7);
+        if (data.sunMat) data.sunMat.opacity *= (0.65 + Math.random() * 0.7);
+        if (data.textMat) data.textMat.uniforms.uOpacity.value *= (0.86 + Math.random() * 0.20);
       }
       return true;
     }
@@ -10570,11 +10904,22 @@ function updateStageLyrics3D(dt) {
     mesh.scale.setScalar(0.98 - a * 0.06);
     return a < 1;
   }
-  tickMesh(stageLyrics.current, true);
-  for (var i = stageLyrics.outgoing.length - 1; i >= 0; i--) {
-    if (!tickMesh(stageLyrics.outgoing[i], false)) {
-      disposeLyricMesh(stageLyrics.outgoing[i]);
-      stageLyrics.outgoing.splice(i, 1);
+  if (getLyricDisplayMode() === 'single') {
+    tickMesh(stageLyrics.current, true);
+    for (var i = stageLyrics.outgoing.length - 1; i >= 0; i--) {
+      if (!tickMesh(stageLyrics.outgoing[i], false)) {
+        disposeLyricMesh(stageLyrics.outgoing[i]);
+        stageLyrics.outgoing.splice(i, 1);
+      }
+    }
+  } else {
+    // 多行窗口：激活行（offset 0）复用 tickMesh 全套发光/粒子/呼吸动画；上下文中行走轻量位移衰减
+    for (var _wi in stageLyrics.rows) {
+      if (!stageLyrics.rows.hasOwnProperty(_wi)) continue;
+      var _wrec = stageLyrics.rows[_wi];
+      if (!_wrec) continue;
+      if (_wrec.offset === 0) tickMesh(_wrec.mesh, true);
+      else tickLyricContextRow(_wrec, dt);
     }
   }
 }
@@ -10604,6 +10949,8 @@ function getLyricLineProgress(line, nextLine, now) {
 }
 
 function tickLyricsParticles() {
+  var _mode = getLyricDisplayMode();
+  if (_mode !== 'single') { tickLyricsParticlesWindow(_mode); return; }
   if (!fx.particleLyrics) {
     if (stageLyrics.current || stageLyrics.currentText || (stageLyrics.outgoing && stageLyrics.outgoing.length)) clearStageLyrics();
     return;
@@ -10659,6 +11006,7 @@ function tickLyricsParticles() {
 
 function disposeLyricsParticles() {
   clearStageLyrics();
+  clearLyricWindow();
   if (stageLyrics.starRiver) {
     if (stageLyrics.starRiver.parent) stageLyrics.starRiver.parent.remove(stageLyrics.starRiver);
     if (stageLyrics.starRiver.geometry) stageLyrics.starRiver.geometry.dispose();
@@ -22797,6 +23145,8 @@ function normalizeFxArchiveSnapshot(raw) {
     lyricLetterSpacing: archiveNumber(raw, 'lyricLetterSpacing', fxDefaults.lyricLetterSpacing, -0.04, 0.18),
     lyricLineHeight: archiveNumber(raw, 'lyricLineHeight', fxDefaults.lyricLineHeight, 0.86, 1.35),
     lyricWeight: archiveNumber(raw, 'lyricWeight', fxDefaults.lyricWeight, 500, 900),
+    lyricDisplayMode: STAGE_LYRIC_DISPLAY_MODES[String(raw.lyricDisplayMode) || 'triple'] ? String(raw.lyricDisplayMode) : 'triple',
+    lyricMotionStyle: STAGE_LYRIC_MOTION_STYLES[String(raw.lyricMotionStyle) || 'float'] ? String(raw.lyricMotionStyle) : 'float',
     lyricTranslationMode: raw.lyricTranslationMode === 'off' || raw.lyricTranslationMode === 'on' ? raw.lyricTranslationMode : 'auto',
     visualTintMode: raw.visualTintMode === 'custom' ? 'custom' : 'auto',
     visualTintColor: normalizeHexColor(raw.visualTintColor || fxDefaults.visualTintColor),
@@ -22938,6 +23288,7 @@ function applySavedLyricPaletteState() {
   updateLyricHighlightControls();
   updateLyricGlowControls();
   updateLyricTranslationControls();
+  updateLyricModeControls();
 }
 function applyFxArchiveSnapshot(snapshot) {
   var data = normalizeFxArchiveSnapshot(snapshot);
@@ -22961,10 +23312,17 @@ function applyFxArchiveSnapshot(snapshot) {
     freeCamera.locked = freeCameraData.locked;
     saveFreeCameraState();
   }
+  var oldLyricDisplayMode = fx.lyricDisplayMode;
   Object.keys(data).forEach(function(key){
     if (key === 'visualPresetSchema' || key === 'preset' || key === 'freeCamera') return;
     fx[key] = data[key];
   });
+  // 存档切换歌词显示模式时，必须清理旧模式的残留 mesh（否则多行切单行会卡死上下文行）
+  if (STAGE_LYRIC_DISPLAY_MODES[data.lyricDisplayMode] && data.lyricDisplayMode !== oldLyricDisplayMode) {
+    clearStageLyrics();
+    clearLyricWindow();
+    updateLyricModeControls();
+  }
   normalizeDevelopmentLockedFxState();
   setPreset(targetPreset, { silent: true, preserveCamera: true, skipTransition: false, noSave: true, commitPlaybackPreset: true });
   applyCoverParticleResolution(fx.coverResolution, { reload: true });
@@ -23494,6 +23852,28 @@ function updateCustomBackgroundControls() {
   if (imageValue) imageValue.textContent = customBackgroundMediaLabel(fx.backgroundMedia || fx.backgroundImage);
   applyBackgroundMediaHint();
 }
+// 后台运行（深度后台）时暂停并隐藏背景媒体，节省 GPU（视频解码是主要开销）
+var _customBgSuspended = false;
+function setCustomBackgroundSuspended(suspended) {
+  var video = document.getElementById('custom-bg-video');
+  document.body.classList.toggle('custom-bg-suspended', suspended);
+  if (!video) return;
+  if (suspended) {
+    try { video.pause(); } catch (e) {}
+  } else {
+    var media = normalizeCustomBackgroundMedia(fx.backgroundMedia || fx.backgroundImage);
+    if (media && media.type === 'video' && fx.bgMediaVisible !== false) {
+      var p = video.play();
+      if (p && p.catch) p.catch(function(){});
+    }
+  }
+}
+function syncCustomBackgroundSuspendState() {
+  var should = isDeepBackgroundMode();
+  if (should === _customBgSuspended) return;
+  _customBgSuspended = should;
+  setCustomBackgroundSuspended(should);
+}
 function setCustomBackgroundColor(color, silent, customFlag) {
   fx.backgroundColor = normalizeHexColor(color || '#000000', '#000000');
   fx.backgroundColorMode = customFlag === false ? 'cover' : 'custom';
@@ -23527,6 +23907,7 @@ function setCustomBackgroundImage(src, silent) {
   fx.backgroundMedia = image ? { type: 'image', src: image } : null;
   updateCustomBackgroundControls();
   saveLyricLayout();
+  saveBgMedia();
   if (!silent) showToast(fx.backgroundImage ? '背景图片已应用' : '背景图片已清除');
 }
 function clearCustomBackgroundImage() {
@@ -23538,6 +23919,7 @@ function setCustomBackgroundMedia(media, silent) {
   fx.backgroundImage = media && media.type === 'image' ? media.src : '';
   updateCustomBackgroundControls();
   saveLyricLayout();
+  saveBgMedia();
   if (!silent) showToast(media ? (media.type === 'video' ? '背景视频已应用' : '背景图片已应用') : '背景媒体已清除');
 }
 function readBackgroundImageFile(file) {
@@ -24517,7 +24899,6 @@ function relabelFxPanelControls() {
   setFxSectionBefore('lyric-color-grid', '文字颜色');
   setFxSectionBefore('lyric-highlight-picker', '跟唱高亮');
   setFxSectionBefore('lyric-glow-row', '歌词溢光颜色');
-  setFxSectionBefore('lyric-source-seg', '歌词来源');
   setFxSectionBefore('lyric-font-grid', '字体与字距');
   setFxSectionBefore('fx-lyricscale', '位置与角度');
   setFxSectionBefore('fx-desktoplyricssize', '桌面歌词');
@@ -25251,7 +25632,7 @@ function setShelfMode(m) {
   m = /^(off|side|stage)$/.test(String(m || '')) ? m : fxDefaults.shelf;
   fx.shelf = m;
   document.querySelectorAll('#shelf-seg button').forEach(function(b){ b.classList.toggle('active', b.dataset.shelf === m); });
-  if (shelfManager) shelfManager.setMode(m);
+  try { if (shelfManager) shelfManager.setMode(m); } catch (e) {}
   updateMosaicShortcutStates();
   // 舞台模式: 顶部搜索、底部控件让位
   var searchArea = document.getElementById('search-area');
@@ -25259,6 +25640,8 @@ function setShelfMode(m) {
   if (searchArea) searchArea.classList.toggle('stage-mode', m === 'stage');
   if (bottomBar) bottomBar.classList.toggle('stage-mode', m === 'stage');
   saveLyricLayout();
+  // 独立 key：3D歌单开关专用、与大设置 blob 解耦，确保关闭状态不被 blob 整体读取异常吞掉
+  try { localStorage.setItem(SHELF_MODE_STORE_KEY, m); } catch (e) {}
 }
 
 function updateShelfControlUi() {
@@ -29509,6 +29892,24 @@ if (fx.floatLayer) createFloatLayer();
 if (fx.particleLyrics) createLyricsParticles();
 if (fx.backCover) createBackCoverLayer();
 initIdleGuideCanvas();
+  // 安全网：启动末尾强制从存档恢复"上次用法"，覆盖任何初始化重置
+  try {
+    var _restored = readSavedLyricLayout();
+    if (_restored) {
+      if (STAGE_LYRIC_DISPLAY_MODES[_restored.lyricDisplayMode]) fx.lyricDisplayMode = _restored.lyricDisplayMode;
+      if (STAGE_LYRIC_MOTION_STYLES[_restored.lyricMotionStyle]) fx.lyricMotionStyle = _restored.lyricMotionStyle;
+      if (/^(off|side|stage)$/.test(_restored.shelf || '')) { fx.shelf = _restored.shelf; try { if (shelfManager) shelfManager.setMode(fx.shelf); } catch (e) {} }
+    }
+    updateLyricModeControls();
+    // 背景媒体：用独立 key 恢复（独立于大设置 blob，避免 blob 异常导致背景丢失）
+    var _bg = loadBgMedia();
+    if (_bg) { fx.backgroundMedia = _bg; fx.backgroundImage = _bg.type === 'image' ? _bg.src : ''; updateCustomBackgroundControls(); }
+  } catch (e) {}
+  // 3D歌单开关：启动用独立 key 最终裁决
+  try {
+    var _sm = localStorage.getItem(SHELF_MODE_STORE_KEY);
+    if (/^(off|side|stage)$/.test(String(_sm || ''))) { fx.shelf = _sm; try { if (shelfManager) shelfManager.setMode(_sm); } catch (e) {} }
+  } catch (e) {}
 var startupLoginStatusPromise = Promise.all([refreshLoginStatus(), refreshQQLoginStatus()]);
 startQQLoginStatusAutoRefresh();
 if (startupLoginStatusPromise && startupLoginStatusPromise.then) {
@@ -30154,6 +30555,7 @@ animate();
   var _cardComments = [];
   var _cardActive = false;
   var _cardPaused = false; /* 暂停标记，替代 playing检查 */
+  var _cardCompleted = false; /* 本轮评论序列是否已自然播完（防止 poll 误重启动导致回跳第一张） */
 
   /* 卡片轮播：past / current / next 三状态轮转 */
   var CARD_STACK_MAX = 3;
@@ -30328,6 +30730,7 @@ animate();
       console.log('[卡片-debug] restartCardCarousel key=', key, 'comments=', _cardComments.length);
       if (!_cardComments.length) return;
       _cardIdx = 0;
+      _cardCompleted = false; /* 新一轮开始，清除"自然播完"标记，允许 poll 在新歌/循环时正常启动 */
       _cardActive = true;
       scheduleNextCard();
     } finally {
@@ -30364,7 +30767,7 @@ animate();
     if (totalSlots <= 0) return;
     var comments = _cardComments.slice(0, totalSlots);
     if (!comments.length) return;
-    if (_cardIdx >= comments.length) { _cardActive = false; return; }
+    if (_cardIdx >= comments.length) { _cardActive = false; _cardCompleted = true; return; }
 
     /* 节奏完全由 CARD_DISPLAY_MS 控制：每张卡片显示 12s，到点自动切换
        等待/延迟逻辑全部移除：首张立即显示，后续按固定间隔轮转 */
@@ -30749,6 +31152,10 @@ animate();
     audio.addEventListener('pause', function() {
       /* 暂停时：只清定时器和隐藏卡片，不重置 _cardActive/_cardIdx，方便恢复时继续 */
       if (_cardTimer) { clearTimeout(_cardTimer); _cardTimer = null; }
+      /* 关键：clearTimeout 只能取消尚未派发的定时器，但 _cardScheduled 仍可能卡在 true。
+         若不复位，恢复播放时 ensureCommentsThenStart 看到 _cardScheduled===true 会跳过重调度，
+         导致卡片（尤其单曲循环重置时）永久不显示。这里一并复位。 */
+      _cardScheduled = false;
       _cardPaused = true;
       hideCurrentCard();
     });
@@ -30797,9 +31204,11 @@ animate();
       hideCurrentCard();
     } else if (isPlaying && _cc_pollPlaying) {
       /* 持续播放中：若检测到歌曲变化（checkSongChangeAndFetch 已 stopCardCarousel），
-         重新拉取评论并启动新轮播 */
+         重新拉取评论并启动新轮播。
+         关键：必须加 !_cardCompleted 守卫——否则评论序列"自然播完"后（歌曲尚未 ended，
+         _cardActive 已为 false）会被此分支反复 restartCardCarousel，导致卡片回跳第一张。 */
       var key = getSongKey();
-      if (key && commentCache[key] && commentCache[key].length && !_cardActive) {
+      if (key && commentCache[key] && commentCache[key].length && !_cardActive && !_cardCompleted) {
         ensureCommentsThenStart();
       }
     }
